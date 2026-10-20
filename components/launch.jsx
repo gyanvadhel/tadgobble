@@ -396,7 +396,8 @@ export default function Launch({ products }) {
           </p>
           <div>
             <a href="/discover">Explore</a>
-            <a href="/discover?privacy=1">Privacy</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
             <a href="/discover?sponsor=1">Work with us</a>
             <a href="/studio">
               The kitchen <ArrowUpRight size={14} />

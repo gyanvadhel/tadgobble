@@ -8,6 +8,9 @@ The static app is deployed to Firebase Hosting. Supabase provides Postgres, auth
 | Discoveries | https://tadgobble.web.app/discover |
 | Submit | https://tadgobble.web.app/discover?submit=1 |
 | Admin review | https://tadgobble.web.app/studio?tab=products&status=pending |
+| Private support inbox | https://tadgobble.web.app/studio?tab=inbox |
+| Privacy policy | https://tadgobble.web.app/privacy |
+| Terms of service | https://tadgobble.web.app/terms |
 
 Admin pages require an account with the server-controlled admin role. Use the existing owner credentials in your local `.env.local`. Signing up with Google creates a member, not an admin.
 
@@ -22,6 +25,16 @@ One-time account setup:
 3. Add this exact authorized redirect URI: `https://ixyfcswubxncobcnjget.supabase.co/auth/v1/callback`.
 4. In [Supabase Auth providers](https://supabase.com/dashboard/project/ixyfcswubxncobcnjget/auth/providers), enable Google and save the Client ID and Client Secret. Leave email checks and nonce checks enabled. Never put the secret in Git or a `NEXT_PUBLIC_*` variable.
 5. Set the Google audience to **In production** to allow public sign-in. A testing audience restricts who can join. Optional branding verification is managed by Google.
+
+For the Branding page's **App domain** fields, use:
+
+- Application home page: `https://tadgobble.web.app`
+- Application privacy policy link: `https://tadgobble.web.app/privacy`
+- Application terms of service link: `https://tadgobble.web.app/terms`
+
+These pages are public and linked from the homepage. Their contact forms store private requests in **Studio → Inbox**. Review that inbox regularly; it does not send email notifications automatically. The old `?tab=partnerships` link still opens the inbox.
+
+Google's Authorized domains field uses domain names, without schemes or paths. For the configured homepage and callback, the top private domains are `tadgobble.web.app` and `ixyfcswubxncobcnjget.supabase.co` (`web.app` and `supabase.co` are public suffixes). Brand verification can require additional ownership verification; saving these fields alone does not establish Google approval. See [Google's domain rules](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification#authorized-domains).
 
 The browser uses PKCE and returns to `/auth/callback`, which is included in Supabase's redirect allowlist. Provider credentials are configured in the dashboard and intentionally omitted from `supabase/config.toml`; config pushes leave them unchanged. Before the provider is enabled, the button displays an explanatory error instead of redirecting to a broken page.
 

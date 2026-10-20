@@ -1,5 +1,13 @@
 # Launch verification
 
+## Google connection and public policy pages — 21 October 2026
+
+Confirmed the Google provider is enabled and email confirmation remains required. The live sign-in button reaches Google's sign-in screen with the expected Supabase callback and no `invalid_client`, `redirect_uri_mismatch`, or access-blocked message. An actual person's Google consent and return session still need an interactive login; no personal Google account was used for these checks.
+
+Added public, statically rendered `/privacy` and `/terms` pages, linked from the landing/footer and sign-in form. The policy describes current Google data use, storage, public/private information, retention, and deletion behavior. Private contact forms use the existing guarded inquiry endpoint and appear in the owner-only Inbox; the old partnerships tab URL remains supported. No email notifications are sent automatically.
+
+Both application builds passed. Browser checks verified policy text in the initial HTML, layouts through 320px, actual private contact delivery, denied anonymous inbox-table access, owner Inbox access, and no browser errors. The temporary inquiry was deleted. Desktop and mobile pages were visually reviewed; artifacts are in `test-results/policies/`.
+
 ## Firebase Hosting and Supabase — 21 October 2026
 
 Deployed the static cloud app to https://tadgobble.web.app using Firebase Hosting only, with billing confirmed disabled. Supabase now holds accounts, listings, saves, comments, cover images, inquiries, and moderation. Argus remains the sole public listing; the existing pending submission and archived starter products were preserved. Local data was backed up before migration.

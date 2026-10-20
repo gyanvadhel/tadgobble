@@ -5,7 +5,7 @@ import {
   Layers,
   Clapperboard,
   CalendarClock,
-  Handshake,
+  Inbox,
   Plug,
   ArrowUpRight,
   ArrowRight,
@@ -110,9 +110,9 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
       'Products',
       'Content',
       'Queue',
-      'Partnerships',
+      'Inbox',
       'Connection',
-    ].find((value) => value.toLowerCase() === params.get('tab'));
+    ].find((value) => value.toLowerCase() === (params.get('tab') === 'partnerships' ? 'inbox' : params.get('tab')));
     if (requested) setTab(requested);
     if (['all', 'pending', 'published', 'rejected', 'archived'].includes(params.get('status')))
       setProductStatus(params.get('status'));
@@ -180,7 +180,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
     ['Products', Layers],
     ['Content', Clapperboard],
     ['Queue', CalendarClock],
-    ['Partnerships', Handshake],
+    ['Inbox', Inbox],
     ['Connection', Plug],
   ];
   const job = data?.jobs.find((j) => j.id === selected);
@@ -600,15 +600,15 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                 )}
               </section>
             )}
-            {tab === 'Partnerships' && (
+            {tab === 'Inbox' && (
               <>
                 <section className="studio-panel">
                   <div className="panel-title">
                     <div>
-                      <h2>Build something people want to support.</h2>
+                      <h2>Your inbox.</h2>
                       <p>
-                        Real partnership inquiries from the public site. These are leads, not paid
-                        orders.
+                        Private support, privacy, and partnership requests from the public site.
+                        Partnership inquiries are leads, not paid orders.
                       </p>
                     </div>
                     <span className="soft-tag">{data.inquiries.length} inquiries</span>
@@ -627,9 +627,8 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                       </article>
                     ))
                   ) : (
-                    <Empty icon={Handshake} title="Room for your first partnership.">
-                      The public partnership form sends inquiries here. Introduce paid placements
-                      after you can show meaningful audience results.
+                    <Empty icon={Inbox} title="All quiet in here.">
+                      Messages from the contact and partnership forms will appear here.
                     </Empty>
                   )}
                 </section>

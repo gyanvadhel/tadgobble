@@ -92,7 +92,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
           }
         } else if (!data.user && (params.get('signin') === '1' || params.get('saved') === '1'))
           setModal('auth');
-        else if (params.get('privacy') === '1') setModal('privacy');
+        else if (params.get('privacy') === '1') location.replace('/privacy');
         else if (params.get('sponsor') === '1') setModal('sponsor');
       })
       .catch((e) => setError(e.message))
@@ -521,7 +521,8 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
         <p>{brand.tagline}</p>
         <div>
           <button onClick={() => setModal('sponsor')}>Partner with us</button>
-          <button onClick={() => setModal('privacy')}>Privacy</button>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
           <a href="/studio">
             Studio <ArrowUpRight size={12} />
           </a>
@@ -560,28 +561,6 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                 notify('Your partnership inquiry was saved for the studio owner.');
               }}
             />
-          ) : modal === 'privacy' ? (
-            <div className="prose">
-              <span className="eyebrow">YOUR INFORMATION</span>
-              <h2>A small, clear privacy note.</h2>
-              <p>
-                Accounts store your name and email. Email logins store a securely hashed password; Google logins never share your Google password with us. Your public
-                comments show your display name. Saved products belong to your account.
-              </p>
-              <p>
-                {cloudMode ? 'An anonymous identifier in your browser’s local storage' : 'A first-party anonymous visitor cookie'} helps us count visits and returning visitors.
-                We record product-link clicks and campaign sources. These are visits, not proof of
-                purchases. Raw visitor events are retained for up to 90 days while the worker runs.
-              </p>
-              <p>
-                {cloudMode ? 'Supabase stores your account and submission data. Your browser keeps your sign-in session until you sign out or the session is revoked.' : 'Session and visitor cookies last up to 30 days.'} We do not sell your account details.
-                Opening a maker’s website takes you to their separate service and privacy terms.
-              </p>
-              <p>
-                You can delete a member account from the account menu. This removes your login,
-                saves, and comments; product listings can remain with the owner association removed.
-              </p>
-            </div>
           ) : modal === 'account' ? (
             <div className="account-panel">
               <span className="eyebrow">YOUR CORNER</span>
@@ -794,6 +773,7 @@ function AuthForm({ onDone, afterAuth }) {
       >
         {register ? 'Already here? Sign in' : 'New here? Create an account'}
       </button>}
+      <p className="auth-policy">By continuing, you agree to our <a href="/terms" target="_blank" rel="noreferrer">Terms</a> and acknowledge our <a href="/privacy" target="_blank" rel="noreferrer">Privacy policy</a>.</p>
     </form>
   );
 }
