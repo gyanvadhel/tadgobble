@@ -18,7 +18,7 @@ LOGO                     discover / saved / submit
           intro / 3D blob / tiny aside
 -------------------------------------------------
 <     PRODUCT NAME     [large demo scene]         >
-      copy / link      [whole stage recolors]      
+      copy / link      [whole stage recolors]
 -------------------------------------------------
                  maker poster
 ```
