@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-20T14:58:39.037Z",
+  "domains": [
+    {
+      "domain": "tadgobble.com",
+      "source": "https://rdap.verisign.com/com/v1/domain/tadgobble.com",
+      "status": 404,
+      "finding": "No domain registration record returned; purchase availability not confirmed."
+    }
+  ],
+  "socialHandles": {
+    "instagram": "Exact username availability unconfirmed. No handle claimed.",
+    "tiktok": "Exact username availability unconfirmed. No handle claimed.",
+    "youtube": "Exact username availability unconfirmed. No handle claimed.",
+    "x": "Exact username availability unconfirmed. No handle claimed."
+  },
+  "notes": "This script checks the selected name in the domain registry only. Registry responses do not prove purchase or username availability. No domain or account was registered."
+}

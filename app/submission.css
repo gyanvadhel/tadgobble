@@ -1,0 +1,809 @@
+.catalog-app .submission-modal {
+  width: min(1160px, calc(100vw - 48px));
+  max-width: none;
+  padding: 0;
+  border-radius: 16px;
+  max-height: 94dvh;
+  background: #fff;
+}
+.submission-modal .modal-close {
+  z-index: 4;
+  top: 22px;
+  right: 22px;
+  width: 32px;
+  height: 32px;
+  color: #39245a;
+  background: #eee7fc;
+  border-radius: 50%;
+}
+.submission-workshop {
+  --submission-ink: #39245a;
+  color: var(--submission-ink);
+}
+.submission-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 22px 75px 22px 32px;
+  border-bottom: 1px solid #39245a15;
+  font-size: 12px;
+}
+.submission-top > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font:
+    650 20px/1 'Bricolage Grotesque',
+    sans-serif;
+  letter-spacing: -0.025em;
+}
+.submission-top svg {
+  width: 31px;
+  height: 28px;
+}
+.submission-top > span:last-child {
+  color: #665578;
+  font-size: 11px;
+}
+.submission-steps {
+  display: flex;
+  padding: 20px 32px;
+  gap: 28px;
+  border-bottom: 1px solid #39245a15;
+}
+.submission-steps button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  background: none;
+  color: #665578;
+  padding: 4px 0;
+  font-size: 12px;
+  min-height: 36px;
+}
+.submission-steps button > span:first-child {
+  display: grid;
+  place-items: center;
+  height: 25px;
+  width: 25px;
+  border: 1px solid #39245a35;
+  border-radius: 50%;
+  font-size: 11px;
+}
+.submission-steps button[aria-current='step'] {
+  color: #39245a;
+  font-weight: 700;
+}
+.submission-steps button[aria-current='step'] > span:first-child {
+  background: #39245a;
+  color: #f9f4a7;
+  border-color: #39245a;
+}
+.submission-steps button:disabled {
+  opacity: 0.65;
+}
+.submission-layout {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  align-items: start;
+}
+.submission-preview {
+  background: #f9f4a7;
+  padding: 32px 34px;
+  position: sticky;
+  top: 0;
+  min-height: 650px;
+  align-self: stretch;
+}
+.preview-intro {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  margin-bottom: 40px;
+}
+.maker-ticket {
+  background: #fff;
+  border-radius: 14px 14px 0 0;
+  transform: rotate(-4deg);
+  box-shadow: 8px 10px 0 #39245a13;
+  margin: 0 5px 40px;
+  position: relative;
+}
+.ticket-art {
+  height: 170px;
+  display: grid;
+  place-items: center;
+  background: var(--ticket-color);
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px 14px 0 0;
+  transition: background 0.25s;
+}
+.ticket-orbit {
+  position: absolute;
+  width: 145px;
+  height: 145px;
+  border: 1px solid #39245a40;
+  border-radius: 50%;
+  top: -30px;
+  right: -25px;
+}
+.ticket-initial {
+  font:
+    750 105px/0.9 'Bricolage Grotesque',
+    sans-serif;
+  letter-spacing: -0.06em;
+  transform: rotate(8deg);
+}
+.ticket-label {
+  position: absolute;
+  left: 16px;
+  bottom: 13px;
+  font-size: 9px;
+  background: #ffffffb0;
+  padding: 5px 9px;
+  border-radius: 20px;
+}
+.ticket-copy {
+  padding: 26px 23px 25px;
+}
+.ticket-copy h3 {
+  font-size: 30px;
+  line-height: 1;
+  margin: 0 0 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.ticket-copy p {
+  min-height: 48px;
+  font-size: 12px;
+  color: #665578;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  margin-bottom: 24px;
+}
+.ticket-copy > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px dashed #39245a35;
+  padding-top: 17px;
+  font-size: 10px;
+}
+.ticket-perforation {
+  position: absolute;
+  bottom: -7px;
+  left: 0;
+  right: 0;
+  height: 9px;
+  background: radial-gradient(circle at 50% 100%, transparent 5px, #fff 5.5px) 0 0 / 14px 9px
+    repeat-x;
+}
+.gobble-tip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 38px 4px 22px;
+}
+.gobble-tip svg {
+  width: 70px;
+  height: 63px;
+  transform: rotate(7deg);
+}
+.gobble-tip p {
+  font:
+    550 18px/1.2 'Bricolage Grotesque',
+    sans-serif;
+  letter-spacing: -0.02em;
+  margin: 0;
+  max-width: 230px;
+}
+.preview-disclaimer {
+  display: block;
+  text-align: center;
+  font-size: 9px;
+  color: #665578;
+}
+.submission-form {
+  padding: 34px 40px 0;
+  min-width: 0;
+}
+.submission-heading > span {
+  font-size: 10px;
+  color: #665578;
+}
+.catalog-app .submission-heading h2 {
+  margin: 13px 0 13px;
+  font:
+    650 39px/1.02 'Bricolage Grotesque',
+    sans-serif;
+  letter-spacing: -0.045em;
+  outline: none;
+}
+.submission-heading p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #665578;
+  margin-bottom: 28px;
+}
+.submission-step-content {
+  min-height: 335px;
+  animation: submission-step-in 0.25s ease-out;
+}
+@keyframes submission-step-in {
+  from {
+    opacity: 0.25;
+    transform: translateX(9px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.submission-field {
+  margin-bottom: 23px;
+}
+.submission-field > label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 9px;
+  font-weight: 600;
+}
+.submission-field :is(input, textarea) {
+  width: 100%;
+  border: 1px solid #39245a35;
+  border-radius: 8px;
+  background: #fcfaff;
+  padding: 14px 15px;
+  color: #39245a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.submission-field :is(input, textarea)::placeholder {
+  color: #82718f;
+  opacity: 1;
+}
+.submission-field textarea {
+  resize: vertical;
+  min-height: 85px;
+}
+.submission-field > small {
+  display: block;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #665578;
+  margin-top: 8px;
+}
+.submission-url {
+  position: relative;
+}
+.submission-url svg {
+  position: absolute;
+  top: 17px;
+  left: 14px;
+  color: #665578;
+}
+.submission-url input {
+  padding-left: 42px;
+}
+.submission-choice-field {
+  border: 0;
+  padding: 0;
+  margin: 0 0 24px;
+  min-width: 0;
+}
+.submission-choice-field legend {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 12px;
+}
+.submission-choice-field legend span {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: #665578;
+  margin-top: 6px;
+}
+.category-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f4f0fc;
+  border-radius: 7px;
+  margin-bottom: 12px;
+}
+.category-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: #39245a;
+  padding: 2px;
+  font-size: 11px;
+}
+.category-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  max-height: 240px;
+  overflow: auto;
+  padding: 4px;
+  margin: -4px;
+  scrollbar-width: thin;
+  scrollbar-color: #c5b5f5 transparent;
+}
+.category-choices button,
+.pricing-choices button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+  padding: 12px;
+  min-height: 43px;
+  color: #39245a;
+  border: 1px solid #39245a25;
+  background: #fff;
+  border-radius: 7px;
+  font-size: 11px;
+}
+.category-choices button[aria-pressed='true'],
+.pricing-choices button[aria-pressed='true'] {
+  background: #eee7fc;
+  border-color: #39245a;
+}
+.category-selected {
+  margin: 13px 0 0;
+  font-size: 10px;
+}
+.category-no-results {
+  font-size: 12px;
+}
+.category-no-results button {
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  padding: 0;
+}
+.audience-choices,
+.platform-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.audience-choices button,
+.platform-choices button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #39245a35;
+  border-radius: 24px;
+  background: #fff;
+  color: #39245a;
+  min-height: 38px;
+  padding: 10px 14px;
+  font-size: 10px;
+}
+.audience-choices button[aria-pressed='true'],
+.platform-choices button[aria-pressed='true'] {
+  background: #39245a;
+  color: #fff;
+  border-color: #39245a;
+}
+.submission-optional {
+  border-top: 1px solid #39245a25;
+  border-bottom: 1px solid #39245a25;
+  margin-top: 20px;
+}
+.submission-optional summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 17px 0;
+}
+.submission-optional summary::-webkit-details-marker {
+  display: none;
+}
+.submission-optional summary > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 400;
+  color: #665578;
+}
+.submission-optional[open] summary svg {
+  transform: rotate(45deg);
+}
+.submission-optional .platform-choices {
+  padding-bottom: 18px;
+}
+.submission-optional .submission-field {
+  margin-top: 12px;
+}
+.pricing-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.pricing-choices button {
+  justify-content: space-between;
+}
+.color-choices > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.color-choices button {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1px solid #39245a15;
+  color: #39245a;
+}
+.color-choices button[aria-pressed='true'] {
+  outline: 1px solid #39245a;
+  outline-offset: 3px;
+}
+.submission-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 25px 0;
+  margin-top: 10px;
+  background: #fff;
+  position: sticky;
+  bottom: 0;
+  border-top: 1px solid #39245a15;
+  z-index: 1;
+}
+.submission-actions > span {
+  font-size: 10px;
+  color: #665578;
+}
+.submission-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  border: 0;
+  background: #39245a;
+  color: #f9f4a7;
+  border-radius: 28px;
+  padding: 16px 23px;
+  font-size: 12px;
+  font-weight: 600;
+  min-height: 49px;
+}
+.submission-primary:hover {
+  background: #503176;
+}
+.submission-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  background: none;
+  border: 0;
+  font-size: 12px;
+}
+.submission-error {
+  padding: 13px 15px;
+  background: #fff0ec;
+  border-left: 3px solid #bc3d2c;
+  color: #8c2b21;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.submission-review {
+  padding: 0 0 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #39245a20;
+}
+.submission-review > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 10px;
+  color: #665578;
+  margin-bottom: 14px;
+}
+.submission-review button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 0;
+  background: none;
+  border: 0;
+  color: #39245a;
+  font-size: 10px;
+}
+.submission-review h3 {
+  font-size: 27px;
+  line-height: 1.1;
+  margin-bottom: 9px;
+  overflow-wrap: anywhere;
+}
+.submission-review p {
+  font-size: 13px;
+  margin-bottom: 9px;
+  overflow-wrap: anywhere;
+}
+.submission-review a {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  font-size: 11px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.submission-review small {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #665578;
+  display: block;
+  overflow-wrap: anywhere;
+}
+.submission-review ul {
+  padding-left: 18px;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.submission-ownership {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.submission-ownership input {
+  accent-color: #39245a;
+  width: 17px;
+  height: 17px;
+  margin: 2px 0 0;
+  flex-shrink: 0;
+}
+.submission-review-note {
+  font-size: 10px;
+  color: #665578;
+  margin-top: 15px;
+}
+.submission-success {
+  min-height: 620px;
+  background: #f9f4a7;
+  color: #39245a;
+  padding: 65px 12%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.submission-success > svg {
+  width: 130px;
+  height: 117px;
+  transform: rotate(-10deg);
+  margin-bottom: 25px;
+}
+.submission-receipt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  margin-bottom: 22px;
+}
+.catalog-app .submission-success h2 {
+  font:
+    700 55px/0.98 'Bricolage Grotesque',
+    sans-serif;
+  letter-spacing: -0.045em;
+  margin-bottom: 25px;
+  outline: none;
+}
+.submission-success p {
+  max-width: 430px;
+  font-size: 14px;
+  margin-bottom: 25px;
+}
+@media (max-width: 900px) {
+  .submission-top > span:last-child {
+    display: none;
+  }
+  .submission-steps {
+    gap: 18px;
+  }
+  .submission-steps button {
+    font-size: 11px;
+  }
+  .submission-layout {
+    grid-template-columns: 0.8fr 1.2fr;
+  }
+  .submission-preview {
+    padding: 30px 22px;
+  }
+  .submission-form {
+    padding: 30px 27px 0;
+  }
+  .ticket-copy {
+    padding: 22px 17px;
+  }
+  .ticket-copy h3 {
+    font-size: 25px;
+  }
+  .ticket-art {
+    height: 150px;
+  }
+  .gobble-tip {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .gobble-tip p {
+    font-size: 17px;
+  }
+  .catalog-app .submission-heading h2 {
+    font-size: 34px;
+  }
+}
+@media (max-width: 650px) {
+  .catalog-app .submission-modal {
+    width: calc(100vw - 16px);
+    border-radius: 12px;
+    max-height: 96dvh;
+  }
+  .submission-modal .modal-close {
+    top: 15px;
+    right: 16px;
+  }
+  .submission-top {
+    padding: 18px 55px 18px 20px;
+  }
+  .submission-top > span:first-child {
+    font-size: 20px;
+  }
+  .submission-top svg {
+    width: 27px;
+    height: 25px;
+  }
+  .submission-steps {
+    padding: 10px 20px;
+    gap: 10px;
+    justify-content: space-between;
+  }
+  .submission-steps button {
+    min-height: 42px;
+    gap: 6px;
+  }
+  .submission-steps button > span:last-child {
+    display: none;
+  }
+  .submission-steps button[aria-current='step'] > span:last-child {
+    display: inline;
+    font-size: 10px;
+  }
+  .submission-steps button > span:first-child {
+    height: 27px;
+    width: 27px;
+  }
+  .submission-layout {
+    display: block;
+  }
+  .submission-preview {
+    display: none;
+    position: static;
+    min-height: 0;
+  }
+  .submission-workshop[data-step='3'] .submission-preview {
+    display: block;
+    padding: 30px 40px 25px;
+  }
+  .submission-workshop[data-step='3'] .preview-intro,
+  .submission-workshop[data-step='3'] .gobble-tip {
+    display: none;
+  }
+  .maker-ticket {
+    max-width: 300px;
+    margin: 0 auto 25px;
+  }
+  .ticket-art {
+    height: 115px;
+  }
+  .ticket-initial {
+    font-size: 75px;
+  }
+  .ticket-copy {
+    padding: 20px;
+  }
+  .ticket-copy p {
+    min-height: 0;
+    margin-bottom: 15px;
+  }
+  .submission-form {
+    padding: 25px 22px 0;
+  }
+  .catalog-app .submission-heading h2 {
+    font-size: 34px;
+  }
+  .submission-heading p {
+    font-size: 12px;
+    margin-bottom: 24px;
+  }
+  .submission-step-content {
+    min-height: 300px;
+  }
+  .submission-field :is(input, textarea) {
+    font-size: 16px;
+    padding: 12px;
+  }
+  .submission-url input {
+    padding-left: 39px;
+  }
+  .category-search input {
+    font-size: 13px;
+  }
+  .category-choices {
+    max-height: 235px;
+  }
+  .category-choices button {
+    font-size: 10px;
+    padding: 11px 9px;
+    min-height: 44px;
+  }
+  .audience-choices button,
+  .platform-choices button {
+    min-height: 40px;
+    padding: 10px 12px;
+  }
+  .submission-actions {
+    padding: 20px 0;
+  }
+  .submission-actions > span {
+    max-width: 85px;
+    font-size: 9px;
+  }
+  .submission-primary {
+    padding: 15px 20px;
+    font-size: 12px;
+  }
+  .submission-optional summary {
+    font-size: 11px;
+  }
+  .submission-optional summary > span {
+    font-size: 9px;
+  }
+  .pricing-choices button {
+    font-size: 10px;
+  }
+  .submission-success {
+    min-height: 610px;
+    padding: 65px 25px;
+  }
+  .catalog-app .submission-success h2 {
+    font-size: 38px;
+  }
+  .submission-success p {
+    font-size: 13px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .submission-step-content {
+    animation: none;
+  }
+  .ticket-art {
+    transition: none;
+  }
+}
