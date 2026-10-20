@@ -1,4 +1,16 @@
-# Launch verification — 20 October 2026
+# Launch verification
+
+## Firebase Hosting and Supabase — 21 October 2026
+
+Deployed the static cloud app to https://tadgobble.web.app using Firebase Hosting only, with billing confirmed disabled. Supabase now holds accounts, listings, saves, comments, cover images, inquiries, and moderation. Argus remains the sole public listing; the existing pending submission and archived starter products were preserved. Local data was backed up before migration.
+
+Both Next builds passed, all 27 unit/workflow tests passed, and production dependency audit found no vulnerabilities. The real-Supabase browser suite verified one-time legacy password conversion, protection against forged admin metadata, denied direct table access, Argus's real image, login/saving, submission/upload, private pending covers, approval/rejection, a real desktop-worker screenshot, owner-only studio access, and layouts at 1440px, 390px, and 320px. Temporary accounts, covers, and listings were removed afterward.
+
+Read-only checks against the deployed HTTPS site verified the landing, discover, product, outbound, studio, and auth callback routes; owner login; pending-review deep link; loaded Argus image; and no mobile overflow or browser exceptions. Desktop landing, submission editor, mobile catalog, and mobile sign-in screenshots were visually reviewed. Artifacts are under `test-results/cloud-launch/` (ignored by Git). The static export was scanned for private configuration values; none were found.
+
+Google sign-in uses PKCE with a dedicated callback and a preserved submission return destination. The auth browser check covers provider-not-configured feedback, the PKCE request, mobile layout, and cancelled consent recovery. It does **not** complete real Google consent. Email confirmation is enabled; Google provider activation and an interactive Google login remain account-side setup steps. No public email/password registration is offered until a separate email service is configured.
+
+Automatic captures require `npm run worker:cloud`; browsing, accounts, uploaded covers, submissions, and review do not require the desktop to stay on. Video rendering and Instagram integration remain local, with external publishing disabled. [Cloud operations and limitations](FREE_HOSTING.md).
 
 ## Automatic website previews and custom covers — latest update
 

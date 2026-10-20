@@ -2,6 +2,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Camera, Upload, RefreshCw, X, LoaderCircle, ImagePlus } from 'lucide-react';
 import '../app/covers.css';
+import { api } from '../lib/client-api.mjs';
 
 export function useProductCover(initialCover = null) {
   const [cover, setCover] = useState(initialCover);
@@ -30,16 +31,7 @@ export function useProductCover(initialCover = null) {
     setStatus(kind);
     const timeout = setTimeout(() => abort.abort(), 35000);
     try {
-      const response = await fetch(`/api/covers/${endpoint}`, {
-        method: 'POST',
-        signal: abort.signal,
-        ...(body instanceof FormData
-          ? { body }
-          : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
-      });
-      const result = await response.json();
-      if (!response.ok)
-        throw new Error(result.error || 'Your cover could not be prepared. Try again.');
+      const result = await api(`covers/${endpoint}`, body, { signal: abort.signal });
       if (version === current.current) {
         setCover(result.cover);
         setStatus('idle');
@@ -92,7 +84,7 @@ export default function CoverEditor({ state, website, name = 'Your product' }) {
         <p>Keep the website preview, or give it your own cover.</p>
       </div>
       <div className={`cover-stage ${cover ? 'has-cover' : ''}`} aria-busy={busy}>
-        {cover ? (
+        {cover?.url ? (
           <img src={cover.url} alt={`${name} cover preview`} width="1600" height="1200" />
         ) : (
           <div className="cover-placeholder">
@@ -111,7 +103,7 @@ export default function CoverEditor({ state, website, name = 'Your product' }) {
             </small>
           </div>
         )}
-        {cover && !busy && (
+        {cover?.url && !busy && (
           <span className="cover-kind">
             {cover.kind === 'capture' ? 'Captured from your website' : 'Your uploaded cover'}
           </span>
@@ -146,6 +138,7 @@ export default function CoverEditor({ state, website, name = 'Your product' }) {
         )}
       </div>
       <p className="cover-hint">JPG, PNG, or WebP · up to 5 MB. A 4:3 image fits best. Optional.</p>
+      {cover && !cover.url && !busy && <p className="cover-hint" role="status">Your website preview is queued. You can submit now or upload your own image.</p>}
       {error && (
         <p className="cover-error" role="alert">
           {error}

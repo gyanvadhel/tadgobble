@@ -20,6 +20,8 @@ Meet Gobble: the purple blob with excellent taste and absolutely no tab discipli
 
 ## Run it locally
 
+The public build runs on **[tadgobble.web.app](https://tadgobble.web.app)** using Firebase Hosting and Supabase. [Free hosting setup](docs/FREE_HOSTING.md) covers deployment, Google sign-in, database migrations, and the desktop screenshot worker.
+
 Use **Node.js 22.13+** and npm.
 
 ```bash
@@ -71,7 +73,9 @@ Covers accept JPG, PNG, or WebP up to 5 MB and are stored as 1600 × 1200 WebP i
 | Application | Next.js 16, React 19, JavaScript |
 | Interface | Custom CSS, GSAP, Lucide, original SVG Gobble |
 | Typography | Self-hosted Bricolage Grotesque and DM Sans |
-| Data and accounts | SQLite, server-side sessions, salted scrypt password hashes |
+| Cloud data and accounts | Supabase Postgres, Auth with Google, private Storage, guarded database functions |
+| Local data and accounts | SQLite, server-side sessions, salted scrypt password hashes |
+| Public hosting | Firebase Hosting static export; no Firebase Functions or App Hosting |
 | Website covers | Playwright Chromium and Sharp |
 | Video workflow | FFmpeg and an optional Meta publishing adapter |
 | Verification | Node's test runner and Playwright browser suites |
@@ -82,11 +86,13 @@ The current landing page keeps the purple SVG Gobble permanently visible. Earlie
 
 ```text
 app/          Routes, page layouts, and styles
+hosting/      Static cloud app sharing the same UI components
 components/   Discovery UI, Gobble, submission flow, and admin studio
 lib/          Database, authentication, captures, moderation, and content workflow
 public/       Fonts, artwork, and social preview
 scripts/      Setup, worker, asset helpers, and browser verification
 tests/        Workflow, access-control, and cover-service tests
+supabase/     Database migrations, auth configuration, legacy-login function
 docs/         Design notes, operations guide, and verification history
 ```
 
@@ -107,7 +113,9 @@ Browser suites use isolated databases and temporary accounts. They cover discove
 
 ## Running beyond localhost
 
-This repository contains a working local pilot. The current deployment model is **one application instance and an optional worker sharing a persistent disk**. Use HTTPS and persistent storage; an ephemeral serverless filesystem will not preserve the SQLite database or uploaded files.
+The public site has a **static Firebase Hosting build backed by Supabase**. Discovery, Google accounts, saves, comments, uploaded covers, submissions, and moderation run without your computer. Automatic website screenshots use the desktop worker; queued captures wait while it is offline. See [Free hosting setup](docs/FREE_HOSTING.md).
+
+The original local version also remains available as one Node application and an optional worker sharing a persistent disk. Use HTTPS and persistent storage if deploying that version elsewhere; an ephemeral filesystem will not preserve its SQLite database or uploaded files.
 
 For the optional render/publishing worker:
 
@@ -115,10 +123,11 @@ For the optional render/publishing worker:
 npm run worker
 ```
 
-External publishing stays off by default. A real Instagram connection needs configured credentials, suitable account access, publicly reachable approved media, and a publishing test. Email verification, password recovery, payments, and subscription billing are not implemented.
+External publishing stays off by default. A real Instagram connection needs configured credentials, suitable account access, publicly reachable approved media, and a publishing test. Cloud signups use Google, and Supabase email confirmation stays enabled. Email delivery/password recovery needs a custom SMTP service and a recovery UI before being offered publicly. Payments and subscription billing are not implemented.
 
 ## More about the project
 
+- [Free hosting setup](docs/FREE_HOSTING.md) — Firebase, Supabase, Google sign-in, and cloud operations.
 - [Operations and configuration](docs/OPERATIONS.md) — environment variables, covers, video workflow, Instagram setup, backups, and deployment considerations.
 - [Brand notes](docs/BRAND.md) — Gobble, the voice, and the visual identity.
 - [Submission design](docs/SUBMISSION_DESIGN.md) — the launch kitchen and cover experience.

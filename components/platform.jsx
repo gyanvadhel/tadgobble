@@ -30,22 +30,9 @@ import '../app/launch.css';
 import '../app/catalog.css';
 import Studio from './studio';
 import { brand } from '../lib/brand.mjs';
+import { api, cloudMode } from '../lib/client-api.mjs';
+export { api } from '../lib/client-api.mjs';
 
-export async function api(path, body) {
-  const res = await fetch(
-    '/api/' + path,
-    body === undefined
-      ? { cache: 'no-store' }
-      : {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        },
-  );
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Request failed.');
-  return data;
-}
 function Field({ label, children, hint }) {
   const fieldId = useId();
   return (
@@ -103,7 +90,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
             setAfterAuth('submit');
             setModal('auth');
           }
-        } else if (params.get('signin') === '1' || (params.get('saved') === '1' && !data.user))
+        } else if (!data.user && (params.get('signin') === '1' || params.get('saved') === '1'))
           setModal('auth');
         else if (params.get('privacy') === '1') setModal('privacy');
         else if (params.get('sponsor') === '1') setModal('sponsor');
@@ -551,6 +538,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
         >
           {modal === 'auth' ? (
             <AuthForm
+              afterAuth={afterAuth}
               onDone={async () => {
                 await refresh();
                 setModal(afterAuth);
@@ -577,16 +565,16 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               <span className="eyebrow">YOUR INFORMATION</span>
               <h2>A small, clear privacy note.</h2>
               <p>
-                Accounts store your name, email, and a securely hashed password. Your public
+                Accounts store your name and email. Email logins store a securely hashed password; Google logins never share your Google password with us. Your public
                 comments show your display name. Saved products belong to your account.
               </p>
               <p>
-                A first-party anonymous visitor cookie helps us count visits and returning visitors.
+                {cloudMode ? 'An anonymous identifier in your browser’s local storage' : 'A first-party anonymous visitor cookie'} helps us count visits and returning visitors.
                 We record product-link clicks and campaign sources. These are visits, not proof of
                 purchases. Raw visitor events are retained for up to 90 days while the worker runs.
               </p>
               <p>
-                Session and visitor cookies last up to 30 days. We do not sell your account details.
+                {cloudMode ? 'Supabase stores your account and submission data. Your browser keeps your sign-in session until you sign out or the session is revoked.' : 'Session and visitor cookies last up to 30 days.'} We do not sell your account details.
                 Opening a maker’s website takes you to their separate service and privacy terms.
               </p>
               <p>
@@ -711,10 +699,11 @@ export function AuthModal({ onClose, onDone }) {
     </Modal>
   );
 }
-function AuthForm({ onDone }) {
+function AuthForm({ onDone, afterAuth }) {
   const [register, setRegister] = useState(false),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState('');
+    [error, setError] = useState(''),
+    [message, setMessage] = useState('');
   return (
     <form
       onSubmit={async (e) => {
@@ -722,10 +711,15 @@ function AuthForm({ onDone }) {
         setBusy(true);
         setError('');
         try {
-          await api(
+          const result = await api(
             register ? 'auth/register' : 'auth/login',
             Object.fromEntries(new FormData(e.currentTarget)),
           );
+          if (result.confirmationRequired) {
+            setMessage('Check your email to confirm your account, then sign in here.');
+            setRegister(false);
+            return;
+          }
           await onDone();
         } catch (e) {
           setError(e.message);
@@ -735,10 +729,28 @@ function AuthForm({ onDone }) {
       }}
     >
       <span className="eyebrow">YOUR STASH IS WAITING</span>
-      <h2>{register ? 'Come for a little snack.' : 'Back for seconds?'}</h2>
+      <h2>{cloudMode ? 'Make yourself at home.' : register ? 'Come for a little snack.' : 'Back for seconds?'}</h2>
       <p className="form-intro">
         Save discoveries, join conversations, and share what you’re making.
       </p>
+      {cloudMode && <>
+        <button className="button button-full auth-google" type="button" disabled={busy} onClick={async () => {
+          setBusy(true);
+          setError('');
+          try { await api('auth/google', { afterAuth }); }
+          catch (e) { setError(e.message); setBusy(false); }
+        }}>
+          <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z" />
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6C44.4 38.03 46.98 31.87 46.98 24.55Z" />
+            <path fill="#FBBC05" d="M10.53 28.59a14.41 14.41 0 0 1 0-9.18l-7.98-6.19A23.86 23.86 0 0 0 0 24c0 3.87.93 7.53 2.56 10.78l7.97-6.19Z" />
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z" />
+          </svg>
+          {busy ? 'One sec…' : 'Continue with Google'}
+        </button>
+        <p className="auth-note">New here? Your Google account gets you in.</p>
+        <div className="auth-divider"><span>or use your existing email login</span></div>
+      </>}
       {register && (
         <Field label="Your name">
           <input name="name" required minLength={2} maxLength={60} autoComplete="name" />
@@ -762,6 +774,7 @@ function AuthForm({ onDone }) {
           {error}
         </p>
       )}
+      {message && <p role="status">{message}</p>}
       <button className="button button-dark button-full" disabled={busy}>
         {busy ? (
           <LoaderCircle className="spin" size={17} />
@@ -771,7 +784,7 @@ function AuthForm({ onDone }) {
           </>
         )}
       </button>
-      <button
+      {!cloudMode && <button
         className="form-switch"
         type="button"
         onClick={() => {
@@ -780,7 +793,7 @@ function AuthForm({ onDone }) {
         }}
       >
         {register ? 'Already here? Sign in' : 'New here? Create an account'}
-      </button>
+      </button>}
     </form>
   );
 }

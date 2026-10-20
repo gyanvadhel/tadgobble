@@ -11,3 +11,8 @@ test-results/
 *.db
 .DS_Store
 Thumbs.db
+hosting/out/
+hosting/public/
+hosting/app/icon.svg
+.firebase/
+supabase/.temp/

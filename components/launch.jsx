@@ -19,6 +19,7 @@ import { Gobble } from './gobble';
 import ProductShowcase, { ProductDemo, productSceneColor } from './product-showcase';
 import { paletteStyle } from '../lib/design-tokens.mjs';
 import '../app/launch.css';
+import { api } from '../lib/client-api.mjs';
 
 export default function Launch({ products }) {
   const root = useRef(null),
@@ -56,11 +57,7 @@ export default function Launch({ products }) {
       source = params.get('utm_source') || sessionStorage.getItem('ap_source') || 'direct';
       sessionStorage.setItem('ap_source', source);
     } catch {}
-    fetch('/api/events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ kind: 'visit', source, campaign: params.get('utm_campaign') || '' }),
-    }).catch(() => {});
+    api('events', { kind: 'visit', source, campaign: params.get('utm_campaign') || '' }).catch(() => {});
     return () => {
       media.removeEventListener('change', update);
       feedTween.current?.kill();

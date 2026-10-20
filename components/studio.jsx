@@ -29,6 +29,7 @@ import {
 import { Brand } from './art';
 import { api, Field, Modal } from './platform';
 import CoverEditor, { useProductCover } from './cover-editor';
+import { cloudMode } from '../lib/client-api.mjs';
 const labels = {
   draft: 'Draft',
   render_pending: 'Waiting to render',
@@ -170,7 +171,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
         ) : (
           <p className="form-error">This account doesn’t have studio access.</p>
         )}
-        <small>The owner account is configured in your local environment file.</small>
+        <small>{cloudMode ? 'Only the studio owner can review submissions.' : 'The owner account is configured in your local environment file.'}</small>
         <a href="/discover">← Back to discoveries</a>
       </div>
     );
@@ -230,7 +231,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
             <h1>{tab}</h1>
           </div>
           <div>
-            <button
+            {!cloudMode && <button
               className="button"
               disabled={busy}
               onClick={async () => {
@@ -243,7 +244,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
             >
               {busy ? <LoaderCircle className="spin" size={15} /> : <Play size={15} />} Run one
               workflow step
-            </button>
+            </button>}
             <div className="avatar">{user.name[0]}</div>
           </div>
         </header>
@@ -291,7 +292,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                     </div>
                   ))}
                 </div>
-                <section className="studio-panel">
+                {!cloudMode && <section className="studio-panel">
                   <div className="panel-title">
                     <div>
                       <h2>From a discovery to a daily post</h2>
@@ -322,7 +323,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                       </div>
                     ))}
                   </div>
-                </section>
+                </section>}
                 <div className="studio-two-col">
                   <section className="studio-panel">
                     <div className="panel-title">
@@ -462,7 +463,16 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                 </div>
               </section>
             )}
-            {tab === 'Content' && (
+            {cloudMode && ['Content', 'Queue', 'Connection'].includes(tab) && (
+              <section className="studio-panel">
+                <h2>Your desktop handles the heavy lifting.</h2>
+                <p>Website previews run through your local worker. Video editing, rendering, and publishing stay in the desktop studio for the free launch.</p>
+                <p>Last preview worker check: {data.connection.worker ? new Date(data.connection.worker).toLocaleString() : 'Waiting for the worker.'}</p>
+                <p>Run <code>npm run worker:cloud</code> on your computer for queued website previews. Run <code>npm run sync:cloud</code> before preparing videos to refresh the desktop catalog.</p>
+                <a className="button button-dark" href="http://127.0.0.1:3000/studio" target="_blank" rel="noreferrer">Open desktop studio <ArrowUpRight size={16} /></a>
+              </section>
+            )}
+            {!cloudMode && tab === 'Content' && (
               <>
                 <section className="studio-panel new-draft">
                   <div>
@@ -523,7 +533,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                 )}
               </>
             )}
-            {tab === 'Queue' && (
+            {!cloudMode && tab === 'Queue' && (
               <section className="studio-panel">
                 <div className="panel-title">
                   <div>
@@ -637,7 +647,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                 </section>
               </>
             )}
-            {tab === 'Connection' && (
+            {!cloudMode && tab === 'Connection' && (
               <>
                 <section className="studio-panel">
                   <div className="panel-title">

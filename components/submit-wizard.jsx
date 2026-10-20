@@ -23,6 +23,7 @@ import {
   productColors,
 } from '../lib/product-options.mjs';
 import '../app/submission.css';
+import { api } from '../lib/client-api.mjs';
 
 const steps = ['The basics', 'Your people', 'The details', 'One last look'];
 const titles = [
@@ -138,13 +139,7 @@ export default function SubmitWizard({ onDone }) {
     if (coverState.busy) return;
     setBusy(true);
     try {
-      const response = await fetch('/api/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, pricing, coverId: coverState.cover?.id || null }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Could not send your product. Try again.');
+      await api('submit', { ...data, pricing, coverId: coverState.cover?.id || null });
       setSubmitted(true);
     } catch (failure) {
       setError(failure.message);

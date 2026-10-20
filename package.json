@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/gyanvadhel/tadgobble.git"
   },
-  "homepage": "https://github.com/gyanvadhel/tadgobble#readme",
+  "homepage": "https://tadgobble.web.app",
   "bugs": {
     "url": "https://github.com/gyanvadhel/tadgobble/issues"
   },
@@ -25,10 +25,19 @@
     "test:e2e": "node scripts/e2e.mjs",
     "test:launch": "node scripts/launch-e2e.mjs",
     "test:submission": "node scripts/submission-e2e.mjs",
-    "test:covers": "node scripts/covers-e2e.mjs"
+    "test:covers": "node scripts/covers-e2e.mjs",
+    "build:hosting": "node scripts/build-hosting.mjs",
+    "deploy:hosting": "npm run build:hosting && firebase deploy --only hosting --project tadgobble",
+    "worker:cloud": "node --env-file-if-exists=.env.local scripts/cloud-worker.mjs",
+    "sync:cloud": "node --env-file-if-exists=.env.local scripts/sync-cloud.mjs",
+    "test:cloud": "node --test tests/cloud.test.mjs",
+    "preview:hosting": "node scripts/serve-hosting.mjs",
+    "test:cloud:e2e": "node --env-file-if-exists=.env.local scripts/cloud-e2e.mjs",
+    "test:cloud:auth": "node scripts/cloud-auth-e2e.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "^9.8.2",
+    "@supabase/supabase-js": "^2.118.0",
     "ffmpeg-static": "5.3.0",
     "gsap": "^3.15.0",
     "lucide-react": "1.60.0",
@@ -40,6 +49,9 @@
     "three": "^0.186.1"
   },
   "devDependencies": {
-    "prettier": "^3.9.10"
+    "@electric-sql/pglite": "^0.3.16",
+    "firebase-tools": "^15.34.0",
+    "prettier": "^3.9.10",
+    "supabase": "^2.121.0"
   }
 }
