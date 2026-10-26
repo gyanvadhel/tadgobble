@@ -208,9 +208,7 @@ export default function Launch({ products }) {
       <header className="launch-header">
         <Brand />
         <nav className={`launch-nav ${menu ? 'is-open' : ''}`} aria-label="Main navigation">
-          <a href="#fresh-picks" onClick={() => setMenu(false)}>
-            The good stuff
-          </a>
+          <a href="/discover">Discover</a>
           <a href="/discover?saved=1">Your stash</a>
           <a href="#for-makers" onClick={() => setMenu(false)}>
             For makers

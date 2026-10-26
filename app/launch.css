@@ -1098,19 +1098,23 @@
 }
 .menu-end {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: 32px 6%;
-  font-size: 12px;
+  gap: 18px;
+  padding: 50px 6% 60px;
+  font-size: 14px;
+  text-align: center;
   background: #fff;
 }
-.menu-end a {
-  display: inline-flex;
-  align-items: center;
-  gap: 13px;
-  border-bottom: 1px solid currentColor;
-  padding: 8px 0;
+.menu-end .launch-button {
+  font-size: 17px;
+  padding: 22px 38px;
+  min-height: 64px;
+}
+.menu-intro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 28px;
 }
 .maker-poster {
   padding: 45px 6% 75px;
@@ -1836,11 +1840,11 @@
     right: 5px;
   }
   .menu-end {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
-    padding: 25px 6%;
-    font-size: 11px;
+    padding: 35px 6% 45px;
+    font-size: 13px;
+  }
+  .menu-end .launch-button {
+    width: 100%;
   }
   .maker-poster {
     padding: 30px 6% 45px;

@@ -270,6 +270,7 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
         .toLowerCase()
         .includes(query.trim().toLowerCase()),
   );
+  const discover = `/discover${audience !== 'Everyone' ? `?audience=${encodeURIComponent(audience)}` : ''}`;
   const activeId =
     selected === null ? null : shown.some((p) => p.id === selected) ? selected : shown[0]?.id;
   function choose(event, product) {
@@ -298,16 +299,21 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
             Good things. Real people behind them.
           </p>
           {products.length > 0 && (
-            <button
-              className="text-button"
-              disabled={!shown.length}
-              onClick={(e) =>
-                onPeek(shown[Math.floor(Math.random() * shown.length)], true, e.currentTarget)
-              }
-            >
-              <Shuffle size={19} />
-              Pick one for me
-            </button>
+            <div className="menu-intro-actions">
+              <button
+                className="text-button"
+                disabled={!shown.length}
+                onClick={(e) =>
+                  onPeek(shown[Math.floor(Math.random() * shown.length)], true, e.currentTarget)
+                }
+              >
+                <Shuffle size={19} />
+                Pick one for me
+              </button>
+              <a className="text-button" href={discover}>
+                See all <ArrowUpRight size={19} />
+              </a>
+            </div>
           )}
         </div>
       </div>
@@ -456,10 +462,9 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
             ? 'A small menu. Plenty of rabbit holes.'
             : 'Real work. Reviewed before it lands here.'}
         </span>
-        <a
-          href={`/discover${audience !== 'Everyone' ? `?audience=${encodeURIComponent(audience)}` : ''}`}
-        >
-          Explore the full catalog <ArrowUpRight size={19} />
+        <a className="launch-button plum-button" href={discover}>
+          {products.length >= 6 ? `See all ${products.length} finds` : 'See everything on Discover'}
+          <ArrowUpRight size={20} />
         </a>
       </div>
     </section>

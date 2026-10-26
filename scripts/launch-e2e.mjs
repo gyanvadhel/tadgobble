@@ -214,7 +214,7 @@ try {
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     if (width <= 800) {
       await page.getByRole('button', { name: 'Open navigation' }).click();
-      await page.getByRole('navigation').getByRole('link', { name: 'The good stuff' }).click();
+      await page.getByRole('navigation').getByRole('link', { name: 'For makers' }).click();
       assert.equal(
         await page.getByRole('button', { name: 'Open navigation' }).getAttribute('aria-expanded'),
         'false',
