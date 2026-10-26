@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req, { params }) {
   const p = get("SELECT * FROM products WHERE slug=? AND status='published'", (await params).slug);
   if (!p) return new Response('Product not found', { status: 404 });
+  if (!p.url) return Response.redirect(new URL(`/product/${p.slug}`, req.url), 302);
   const input = new URL(req.url);
   const visitor = recordEvent(req, {
     kind: 'outbound',

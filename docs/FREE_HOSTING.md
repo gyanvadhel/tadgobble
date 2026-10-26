@@ -1,6 +1,6 @@
 # Free launch: Firebase Hosting + Supabase
 
-The static app is deployed to Firebase Hosting. Supabase provides Postgres, authentication, private cover storage, and a small function for migrating existing passwords. Firebase billing was confirmed disabled during setup. Nothing in this deployment enables Blaze, Firebase Functions, or Firebase App Hosting.
+The static app is deployed to Firebase Hosting. Supabase provides Postgres, authentication, private media storage, and small functions for validating video uploads and migrating existing passwords. Firebase billing was confirmed disabled during setup. Nothing in this deployment enables Blaze, Firebase Functions, or Firebase App Hosting.
 
 | Page | Address |
 | --- | --- |
@@ -72,11 +72,78 @@ npx supabase db push --linked
 npx supabase config diff --project-ref ixyfcswubxncobcnjget
 npx supabase config push --project-ref ixyfcswubxncobcnjget
 npx supabase functions deploy legacy-login --project-ref ixyfcswubxncobcnjget --use-api
+npx supabase functions deploy video-upload --project-ref ixyfcswubxncobcnjget --use-api
 ```
 
 Review the config diff before pushing. Application tables use RLS with direct browser access revoked. `tg_api` validates inputs and checks ownership/admin roles. The private schema holds helpers and legacy password hashes. Google metadata cannot grant admin privileges.
 
 ## Website previews and videos
+
+Art and design submissions use a photo and a title; a portfolio or website is
+optional. The form defaults to **Art & design**, with **App or tool** as a second
+choice. Categories, descriptions, image descriptions, and creative links live in
+an optional section. All work uses the same private upload and human review flow.
+Uploaded images keep their full proportions and are compressed to WebP within
+1600 × 1600 pixels without upscaling. No new paid service is required. The first
+version supports one photo or video per work. For JPG, PNG, or WebP images, originals up to 25 MB are
+resized on the device before upload; the server still caps the resulting file at 5 MB.
+
+Video posts support clips up to **30 seconds** with a **5 MiB stored video limit**.
+MP4, MOV, and WebM originals up to 100 MiB can be prepared in supported browsers;
+the browser compresses when necessary and generates a WebP cover frame. If the
+browser cannot encode a particular clip, the form asks for an H.264 MP4 under
+5 MiB. Sound is preserved. There is no server transcoding service or paid encoder.
+The policy is shared in `supabase/functions/_shared/video.mjs`; reducing the limit
+later affects new uploads, not playback of existing approved clips.
+
+Migration `202610210006_video_posts.sql` creates the private `videos` bucket and
+ownership rules. The `video-upload` Edge Function independently validates actual
+file duration, format, dimensions, and size before storage. Direct browser writes
+to the video bucket are disabled. Deploy the migration and function before the UI.
+`verify_jwt=false` in the function configuration delegates authentication to the
+user-scoped database upload gate; the function still requires a valid member JWT.
+
+Galleries load only posters and duration badges. Work details and admin review
+obtain a five-minute signed video URL only after Play is pressed. Native controls
+allow sound, seeking, and fullscreen. Pending videos remain private to their owner
+and admins; publishing makes playback available to visitors. Revocation blocks
+new links immediately, while previously signed links can last until expiry.
+
+Run `npm run test:videos` after `npm run build` for isolated local browser checks.
+`npm run test:cloud:videos` checks the static preview and real cloud upload, then
+removes its private test user, submission, and media. It never publishes a test clip.
+
+## Creator accounts and review
+
+- `/settings` edits the creator's name, username, photo, bio, links, profile colour,
+  and public visibility. Google remains the signup method.
+- `/welcome` provides a skippable two-step introduction after a new member signs
+  in. It preserves the requested return page. Existing accounts are marked complete
+  by migration `202610210008_blob_onboarding.sql` and can revisit it from Settings.
+  Users can choose the original Gobble or a Blobatar friend, colour and expression
+  instead of uploading a photo. Blobs render locally and do not consume Storage.
+  Intent and interests are private account preferences, not public profile fields.
+  They are editable in Settings; they do not yet change the discovery ranking.
+- Account deletion is available only in the collapsed **Delete account** section
+  at the bottom of Settings, with the existing confirmation and admin restriction.
+- `/profile/<username>` is a shareable public page containing approved, self-authored
+  work. Email, saved items, pending work, and review notes remain private.
+- `/my-work` shows submission status and private admin feedback. Editing an approved
+  piece returns it to review and temporarily removes it from public pages.
+- `/studio` opens the review queue on the hosted site. Reviewers can publish, request
+  changes, or reject with feedback. Published work and desktop-only tools have their
+  own labelled navigation items.
+- Work shared with permission on someone else's behalf carries separate creator
+  credit and does not appear in the submitter's own profile gallery.
+
+These routes are part of the static Firebase export and use the existing Supabase
+backend. Profile and cover permissions are covered by migration
+`202610210005_creator_profiles.sql`. Hiding a profile stops new public avatar links;
+previously signed links can remain valid until their five-minute expiry.
+
+Run `node --env-file-if-exists=.env.local scripts/cloud-artwork-e2e.mjs` to check
+the static preview against the real cloud backend. It creates and removes a
+temporary account, upload, and pending submission; it never publishes its artwork.
 
 Uploaded cover images work entirely through the website. Automatic screenshots run on your computer to avoid paying for a browser server:
 
@@ -89,7 +156,7 @@ The worker signs in with the owner account, claims queued jobs, captures only pe
 
 Pending covers are accessible only to their maker and the owner. Approved covers can be viewed by everyone through signed links valid for five minutes. Rejecting a listing blocks new public links immediately; a previously issued link may remain valid until it expires.
 
-The FFmpeg/video/Instagram workflow remains in the desktop studio:
+The promotional-video editing and Instagram workflow remains in the desktop studio:
 
 ```bash
 npm run sync:cloud

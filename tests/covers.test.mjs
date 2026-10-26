@@ -95,8 +95,8 @@ test('uploads decode actual raster data and produce a normalized cover; SVG and 
   const response = coverResponse(cover.id, { id: 'maker', role: 'member' });
   assert.equal(response.headers.get('content-type'), 'image/webp');
   const meta = await sharp(Buffer.from(await response.arrayBuffer())).metadata();
-  assert.equal(meta.width, 1600);
-  assert.equal(meta.height, 1200);
+  assert.equal(meta.width, 640);
+  assert.equal(meta.height, 480);
   assert.equal(meta.format, 'webp');
   await assert.rejects(
     storeCover(

@@ -6,7 +6,10 @@
     "cleanUrls": true,
     "trailingSlash": false,
     "rewrites": [
+      { "source": "/google202651cb7559ce4c.html", "destination": "/site-verification/google202651cb7559ce4c.html" },
+      { "source": "/google202651cb7559ce4c", "destination": "/site-verification/google202651cb7559ce4c.html" },
       { "source": "/product/**", "destination": "/product.html" },
+      { "source": "/profile/**", "destination": "/profile.html" },
       { "source": "/go/**", "destination": "/go.html" }
     ],
     "headers": [

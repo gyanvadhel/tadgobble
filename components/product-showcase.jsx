@@ -15,7 +15,9 @@ import {
   Undo2,
 } from 'lucide-react';
 import { Gobble } from './gobble';
-import { audiences, productColors } from '../lib/product-options.mjs';
+import { CreatorCredit } from './creator-credit';
+import WorkMedia from './work-media';
+import { audiences, productColors, isArtwork, workImageAlt } from '../lib/product-options.mjs';
 import '../app/covers.css';
 
 export const showcaseColors = {
@@ -51,15 +53,21 @@ export function ProductDemo({ product }) {
   const id = useId();
   if (product.cover)
     return (
-      <figure className="product-cover-figure">
-        <img
-          src={product.cover.url}
-          alt={`${product.name} website preview`}
-          width="1600"
-          height="1200"
+      <figure className={`product-cover-figure ${isArtwork(product) ? 'is-artwork' : ''}`}>
+        <WorkMedia
+          key={product.cover.id}
+          cover={product.cover}
+          name={product.name}
+          alt={workImageAlt(product)}
         />
         <figcaption>
-          {product.cover.kind === 'capture' ? 'Website snapshot' : 'Uploaded product cover'}
+          {isArtwork(product)
+            ? product.owner_name
+              ? `Shared by ${product.owner_name}`
+              : product.name
+            : product.cover.kind === 'capture'
+              ? 'Website snapshot'
+              : 'Uploaded product cover'}
         </figcaption>
       </figure>
     );
@@ -251,11 +259,13 @@ export function ProductDemo({ product }) {
 
 export default function ProductShowcase({ products, onPeek, motion = true }) {
   const [audience, setAudience] = useState('Everyone');
+  const [workKind, setWorkKind] = useState('all');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(products[0]?.id);
   const shown = products.filter(
     (p) =>
       (audience === 'Everyone' || p.audience === 'Everyone' || p.audience === audience) &&
+      (workKind === 'all' || isArtwork(p) === (workKind === 'art')) &&
       `${p.name} ${p.category} ${p.tagline} ${p.description}`
         .toLowerCase()
         .includes(query.trim().toLowerCase()),
@@ -283,9 +293,9 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
         </h2>
         <div className="menu-intro-aside">
           <p>
-            Useful apps. Weird little tools.
+            Art, design, and useful little apps.
             <br />
-            Things worth opening another tab for.
+            Good things. Real people behind them.
           </p>
           {products.length > 0 && (
             <button
@@ -303,17 +313,16 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
       </div>
       {products.length > 0 && (
         <div className="menu-controls">
-          <div className="audience-tabs" role="group" aria-label="Find products for your audience">
+          <div className="audience-tabs" role="group" aria-label="What to discover">
             {[
-              ['Everyone', 'For everyone'],
-              ['Creators', 'I create'],
-              ['Businesses', 'I run a business'],
-              ['Developers', 'I build'],
+              ['all', 'Everything'],
+              ['art', 'Art & design'],
+              ['app', 'Apps & tools'],
             ].map(([value, label]) => (
               <button
                 key={value}
-                aria-pressed={audience === value}
-                onClick={() => setAudience(value)}
+                aria-pressed={workKind === value}
+                onClick={() => setWorkKind(value)}
               >
                 {label}
               </button>
@@ -321,11 +330,10 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
             <select
               className="more-audiences"
               aria-label="More audiences"
-              value={audiences.slice(4).includes(audience) ? audience : ''}
+              value={audience}
               onChange={(event) => setAudience(event.target.value || 'Everyone')}
             >
-              <option value="">More people</option>
-              {audiences.slice(4).map((value) => (
+              {audiences.map((value) => (
                 <option key={value} value={value}>
                   {value}
                 </option>
@@ -335,7 +343,7 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
           <label className="menu-search">
             <Search size={18} />
             <input
-              aria-label="Search products"
+              aria-label="Search discoveries"
               placeholder="Find your thing…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -349,12 +357,12 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
         </div>
       )}
       <span className="sr-only" role="status">
-        {shown.length} products found
+        {shown.length} discoveries found
       </span>
       <div className="product-drawers">
         {shown.map((product) => (
           <details
-            className={`product-drawer ${product.cover ? 'has-cover' : ''}`}
+            className={`product-drawer ${product.cover ? 'has-cover' : ''} ${isArtwork(product) ? 'is-artwork' : ''}`}
             key={product.id}
             open={product.id === activeId}
             style={{ '--product-color': productSceneColor(product) }}
@@ -382,7 +390,7 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
                 <p className="drawer-tagline">{product.tagline}</p>
                 <p className="drawer-description">{product.description}</p>
                 <a className="launch-button plum-button" href={`/product/${product.slug}`}>
-                  Meet {product.name}
+                  {isArtwork(product) ? 'See the work' : `Meet ${product.name}`}
                   <ArrowUpRight size={19} />
                 </a>
                 <button
@@ -392,9 +400,13 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
                   Just a quick look <Plus size={17} />
                 </button>
                 <span className="drawer-editorial">
-                  {product.sponsored
-                    ? 'Paid feature'
-                    : 'An editorial find. Not a paid partnership.'}
+                  {product.sponsored ? (
+                    'Paid feature'
+                  ) : product.owner_name ? (
+                    <CreatorCredit product={product} prefix="Made by " />
+                  ) : (
+                    'An editorial find.'
+                  )}
                 </span>
               </div>
               <ProductDemo product={product} />
@@ -411,11 +423,11 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
           <div>
             <h3>First bite’s yours.</h3>
             <p>
-              The discoveries are empty for now. Built something useful, weird, or both? Give it a
+              The discoveries are empty for now. Made a painting, a design, or an app? Give it a
               place on the menu.
             </p>
             <a className="launch-button plum-button" href="/discover?submit=1">
-              Share your product <Plus size={18} />
+              Share your work <Plus size={18} />
             </a>
           </div>
         </div>
@@ -424,12 +436,13 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
           <div className="menu-empty">
             <Gobble />
             <h3>No bites for that one.</h3>
-            <p>Try a product name, “design”, or “automation”.</p>
+            <p>Try another name or explore everything.</p>
             <button
               className="launch-button plum-button"
               onClick={() => {
                 setQuery('');
                 setAudience('Everyone');
+                setWorkKind('all');
               }}
             >
               Show all the finds
@@ -441,7 +454,7 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
         <span>
           {products.length
             ? 'A small menu. Plenty of rabbit holes.'
-            : 'Real products. Reviewed before they land here.'}
+            : 'Real work. Reviewed before it lands here.'}
         </span>
         <a
           href={`/discover${audience !== 'Everyone' ? `?audience=${encodeURIComponent(audience)}` : ''}`}

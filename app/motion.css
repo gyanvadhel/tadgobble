@@ -1,0 +1,25 @@
+/* Pieces drawn by the motion helpers in components/motion.jsx. */
+.squiggle {
+  display: block;
+  width: 150px;
+  height: 12px;
+  margin: 8px 0 4px;
+  overflow: visible;
+  color: #c5b5f5;
+}
+.squiggle path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.save-confetti {
+  position: fixed;
+  z-index: 1000;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  pointer-events: none;
+}

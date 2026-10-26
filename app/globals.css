@@ -199,13 +199,47 @@ svg {
   padding-left: 0;
   padding-right: 0;
 }
-.auth-google { background: #fff; color: #1f1f1f; border: 1px solid #747775; min-height: 48px; }
-.auth-policy { font-size: 11px; color: var(--muted); line-height: 1.6; text-align: center; margin: 18px 0 0; }
-.auth-policy a { text-decoration: underline; text-underline-offset: 3px; }
-.auth-google:hover { background: #f5f5f5; }
-.auth-note { text-align: center; font-size: 12px; margin: 12px 0 24px; color: var(--muted); }
-.auth-divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; font-size: 11px; color: var(--muted); }
-.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--line, #ddd); }
+.auth-google {
+  background: #fff;
+  color: #1f1f1f;
+  border: 1px solid #747775;
+  min-height: 48px;
+}
+.auth-policy {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+  text-align: center;
+  margin: 18px 0 0;
+}
+.auth-policy a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.auth-google:hover {
+  background: #f5f5f5;
+}
+.auth-note {
+  text-align: center;
+  font-size: 12px;
+  margin: 12px 0 24px;
+  color: var(--muted);
+}
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line, #ddd);
+}
 .button-full {
   width: 100%;
 }
@@ -517,7 +551,7 @@ svg {
   overflow: auto;
   scrollbar-width: none;
 }
-.category-tabs button {
+.category-tabs > button {
   white-space: nowrap;
   background: transparent;
   border: 0;
@@ -529,12 +563,12 @@ svg {
   align-items: center;
   color: #788373;
 }
-.category-tabs button.selected {
+.category-tabs > button.selected {
   background: #eaf0df;
   color: #375332;
   font-weight: 600;
 }
-.category-tabs button:hover {
+.category-tabs > button:hover {
   background: #eef1e7;
 }
 .search-controls {
@@ -1297,6 +1331,16 @@ svg {
   margin: 0 0 12px;
   font-size: 12px;
 }
+.reset-password {
+  width: min(380px, 100%);
+  padding: 0 16px;
+  color: var(--ink);
+}
+.reset-password h1 {
+  font-family: var(--serif);
+  margin: 0 0 18px;
+  text-align: center;
+}
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1632,6 +1676,45 @@ svg {
   border-bottom: 1px solid var(--line);
   display: flex;
   gap: 12px;
+}
+.comment-thread {
+  border-bottom: 1px solid var(--line);
+}
+.comment-thread .comment {
+  border-bottom: 0;
+}
+.comment-replies {
+  margin: -8px 0 20px 44px;
+  padding-left: 16px;
+  border-left: 2px solid var(--line);
+}
+.comment-replies .comment {
+  padding: 12px 0;
+}
+.comment-actions {
+  display: flex;
+  gap: 18px;
+}
+.comment-removed p {
+  color: #a2aa97;
+  font-style: italic;
+  margin: 0;
+}
+.conversation .reply-form textarea {
+  margin: 10px 0;
+}
+.reply-form > div {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 8px;
+}
+@media (max-width: 640px) {
+  .comment-replies {
+    margin-left: 12px;
+    padding-left: 12px;
+  }
 }
 .comment strong {
   font-size: 12px;
@@ -2980,7 +3063,7 @@ code {
     gap: 3px;
     padding-bottom: 12px;
   }
-  .category-tabs button {
+  .category-tabs > button {
     font-size: 10px;
     padding: 9px 10px;
   }
@@ -3326,4 +3409,16 @@ code {
   left: auto;
   right: 40px;
   top: 58px;
+}
+
+/* Moving between pages crossfades instead of blinking white. A work's page
+   also flies its picture in from the card that was clicked (useLanding). */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.25s;
+  }
 }

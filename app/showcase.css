@@ -1,0 +1,324 @@
+/* Discover as a showcase: the work leads, words stay small. */
+.showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 4), minmax(0, 1fr));
+  gap: 22px;
+  align-items: start;
+}
+.showcase-column {
+  display: grid;
+  gap: 30px;
+}
+.showcase-card {
+  color: #39245a;
+}
+.showcase-frame {
+  position: relative;
+}
+.showcase-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--product-color);
+}
+.showcase-media img,
+.showcase-media video {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.showcase-card.is-app .showcase-media img {
+  aspect-ratio: 4/3;
+  object-fit: cover;
+}
+.showcase-media video {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  object-fit: cover;
+}
+.showcase-card.is-artwork .showcase-media video {
+  object-fit: contain;
+  background: var(--product-color);
+}
+.showcase-media:hover img {
+  transform: scale(1.025);
+}
+.showcase-placeholder {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 10px;
+  aspect-ratio: 4/3;
+  padding: 24px;
+}
+.showcase-placeholder strong {
+  font: 650 clamp(30px, 3vw, 44px)/0.95 var(--display);
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+}
+.showcase-placeholder span {
+  font-size: 14px;
+  line-height: 1.45;
+}
+.catalog-app .showcase-save {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: #fffdf8;
+  color: #39245a;
+  box-shadow: 0 2px 10px #39245a26;
+  transition: opacity 0.2s;
+}
+.catalog-app .showcase-save:hover,
+.catalog-app .showcase-save.is-saved {
+  background: #39245a;
+  color: #f9f4a7;
+}
+@media (hover: hover) {
+  .showcase-frame .showcase-save:not(.is-saved) {
+    opacity: 0;
+  }
+  .showcase-frame:hover .showcase-save,
+  .showcase-frame .showcase-save:focus-visible {
+    opacity: 1;
+  }
+}
+.showcase-info {
+  padding: 12px 2px 0;
+}
+.showcase-title {
+  display: block;
+  font: 650 20px/1.15 var(--display);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.showcase-title:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.showcase-info p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #665578;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.showcase-byline {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 9px;
+  font-size: 13px;
+  color: #665578;
+  min-width: 0;
+}
+.showcase-byline .creator-avatar {
+  flex: none;
+}
+.showcase-byline .creator-credit {
+  color: inherit;
+}
+.showcase-talk {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.featured-work {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(28px, 5vw, 70px);
+  margin: 0 0 70px;
+  padding: clamp(20px, 3vw, 40px);
+  border-radius: 14px;
+  background: var(--product-color);
+  color: #39245a;
+}
+.featured-media img {
+  max-height: 70dvh;
+  object-fit: cover;
+  /* It drifts with the scroll instead of zooming on hover. */
+  transition: none;
+}
+.featured-work.is-artwork .featured-media {
+  background: #fffdf8;
+}
+.featured-work.is-artwork .featured-media img {
+  object-fit: contain;
+}
+.featured-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #39245a;
+  color: #f9f4a7;
+  font-size: 13px;
+  font-weight: 600;
+}
+.featured-copy h2 {
+  margin: 18px 0 12px;
+  font: 700 clamp(40px, 5vw, 78px)/0.95 var(--display);
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+}
+.featured-copy > p {
+  margin: 0 0 8px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+.featured-copy .showcase-byline {
+  font-size: 14px;
+  color: #39245a;
+}
+.featured-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 26px;
+}
+.catalog-app .featured-actions .showcase-save {
+  position: static;
+  width: 46px;
+  height: 46px;
+  box-shadow: none;
+  border: 1px solid #39245a70;
+  background: transparent;
+}
+
+.makers-strip {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: center;
+  gap: 30px;
+  margin-top: 45px;
+  padding: 30px 0;
+  border-top: 1px solid #39245a30;
+}
+.makers-strip h2 {
+  margin: 0 0 8px;
+  font-size: 34px;
+  line-height: 1;
+}
+.makers-strip p {
+  margin: 0;
+  font-size: 14px;
+  color: #665578;
+}
+.makers-strip ul {
+  display: flex;
+  gap: 26px;
+  margin: 0;
+  padding: 6px 2px 10px;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+/* Mouse users drag and fling the row (see useFlingScroll), so snapping would fight it. */
+.makers-strip ul.is-flingable {
+  scroll-snap-type: none;
+  cursor: grab;
+  user-select: none;
+}
+.makers-strip ul.is-flingable img {
+  -webkit-user-drag: none;
+}
+.makers-strip li {
+  flex: none;
+  scroll-snap-align: start;
+}
+.makers-strip a {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: 100px;
+  text-align: center;
+}
+.makers-strip a:hover .creator-avatar {
+  transform: rotate(-6deg) scale(1.05);
+}
+.makers-strip .creator-avatar {
+  transition: transform 0.2s;
+}
+.makers-strip strong {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+.makers-strip small {
+  font-size: 12px;
+  color: #665578;
+}
+.catalog-app .search-controls .sort-select {
+  margin-left: auto;
+}
+
+@media (max-width: 800px) {
+  .featured-work {
+    grid-template-columns: 1fr;
+    margin-bottom: 50px;
+  }
+  .featured-media img {
+    max-height: 60dvh;
+  }
+  .makers-strip {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+@media (max-width: 580px) {
+  .showcase-grid {
+    gap: 12px;
+  }
+  .showcase-column {
+    gap: 22px;
+  }
+  .showcase-title {
+    font-size: 16px;
+  }
+  .showcase-byline {
+    font-size: 12px;
+  }
+  .showcase-placeholder {
+    padding: 14px;
+  }
+  .showcase-placeholder strong {
+    font-size: 22px;
+  }
+  .catalog-app .showcase-save {
+    top: 6px;
+    right: 6px;
+    width: 34px;
+    height: 34px;
+  }
+  .showcase-byline .creator-avatar {
+    display: none;
+  }
+  .featured-copy h2 {
+    font-size: 40px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .showcase-media img,
+  .makers-strip .creator-avatar {
+    transition: none;
+  }
+}

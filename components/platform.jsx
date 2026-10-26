@@ -1,4 +1,6 @@
 'use client';
+import { setupDestination } from '../lib/blob-options.mjs';
+import { Avatar } from './blob-avatar';
 import { useState, useEffect, useCallback, useId, useRef, cloneElement } from 'react';
 import {
   Search,
@@ -19,13 +21,31 @@ import {
   Asterisk,
   Compass,
   Sparkles,
+  Reply,
+  Clock,
+  Shapes,
 } from 'lucide-react';
+import { Dropdown } from './dropdown';
 import { Brand } from './art';
-import { Gobble } from './gobble';
 import { ProductDemo, productSceneColor } from './product-showcase';
 import { paletteStyle } from '../lib/design-tokens.mjs';
-import { categories, audiences } from '../lib/product-options.mjs';
+import { categories, audiences, isArtwork, workImageAlt } from '../lib/product-options.mjs';
+import { ShowcaseGrid, FeaturedWork, MakersStrip } from './showcase';
+import {
+  CountBump,
+  LivingGobble,
+  Poster,
+  SpinOnScroll,
+  Squiggle,
+  saveBurst,
+  squish,
+  useLanding,
+  useMagnetic,
+  useScramblePlaceholder,
+} from './motion';
 import SubmitWizard from './submit-wizard';
+import { CreatorCredit, ShareButton } from './creator-credit';
+import '../app/creators.css';
 import '../app/launch.css';
 import '../app/catalog.css';
 import Studio from './studio';
@@ -48,14 +68,28 @@ function Field({ label, children, hint }) {
 }
 export { Field };
 
+const searchExamples = [
+  'Find your next thing…',
+  'Find a font…',
+  'Find a tiny app…',
+  'Find a painting…',
+  'Find a zine…',
+  'Find a clever tool…',
+];
+
 export default function Platform({ initialView = 'discover', initialSlug = null }) {
+  const shareMagnet = useMagnetic(),
+    bannerMagnet = useMagnetic(),
+    searchBox = useScramblePlaceholder(searchExamples);
   const [products, setProducts] = useState([]),
     [user, setUser] = useState(null),
     [loading, setLoading] = useState(true),
     [view, setView] = useState(initialView);
   const [category, setCategory] = useState('All discoveries'),
+    [workKind, setWorkKind] = useState('all'),
     [audience, setAudience] = useState('Everyone'),
     [search, setSearch] = useState(''),
+    [sort, setSort] = useState('newest'),
     [modal, setModal] = useState(null),
     [toast, setToast] = useState(''),
     [error, setError] = useState('');
@@ -121,6 +155,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
       await api('save', { productId: p.id });
       await refresh();
       await refreshDetail();
+      return true;
     } catch (e) {
       notify(e.message);
     }
@@ -141,9 +176,29 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
     (p) =>
       (view !== 'saved' || p.saved) &&
       (category === 'All discoveries' || p.category === category) &&
+      (workKind === 'all' || isArtwork(p) === (workKind === 'art')) &&
       (audience === 'Everyone' || p.audience === 'Everyone' || p.audience === audience) &&
-      `${p.name} ${p.tagline} ${p.category}`.toLowerCase().includes(search.toLowerCase()),
+      `${p.name} ${p.tagline} ${p.category} ${p.owner_name || ''}`
+        .toLowerCase()
+        .includes(search.toLowerCase()),
   );
+  const sorters = {
+    newest: (a, b) => (a.created_at < b.created_at ? 1 : -1),
+    saved: (a, b) => b.save_count - a.save_count || sorters.newest(a, b),
+    talked: (a, b) => b.comment_count - a.comment_count || sorters.newest(a, b),
+  };
+  // The front of the showcase: a piece the team featured, else the newest artwork.
+  const browsing =
+    view === 'discover' &&
+    category === 'All discoveries' &&
+    workKind === 'all' &&
+    audience === 'Everyone' &&
+    !search;
+  const spotlight = browsing
+    ? products.find((p) => p.featured && p.cover) ||
+      products.filter((p) => p.cover && isArtwork(p)).sort(sorters.newest)[0]
+    : null;
+  const gridProducts = filtered.filter((p) => p !== spotlight).sort(sorters[sort]);
   if (view === 'studio')
     return (
       <>
@@ -196,12 +251,21 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               }}
             >
               Saved
-              {user && <span className="nav-count">{products.filter((p) => p.saved).length}</span>}
+              {user && (
+                <CountBump className="nav-count" value={products.filter((p) => p.saved).length} />
+              )}
+            </button>
+            <button className="mobile-share-work" onClick={() => actionModal('submit')}>
+              <Plus size={15} /> Share your work
             </button>
           </nav>
           <div className="header-actions">
-            <button className="button button-dark submit-nav" onClick={() => actionModal('submit')}>
-              <Plus size={16} /> Share your product
+            <button
+              ref={shareMagnet}
+              className="button button-dark submit-nav"
+              onClick={() => actionModal('submit')}
+            >
+              <Plus size={16} /> Share your work
             </button>
             {user ? (
               <button
@@ -210,7 +274,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                 title={user.name}
                 onClick={() => setModal('account')}
               >
-                {user.name[0].toUpperCase()}
+                <Avatar profile={user.profile || { name: user.name }} size={40} />
               </button>
             ) : (
               <button className="button button-plain" onClick={() => setModal('auth')}>
@@ -248,21 +312,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
         ) : (
           <>
             {view === 'discover' ? (
-              <section className="catalog-poster">
-                <h1>
-                  THE WHOLE
-                  <br />
-                  RABBIT HOLE.
-                </h1>
-                <div>
-                  <Gobble />
-                  <p>
-                    Useful apps. Weird little tools.
-                    <br />
-                    Go on. Open another tab.
-                  </p>
-                </div>
-              </section>
+              <Poster />
             ) : (
               <section className="collection-hero">
                 <div className="eyebrow">
@@ -290,6 +340,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                 </p>
               </section>
             )}
+            {spotlight && !loading && <FeaturedWork product={spotlight} onSave={save} />}
             <section id="discoveries" className="discovery-section">
               <div className="section-heading">
                 <div>
@@ -297,6 +348,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                   <h2>
                     {view === 'saved' ? 'Your saved discoveries' : 'Fresh out of the internet.'}
                   </h2>
+                  <Squiggle />
                 </div>
                 <span className="collection-note">
                   <span className="small-dot" /> A growing collection
@@ -304,71 +356,39 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               </div>
               {products.length > 0 && (
                 <div className="discovery-controls">
-                  <div className="category-tabs" role="group" aria-label="Filter by category">
+                  <div className="category-tabs" role="group" aria-label="What to discover">
                     {[
-                      'All discoveries',
-                      'Design',
-                      'Productivity',
-                      'Business',
-                      'Automation',
-                      'Developer tools',
-                      'Play',
-                    ].map((c) => (
+                      ['all', 'Everything'],
+                      ['art', 'Art & design'],
+                      ['app', 'Apps & tools'],
+                    ].map(([value, label]) => (
                       <button
-                        key={c}
-                        className={category === c ? 'selected' : ''}
-                        onClick={() => setCategory(c)}
+                        key={value}
+                        className={workKind === value ? 'selected' : ''}
+                        aria-pressed={workKind === value}
+                        onClick={() => {
+                          setWorkKind(value);
+                          setCategory('All discoveries');
+                        }}
                       >
-                        {c === 'All discoveries' && <Compass size={15} />} {c}
+                        {label}
                       </button>
                     ))}
-                    <select
+                    <Dropdown
                       className="catalog-more-categories"
-                      aria-label="More categories"
-                      value={
-                        categories
-                          .filter(
-                            (c) =>
-                              ![
-                                'Design',
-                                'Productivity',
-                                'Business',
-                                'Automation',
-                                'Developer tools',
-                                'Play',
-                              ].includes(c),
-                          )
-                          .includes(category)
-                          ? category
-                          : ''
-                      }
-                      onChange={(event) => setCategory(event.target.value || 'All discoveries')}
-                    >
-                      <option value="">More categories</option>
-                      {categories
-                        .filter(
-                          (c) =>
-                            ![
-                              'Design',
-                              'Productivity',
-                              'Business',
-                              'Automation',
-                              'Developer tools',
-                              'Play',
-                            ].includes(c),
-                        )
-                        .map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
-                    </select>
+                      label="Filter by category"
+                      icon={Shapes}
+                      value={category}
+                      options={['All discoveries', ...categories]}
+                      onChange={setCategory}
+                    />
                   </div>
                   <div className="search-controls">
                     <label className="search-input">
                       <Search size={17} />
                       <input
-                        aria-label="Search products"
+                        ref={searchBox}
+                        aria-label="Search discoveries"
                         placeholder="Find your next thing…"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
@@ -379,18 +399,25 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                         </button>
                       )}
                     </label>
-                    <label className="audience-select">
-                      <SlidersHorizontal size={15} />
-                      <select
-                        aria-label="Filter by audience"
-                        value={audience}
-                        onChange={(e) => setAudience(e.target.value)}
-                      >
-                        {audiences.map((a) => (
-                          <option key={a}>{a}</option>
-                        ))}
-                      </select>
-                    </label>
+                    <Dropdown
+                      className="sort-select"
+                      label="Sort discoveries"
+                      value={sort}
+                      options={[
+                        ['newest', 'Newest', Clock],
+                        ['saved', 'Most saved', Bookmark],
+                        ['talked', 'Most talked about', MessageCircle],
+                      ]}
+                      onChange={setSort}
+                    />
+                    <Dropdown
+                      className="audience-select"
+                      label="Filter by audience"
+                      icon={SlidersHorizontal}
+                      value={audience}
+                      options={audiences}
+                      onChange={setAudience}
+                    />
                   </div>
                 </div>
               )}
@@ -407,10 +434,10 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                 </div>
               ) : products.length === 0 && view !== 'saved' ? (
                 <div className="catalog-first-find">
-                  <Gobble />
+                  <LivingGobble />
                   <h3>The first bite is still cooking.</h3>
                   <p>
-                    No discoveries yet. Share a working product and we’ll give it a proper look.
+                    No discoveries yet. Share something you made and we’ll give it a proper look.
                   </p>
                   <button className="button button-dark" onClick={() => actionModal('submit')}>
                     Be the first find <Plus size={16} />
@@ -424,7 +451,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                   </h3>
                   <p>
                     {view === 'saved'
-                      ? 'Tap the bookmark on any product to save it here.'
+                      ? 'Tap the bookmark on any discovery to save it here.'
                       : 'Try another category or a different search.'}
                   </p>
                   <button
@@ -432,6 +459,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                     onClick={() => {
                       setView('discover');
                       setCategory('All discoveries');
+                      setWorkKind('all');
                       setAudience('Everyone');
                       setSearch('');
                     }}
@@ -440,77 +468,32 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                   </button>
                 </div>
               ) : (
-                <div className="catalog-list">
-                  {filtered.map((p, i) => (
-                    <article
-                      className={`product-card catalog-product ${p.cover ? 'has-cover' : ''}`}
-                      style={{ '--product-color': productSceneColor(p) }}
-                      key={p.id}
-                    >
-                      {p.cover && (
-                        <a
-                          className="catalog-cover"
-                          href={'/product/' + p.slug}
-                          aria-label={`View ${p.name} preview`}
-                        >
-                          <img
-                            src={p.cover.url}
-                            alt={`${p.name} website preview`}
-                            width="1600"
-                            height="1200"
-                            loading="lazy"
-                          />
-                        </a>
-                      )}
-                      <a className="catalog-product-title" href={'/product/' + p.slug}>
-                        <h3>{p.name}</h3>
-                        <p>{p.tagline}</p>
-                      </a>
-                      <div className="catalog-product-meta">
-                        <span>{p.category}</span>
-                        <small>
-                          {p.sponsored
-                            ? 'Paid feature'
-                            : p.owner_name
-                              ? `by ${p.owner_name}`
-                              : 'Editorial find'}
-                        </small>
-                      </div>
-                      <div className="catalog-product-actions">
-                        <button
-                          className={`save-button ${p.saved ? 'is-saved' : ''}`}
-                          onClick={() => save(p)}
-                          aria-label={`${p.saved ? 'Unsave' : 'Save'} ${p.name}`}
-                        >
-                          <Bookmark size={20} fill={p.saved ? 'currentColor' : 'none'} />
-                        </button>
-                        <a href={'/product/' + p.slug} aria-label={`Explore ${p.name}`}>
-                          <ArrowUpRight size={25} />
-                        </a>
-                      </div>
-                    </article>
-                  ))}
-                </div>
+                <ShowcaseGrid products={gridProducts} onSave={save} />
               )}
             </section>
+            {view === 'discover' && !loading && <MakersStrip products={products} />}
             <section className="maker-banner">
-              <div className="maker-banner-icon">
+              <SpinOnScroll className="maker-banner-icon">
                 <Asterisk size={54} />
-              </div>
+              </SpinOnScroll>
               <div>
                 <span className="eyebrow">YOU MADE IT. LET PEOPLE FIND IT.</span>
                 <h2>There’s a place for your thing here.</h2>
-                <p>Share what you’re building with people who love discovering something new.</p>
+                <p>A photo and a title are enough. Give something you made a place to be seen.</p>
               </div>
-              <button className="button button-dark" onClick={() => actionModal('submit')}>
-                Share your product <ArrowUpRight size={17} />
+              <button
+                ref={bannerMagnet}
+                className="button button-dark"
+                onClick={() => actionModal('submit')}
+              >
+                Share your work <ArrowUpRight size={17} />
               </button>
             </section>
             <div className="editorial-note">
               <Sparkles size={16} />
               <p>
-                Products belong to their makers. We review submissions before publishing. Paid
-                features are clearly labelled.
+                Work belongs to its creators. We review submissions before publishing. Paid features
+                are clearly labelled.
               </p>
             </div>
           </>
@@ -549,9 +532,10 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
             />
           ) : modal === 'submit' ? (
             <SubmitWizard
+              creator={user?.profile}
               onDone={() => {
                 setModal(null);
-                notify('Your product is in the review queue. Thanks for sharing it.');
+                notify('Your work is in the review queue. Thanks for sharing it.');
               }}
             />
           ) : modal === 'sponsor' ? (
@@ -565,7 +549,21 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
             <div className="account-panel">
               <span className="eyebrow">YOUR CORNER</span>
               <h2>Hello, {user?.name}.</h2>
+              <Avatar profile={user?.profile || { name: user?.name }} size={84} />
               <p>{user?.email}</p>
+              <div className="account-shortcuts">
+                <a className="button button-dark" href="/my-work">
+                  My work
+                </a>
+                {user?.profile?.visible && (
+                  <a className="button" href={`/profile/${user.profile.username}`}>
+                    View my profile
+                  </a>
+                )}
+                <a className="button" href="/settings">
+                  Profile & account settings
+                </a>
+              </div>
               {user?.role === 'admin' && (
                 <a className="button button-dark" href="/studio">
                   Open content studio <ArrowUpRight size={16} />
@@ -580,24 +578,6 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               >
                 Sign out <LogOut size={16} />
               </button>
-              {user?.role !== 'admin' && (
-                <button
-                  className="button button-danger"
-                  onClick={async () => {
-                    if (confirm('Delete your account, saved products, and comments permanently?')) {
-                      try {
-                        await api('account/delete', {});
-                        await refresh();
-                        setModal(null);
-                      } catch (e) {
-                        notify(e.message);
-                      }
-                    }
-                  }}
-                >
-                  Delete my account
-                </button>
-              )}
             </div>
           ) : null}
         </Modal>
@@ -628,7 +608,7 @@ export function Modal({ children, onClose, wide = false, className = '' }) {
       if (e.key === 'Tab') {
         const items = [
           ...dialog.current.querySelectorAll(
-            'button:not(:disabled),a[href],input:not(:disabled),textarea:not(:disabled),select:not(:disabled)',
+            'button:not(:disabled),a[href],input:not(:disabled),textarea:not(:disabled),select:not(:disabled),summary',
           ),
         ].filter((el) => el.offsetParent !== null);
         const first = items[0],
@@ -680,9 +660,19 @@ export function AuthModal({ onClose, onDone }) {
 }
 function AuthForm({ onDone, afterAuth }) {
   const [register, setRegister] = useState(false),
+    [resetting, setResetting] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     [message, setMessage] = useState('');
+  const [embedded, setEmbedded] = useState(false),
+    [returnLink, setReturnLink] = useState('');
+  useEffect(() => {
+    setEmbedded(/Instagram|FBAN|FBAV|\bwv\b/i.test(navigator.userAgent));
+    setReturnLink(
+      location.origin +
+        (afterAuth === 'submit' ? '/discover?submit=1' : location.pathname + location.search),
+    );
+  }, [afterAuth]);
   return (
     <form
       onSubmit={async (e) => {
@@ -690,13 +680,31 @@ function AuthForm({ onDone, afterAuth }) {
         setBusy(true);
         setError('');
         try {
+          if (resetting) {
+            await api('auth/reset', Object.fromEntries(new FormData(e.currentTarget)));
+            setMessage(
+              'If that email has an account, a reset link is on its way. Open it on this device.',
+            );
+            setResetting(false);
+            return;
+          }
           const result = await api(
             register ? 'auth/register' : 'auth/login',
             Object.fromEntries(new FormData(e.currentTarget)),
           );
           if (result.confirmationRequired) {
-            setMessage('Check your email to confirm your account, then sign in here.');
+            setMessage(
+              'Check your email for a link to confirm your account. Open it on this device to land straight back here.',
+            );
             setRegister(false);
+            return;
+          }
+          if (result.user?.onboarding?.complete === false) {
+            location.assign(
+              setupDestination(
+                afterAuth === 'submit' ? '/discover?submit=1' : location.pathname + location.search,
+              ),
+            );
             return;
           }
           await onDone();
@@ -708,72 +716,169 @@ function AuthForm({ onDone, afterAuth }) {
       }}
     >
       <span className="eyebrow">YOUR STASH IS WAITING</span>
-      <h2>{cloudMode ? 'Make yourself at home.' : register ? 'Come for a little snack.' : 'Back for seconds?'}</h2>
+      <h2>
+        {cloudMode
+          ? 'Make yourself at home.'
+          : register
+            ? 'Come for a little snack.'
+            : 'Back for seconds?'}
+      </h2>
       <p className="form-intro">
         Save discoveries, join conversations, and share what you’re making.
       </p>
-      {cloudMode && <>
-        <button className="button button-full auth-google" type="button" disabled={busy} onClick={async () => {
-          setBusy(true);
-          setError('');
-          try { await api('auth/google', { afterAuth }); }
-          catch (e) { setError(e.message); setBusy(false); }
-        }}>
-          <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
-            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z" />
-            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6C44.4 38.03 46.98 31.87 46.98 24.55Z" />
-            <path fill="#FBBC05" d="M10.53 28.59a14.41 14.41 0 0 1 0-9.18l-7.98-6.19A23.86 23.86 0 0 0 0 24c0 3.87.93 7.53 2.56 10.78l7.97-6.19Z" />
-            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z" />
-          </svg>
-          {busy ? 'One sec…' : 'Continue with Google'}
-        </button>
-        <p className="auth-note">New here? Your Google account gets you in.</p>
-        <div className="auth-divider"><span>or use your existing email login</span></div>
-      </>}
-      {register && (
-        <Field label="Your name">
-          <input name="name" required minLength={2} maxLength={60} autoComplete="name" />
-        </Field>
+      {cloudMode && (
+        <>
+          {embedded && (
+            <div className="embedded-browser-help">
+              <strong>Open this in your browser to sign in.</strong>
+              <p>
+                In Instagram, use the menu and choose “Open in browser” (Safari or Chrome). Then
+                continue with Google here.
+              </p>
+              <button
+                type="button"
+                className="button"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(returnLink);
+                    setMessage('Link copied. Paste it in Safari or Chrome.');
+                  } catch {
+                    setMessage('Select and copy the link below, then open it in your browser.');
+                  }
+                }}
+              >
+                Copy this page’s link
+              </button>
+              <input
+                aria-label="Link to open in your browser"
+                readOnly
+                value={returnLink}
+                onFocus={(e) => e.target.select()}
+              />
+            </div>
+          )}
+          <button
+            className="button button-full auth-google"
+            type="button"
+            disabled={busy || embedded}
+            onClick={async () => {
+              setBusy(true);
+              setError('');
+              try {
+                await api('auth/google', { afterAuth });
+              } catch (e) {
+                setError(e.message);
+                setBusy(false);
+              }
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+              <path
+                fill="#EA4335"
+                d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z"
+              />
+              <path
+                fill="#4285F4"
+                d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6C44.4 38.03 46.98 31.87 46.98 24.55Z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M10.53 28.59a14.41 14.41 0 0 1 0-9.18l-7.98-6.19A23.86 23.86 0 0 0 0 24c0 3.87.93 7.53 2.56 10.78l7.97-6.19Z"
+              />
+              <path
+                fill="#34A853"
+                d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z"
+              />
+            </svg>
+            {busy ? 'One sec…' : 'Continue with Google'}
+          </button>
+          <p className="auth-note">Or use your email below.</p>
+        </>
       )}
-      <Field label="Email">
-        <input name="email" type="email" required autoComplete="email" />
-      </Field>
-      <Field label="Password" hint="At least 12 characters.">
-        <input
-          name="password"
-          type="password"
-          required
-          minLength={12}
-          maxLength={128}
-          autoComplete={register ? 'new-password' : 'current-password'}
-        />
-      </Field>
-      {error && (
+      <details className="auth-email-options" open={cloudMode ? undefined : true}>
+        <summary>Email & password</summary>
+        {register && (
+          <Field label="Your name">
+            <input name="name" required minLength={2} maxLength={60} autoComplete="name" />
+          </Field>
+        )}
+        <Field label="Email">
+          <input name="email" type="email" required autoComplete="email" />
+        </Field>
+        {!resetting && (
+          <Field label="Password" hint="At least 12 characters.">
+            <input
+              name="password"
+              type="password"
+              required
+              minLength={12}
+              maxLength={128}
+              autoComplete={register ? 'new-password' : 'current-password'}
+            />
+          </Field>
+        )}
+        {cloudMode && !register && !resetting && (
+          <button
+            className="form-switch"
+            type="button"
+            onClick={() => {
+              setResetting(true);
+              setError('');
+              setMessage('');
+            }}
+          >
+            Forgot your password?
+          </button>
+        )}
+        {!cloudMode && error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
+        {!cloudMode && message && <p role="status">{message}</p>}
+        <button className="button button-dark button-full" disabled={busy}>
+          {busy ? (
+            <LoaderCircle className="spin" size={17} />
+          ) : (
+            <>
+              {resetting ? 'Send reset link' : register ? 'Create your account' : 'Sign in'}{' '}
+              <ArrowRight size={16} />
+            </>
+          )}
+        </button>
+        <button
+          className="form-switch"
+          type="button"
+          onClick={() => {
+            if (resetting) setResetting(false);
+            else setRegister(!register);
+            setError('');
+          }}
+        >
+          {resetting
+            ? 'Remembered it? Sign in'
+            : register
+              ? 'Already here? Sign in'
+              : 'New here? Create an account'}
+        </button>
+      </details>
+      {cloudMode && error && (
         <p className="form-error" role="alert">
           {error}
         </p>
       )}
-      {message && <p role="status">{message}</p>}
-      <button className="button button-dark button-full" disabled={busy}>
-        {busy ? (
-          <LoaderCircle className="spin" size={17} />
-        ) : (
-          <>
-            {register ? 'Create your account' : 'Sign in'} <ArrowRight size={16} />
-          </>
-        )}
-      </button>
-      {!cloudMode && <button
-        className="form-switch"
-        type="button"
-        onClick={() => {
-          setRegister(!register);
-          setError('');
-        }}
-      >
-        {register ? 'Already here? Sign in' : 'New here? Create an account'}
-      </button>}
-      <p className="auth-policy">By continuing, you agree to our <a href="/terms" target="_blank" rel="noreferrer">Terms</a> and acknowledge our <a href="/privacy" target="_blank" rel="noreferrer">Privacy policy</a>.</p>
+      {cloudMode && message && <p role="status">{message}</p>}
+      <p className="auth-policy">
+        By continuing, you agree to our{' '}
+        <a href="/terms" target="_blank" rel="noreferrer">
+          Terms
+        </a>{' '}
+        and acknowledge our{' '}
+        <a href="/privacy" target="_blank" rel="noreferrer">
+          Privacy policy
+        </a>
+        .
+      </p>
     </form>
   );
 }
@@ -821,11 +926,81 @@ function SponsorForm({ onDone }) {
   );
 }
 function ProductDetail({ product: p, comments, user, onSave, onLogin, onRefresh, notify, source }) {
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(false),
+    [replyTo, setReplyTo] = useState(null);
+  const landing = useLanding(p.slug);
+  const talking = comments.filter((c) => !c.removed).length;
+  const threads = comments.filter((c) => !c.parent_id);
+  const repliesTo = (id) =>
+    comments
+      .filter((c) => c.parent_id === id)
+      .sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
+  async function postComment(e, parentId) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    setBusy(true);
+    try {
+      await api('comment', { productId: p.id, body: new FormData(form).get('body'), parentId });
+      form.reset();
+      setReplyTo(null);
+      await onRefresh();
+    } catch (e) {
+      notify(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  const renderComment = (c, thread) =>
+    c.removed ? (
+      <article className="comment comment-removed" key={c.id}>
+        <p>This comment was removed.</p>
+      </article>
+    ) : (
+      <article className="comment" key={c.id}>
+        <Avatar profile={c.profile || { name: c.name }} size={32} />
+        <div>
+          <strong>{c.name}</strong>
+          <time>{new Date(c.created_at).toLocaleDateString()}</time>
+          <p>{c.body}</p>
+          <div className="comment-actions">
+            <button
+              className="text-button"
+              onClick={() =>
+                user
+                  ? setReplyTo({ thread, id: c.id, mention: c.parent_id ? c.name : '' })
+                  : onLogin()
+              }
+            >
+              <Reply size={13} /> Reply
+            </button>
+            {(user?.id === c.user_id || user?.role === 'admin') && (
+              <button
+                className="text-button"
+                onClick={async () => {
+                  try {
+                    await api('comment/delete', { id: c.id });
+                    await onRefresh();
+                  } catch (e) {
+                    notify(e.message);
+                  }
+                }}
+              >
+                Remove
+              </button>
+            )}
+          </div>
+        </div>
+      </article>
+    );
+  const art = isArtwork(p);
   return (
     <div className="product-detail">
       <div className="detail-main">
-        <div className="catalog-detail-demo" style={{ background: productSceneColor(p) }}>
+        <div
+          ref={landing}
+          className="catalog-detail-demo"
+          style={{ background: productSceneColor(p) }}
+        >
           <ProductDemo product={p} />
         </div>
         <div className="detail-title">
@@ -845,8 +1020,12 @@ function ProductDetail({ product: p, comments, user, onSave, onLogin, onRefresh,
           ))}
           {p.sponsored && <span className="soft-tag">Paid feature</span>}
         </div>
-        <h2>A little about this discovery</h2>
-        <p className="detail-description">{p.description}</p>
+        {(!art || p.description !== p.category) && (
+          <>
+            <h2>{art ? 'Behind the work' : 'A little about this discovery'}</h2>
+            <p className="detail-description">{p.description}</p>
+          </>
+        )}
         <ul className="facts-list">
           {p.facts.map((f) => (
             <li key={f}>
@@ -855,9 +1034,11 @@ function ProductDetail({ product: p, comments, user, onSave, onLogin, onRefresh,
             </li>
           ))}
         </ul>
-        <a className="source-link" href={p.source} target="_blank" rel="noreferrer">
-          Read the maker’s information <ExternalLink size={13} />
-        </a>
+        {p.source && (
+          <a className="source-link" href={p.source} target="_blank" rel="noreferrer">
+            Read the maker’s information <ExternalLink size={13} />
+          </a>
+        )}
         {p.submission?.demoUrl && (
           <p>
             <a className="source-link" href={p.submission.demoUrl} target="_blank" rel="noreferrer">
@@ -867,30 +1048,16 @@ function ProductDetail({ product: p, comments, user, onSave, onLogin, onRefresh,
         )}
         <section className="conversation">
           <h2>
-            Start a conversation <span>{comments.length}</span>
+            {talking ? 'The conversation' : 'Start a conversation'} <span>{talking}</span>
           </h2>
           <p>
             Ask a question, share what you tried, or leave something useful for the next person.
           </p>
           {user ? (
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const form = e.currentTarget;
-                setBusy(true);
-                try {
-                  await api('comment', { productId: p.id, body: new FormData(form).get('body') });
-                  form.reset();
-                  await onRefresh();
-                } catch (e) {
-                  notify(e.message);
-                } finally {
-                  setBusy(false);
-                }
-              }}
-            >
+            <form onSubmit={(e) => postComment(e)}>
               <textarea
                 name="body"
+                aria-label="Your comment"
                 required
                 minLength={2}
                 maxLength={1500}
@@ -909,57 +1076,98 @@ function ProductDetail({ product: p, comments, user, onSave, onLogin, onRefresh,
           {comments.length === 0 ? (
             <div className="quiet-empty">A good conversation can start with you.</div>
           ) : (
-            comments.map((c) => (
-              <article className="comment" key={c.id}>
-                <div className="avatar small">{c.name[0]}</div>
-                <div>
-                  <strong>{c.name}</strong>
-                  <time>{new Date(c.created_at).toLocaleDateString()}</time>
-                  <p>{c.body}</p>
-                  {(user?.id === c.user_id || user?.role === 'admin') && (
-                    <button
-                      className="text-button"
-                      onClick={async () => {
-                        await api('comment/delete', { id: c.id });
-                        await onRefresh();
-                      }}
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              </article>
+            threads.map((t) => (
+              <div className="comment-thread" key={t.id}>
+                {renderComment(t, t.id)}
+                {(repliesTo(t.id).length > 0 || replyTo?.thread === t.id) && (
+                  <div className="comment-replies">
+                    {repliesTo(t.id).map((r) => renderComment(r, t.id))}
+                    {replyTo?.thread === t.id && (
+                      <form
+                        className="reply-form"
+                        key={replyTo.id}
+                        onSubmit={(e) => postComment(e, t.id)}
+                      >
+                        <textarea
+                          name="body"
+                          aria-label="Your reply"
+                          required
+                          minLength={2}
+                          maxLength={1500}
+                          rows={2}
+                          autoFocus
+                          placeholder="Write a reply…"
+                          defaultValue={replyTo.mention ? `@${replyTo.mention} ` : ''}
+                        />
+                        <div>
+                          <button
+                            className="text-button"
+                            type="button"
+                            onClick={() => setReplyTo(null)}
+                          >
+                            Cancel
+                          </button>
+                          <button className="button button-dark" disabled={busy}>
+                            Reply <Send size={14} />
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+                )}
+              </div>
             ))
           )}
         </section>
       </div>
       <aside className="detail-sidebar">
-        <span className="eyebrow">YOUR NEXT TAB</span>
-        <h3>Take a closer look.</h3>
-        <p>{p.pricing}</p>
-        <a
-          className="button button-dark button-full"
-          href={`/go/${p.slug}?source=${encodeURIComponent(source)}`}
-          target="_blank"
-          rel="noreferrer"
+        <span className="eyebrow">{art ? 'MADE BY A GOBBLER' : 'YOUR NEXT TAB'}</span>
+        <h3>{art ? 'A little appreciation goes a long way.' : 'Take a closer look.'}</h3>
+        {!art && <p>{p.pricing}</p>}
+        {p.url && (
+          <a
+            className="button button-dark button-full"
+            href={`/go/${p.slug}?source=${encodeURIComponent(source)}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {art ? 'Visit the creator’s link' : `Try ${p.name}`} <ArrowUpRight size={17} />
+          </a>
+        )}
+        <button
+          className="button button-full"
+          onClick={async (e) => {
+            const icon = e.currentTarget.querySelector('svg'),
+              rect = icon.getBoundingClientRect(),
+              wasSaved = p.saved;
+            squish(icon);
+            if ((await onSave()) && !wasSaved) saveBurst(rect);
+          }}
         >
-          Try {p.name} <ArrowUpRight size={17} />
-        </a>
-        <button className="button button-full" onClick={onSave}>
           <Bookmark size={16} fill={p.saved ? 'currentColor' : 'none'} />
           {p.saved ? 'Saved to your collection' : 'Save for later'}
         </button>
+        <ShareButton
+          path={`/product/${p.slug}`}
+          title={p.name}
+          label="Share this work"
+          product={p}
+        />
         <div className="sidebar-divider" />
         <span className="eyebrow">BEHIND THE DISCOVERY</span>
         <p>
-          {p.owner_name
-            ? `Shared by ${p.owner_name}`
-            : 'Selected for our editorial starter collection.'}
+          {p.owner_name ? (
+            <CreatorCredit product={p} prefix="Made by " />
+          ) : (
+            'Selected for our editorial starter collection.'
+          )}
         </p>
-        <small>
-          {p.editorial ? 'This maker has not claimed this listing. ' : ''}Pricing and availability
-          are set by the product’s maker.
-        </small>
+        {!art && (
+          <small>
+            {p.editorial ? 'This maker has not claimed this listing. ' : ''}Pricing and availability
+            are set by the product’s maker.
+          </small>
+        )}
       </aside>
     </div>
   );

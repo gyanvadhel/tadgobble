@@ -29,8 +29,14 @@ import {
 import { Brand } from './art';
 import { api, Field, Modal } from './platform';
 import CoverEditor, { useProductCover } from './cover-editor';
+import { isArtwork } from '../lib/product-options.mjs';
+import { CreatorCredit } from './creator-credit';
+import '../app/creator-studio.css';
 import { cloudMode } from '../lib/client-api.mjs';
 const labels = {
+  pending: 'In review',
+  needs_changes: 'Needs changes',
+  rejected: 'Not selected',
   draft: 'Draft',
   render_pending: 'Waiting to render',
   rendering: 'Rendering',
@@ -97,7 +103,7 @@ function Empty({ icon: Icon = Clapperboard, title, children }) {
 }
 export default function Studio({ user, loading, onLogin, notify, onLogout }) {
   const [data, setData] = useState(null),
-    [tab, setTab] = useState('Overview'),
+    [tab, setTab] = useState(cloudMode ? 'Products' : 'Overview'),
     [productStatus, setProductStatus] = useState('pending'),
     [selected, setSelected] = useState(null),
     [review, setReview] = useState(null),
@@ -112,9 +118,27 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
       'Queue',
       'Inbox',
       'Connection',
-    ].find((value) => value.toLowerCase() === (params.get('tab') === 'partnerships' ? 'inbox' : params.get('tab')));
-    if (requested) setTab(requested);
-    if (['all', 'pending', 'published', 'rejected', 'archived'].includes(params.get('status')))
+      'Tools',
+      'Published',
+    ].find(
+      (value) =>
+        value.toLowerCase() ===
+        (params.get('tab') === 'partnerships' ? 'inbox' : params.get('tab')),
+    );
+    if (requested)
+      setTab(
+        requested === 'Published'
+          ? 'Products'
+          : cloudMode && ['Content', 'Queue', 'Connection'].includes(requested)
+            ? 'Tools'
+            : requested,
+      );
+    if (requested === 'Published') setProductStatus('published');
+    if (
+      ['all', 'pending', 'needs_changes', 'published', 'rejected', 'archived'].includes(
+        params.get('status'),
+      )
+    )
       setProductStatus(params.get('status'));
   }, []);
   const refresh = useCallback(async () => {
@@ -171,18 +195,30 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
         ) : (
           <p className="form-error">This account doesn’t have studio access.</p>
         )}
-        <small>{cloudMode ? 'Only the studio owner can review submissions.' : 'The owner account is configured in your local environment file.'}</small>
+        <small>
+          {cloudMode
+            ? 'Only the studio owner can review submissions.'
+            : 'The owner account is configured in your local environment file.'}
+        </small>
         <a href="/discover">← Back to discoveries</a>
       </div>
     );
-  const nav = [
-    ['Overview', LayoutDashboard],
-    ['Products', Layers],
-    ['Content', Clapperboard],
-    ['Queue', CalendarClock],
-    ['Inbox', Inbox],
-    ['Connection', Plug],
-  ];
+  const nav = cloudMode
+    ? [
+        ['Products', Layers, 'Review queue'],
+        ['Published', Check, 'Published'],
+        ['Overview', LayoutDashboard],
+        ['Inbox', Inbox],
+        ['Tools', Plug, 'Desktop tools'],
+      ]
+    : [
+        ['Overview', LayoutDashboard],
+        ['Products', Layers],
+        ['Content', Clapperboard],
+        ['Queue', CalendarClock],
+        ['Inbox', Inbox],
+        ['Connection', Plug],
+      ];
   const job = data?.jobs.find((j) => j.id === selected);
   return (
     <div className="studio-shell">
@@ -190,19 +226,35 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
         <Brand light studio />
         <div className="workspace-label">YOUR WORKSPACE</div>
         <nav>
-          {nav.map(([name, Icon]) => (
+          {nav.map(([name, Icon, label]) => (
             <button
               key={name}
-              className={tab === name ? 'active' : ''}
+              className={
+                (
+                  name === 'Published'
+                    ? tab === 'Products' && productStatus === 'published'
+                    : name === 'Products' && cloudMode
+                      ? tab === 'Products' && productStatus !== 'published'
+                      : tab === name
+                )
+                  ? 'active'
+                  : ''
+              }
+              title={label || (name === 'Products' ? 'Submissions' : name)}
+              aria-label={label || (name === 'Products' ? 'Submissions' : name)}
               onClick={() => {
-                setTab(name);
+                setTab(name === 'Published' ? 'Products' : name);
+                if (name === 'Published') setProductStatus('published');
+                if (name === 'Products') setProductStatus('pending');
                 const url = new URL(location.href);
                 url.searchParams.set('tab', name.toLowerCase());
+                if (name === 'Products' || name === 'Published')
+                  url.searchParams.set('status', name === 'Published' ? 'published' : 'pending');
                 history.replaceState(null, '', url);
               }}
             >
               <Icon size={19} />
-              {name}
+              {label || (name === 'Products' ? 'Submissions' : name)}
               {name === 'Products' && data?.products.some((p) => p.status === 'pending') && (
                 <span className="sidebar-count">
                   {data.products.filter((p) => p.status === 'pending').length}
@@ -228,23 +280,35 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
         <header className="studio-header">
           <div>
             <span className="eyebrow">TADGOBBLE STUDIO</span>
-            <h1>{tab}</h1>
+            <h1>
+              {tab === 'Products'
+                ? productStatus === 'published'
+                  ? 'Published work'
+                  : 'Submissions'
+                : tab === 'Tools'
+                  ? 'Desktop tools'
+                  : tab}
+            </h1>
           </div>
           <div>
-            {!cloudMode && <button
-              className="button"
-              disabled={busy}
-              onClick={async () => {
-                const r = await action('tick', {});
-                if (r)
-                  notify(
-                    r.action === 'idle' ? r.reason : `Automation: ${r.action.replaceAll('_', ' ')}`,
-                  );
-              }}
-            >
-              {busy ? <LoaderCircle className="spin" size={15} /> : <Play size={15} />} Run one
-              workflow step
-            </button>}
+            {!cloudMode && (
+              <button
+                className="button"
+                disabled={busy}
+                onClick={async () => {
+                  const r = await action('tick', {});
+                  if (r)
+                    notify(
+                      r.action === 'idle'
+                        ? r.reason
+                        : `Automation: ${r.action.replaceAll('_', ' ')}`,
+                    );
+                }}
+              >
+                {busy ? <LoaderCircle className="spin" size={15} /> : <Play size={15} />} Run one
+                workflow step
+              </button>
+            )}
             <div className="avatar">{user.name[0]}</div>
           </div>
         </header>
@@ -292,38 +356,40 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                     </div>
                   ))}
                 </div>
-                {!cloudMode && <section className="studio-panel">
-                  <div className="panel-title">
-                    <div>
-                      <h2>From a discovery to a daily post</h2>
-                      <p>Every step has a clear state. Start with a product you’ve checked.</p>
-                    </div>
-                    <button className="text-button" onClick={() => setTab('Content')}>
-                      Open content <ArrowRight size={14} />
-                    </button>
-                  </div>
-                  <div className="pipeline">
-                    {[
-                      ['Review', data.products.filter((p) => p.status === 'pending').length],
-                      ['Draft', data.jobs.filter((j) => j.status === 'draft').length],
-                      [
-                        'Render',
-                        data.jobs.filter((j) =>
-                          ['render_pending', 'rendering', 'rendered'].includes(j.status),
-                        ).length,
-                      ],
-                      ['Approved', data.jobs.filter((j) => j.status === 'approved').length],
-                      ['Scheduled', data.jobs.filter((j) => j.status === 'queued').length],
-                      ['Published', data.jobs.filter((j) => j.status === 'published').length],
-                    ].map(([name, count], i) => (
-                      <div className="pipeline-step" key={name}>
-                        <span>0{i + 1}</span>
-                        <strong>{count}</strong>
-                        <small>{name}</small>
+                {!cloudMode && (
+                  <section className="studio-panel">
+                    <div className="panel-title">
+                      <div>
+                        <h2>From a discovery to a daily post</h2>
+                        <p>Every step has a clear state. Start with a product you’ve checked.</p>
                       </div>
-                    ))}
-                  </div>
-                </section>}
+                      <button className="text-button" onClick={() => setTab('Content')}>
+                        Open content <ArrowRight size={14} />
+                      </button>
+                    </div>
+                    <div className="pipeline">
+                      {[
+                        ['Review', data.products.filter((p) => p.status === 'pending').length],
+                        ['Draft', data.jobs.filter((j) => j.status === 'draft').length],
+                        [
+                          'Render',
+                          data.jobs.filter((j) =>
+                            ['render_pending', 'rendering', 'rendered'].includes(j.status),
+                          ).length,
+                        ],
+                        ['Approved', data.jobs.filter((j) => j.status === 'approved').length],
+                        ['Scheduled', data.jobs.filter((j) => j.status === 'queued').length],
+                        ['Published', data.jobs.filter((j) => j.status === 'published').length],
+                      ].map(([name, count], i) => (
+                        <div className="pipeline-step" key={name}>
+                          <span>0{i + 1}</span>
+                          <strong>{count}</strong>
+                          <small>{name}</small>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
                 <div className="studio-two-col">
                   <section className="studio-panel">
                     <div className="panel-title">
@@ -375,8 +441,11 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
               <section className="studio-panel">
                 <div className="panel-title">
                   <div>
-                    <h2>A collection worth sharing</h2>
-                    <p>Check the source facts before preparing a public feature.</p>
+                    <h2>Give good work a proper look.</h2>
+                    <p>
+                      Check the image, creator credit and details. Feedback goes to their My work
+                      page.
+                    </p>
                   </div>
                   <label className="studio-status-filter">
                     Show{' '}
@@ -390,86 +459,91 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                         history.replaceState(null, '', url);
                       }}
                     >
-                      {['pending', 'published', 'rejected', 'archived', 'all'].map((value) => (
-                        <option key={value} value={value}>
-                          {value === 'all'
-                            ? 'All listings'
-                            : value[0].toUpperCase() + value.slice(1)}
-                        </option>
-                      ))}
+                      {['pending', 'needs_changes', 'published', 'rejected', 'archived', 'all'].map(
+                        (value) => (
+                          <option key={value} value={value}>
+                            {value === 'all'
+                              ? 'All listings'
+                              : labels[value] || value[0].toUpperCase() + value.slice(1)}
+                          </option>
+                        ),
+                      )}
                     </select>
                   </label>
                 </div>
-                <div className="table-scroll">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Product</th>
-                        <th>Audience</th>
-                        <th>Listing</th>
-                        <th>Source review</th>
-                        <th />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.products
-                        .filter((p) => productStatus === 'all' || p.status === productStatus)
-                        .map((p) => (
-                          <tr key={p.id}>
-                            <td>
-                              <div className="table-product">
-                                <span className={`product-monogram mono-${p.color}`}>
-                                  {p.name[0]}
-                                </span>
-                                <div>
-                                  <strong>{p.name}</strong>
-                                  <small>
-                                    {p.editorial
-                                      ? 'Editorial starter listing'
-                                      : `Submitted by ${p.owner_name || 'a member'}`}
-                                  </small>
-                                </div>
-                              </div>
-                            </td>
-                            <td>{p.audience}</td>
-                            <td>
-                              <Status value={p.status} />
-                            </td>
-                            <td>
-                              {p.verified_at ? (
-                                <span className="verified">
-                                  <Check size={14} /> Checked
-                                </span>
-                              ) : (
-                                <span className="muted">Needs review</span>
-                              )}
-                            </td>
-                            <td>
-                              <button className="button button-small" onClick={() => setReview(p)}>
-                                Review <ArrowRight size={13} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
+                <div className="review-queue">
+                  {data.products
+                    .filter((p) => productStatus === 'all' || p.status === productStatus)
+                    .map((p) => (
+                      <article className="review-queue-item" key={p.id}>
+                        <button
+                          className="review-queue-image"
+                          aria-label={`Review image for ${p.name}`}
+                          onClick={() => setReview(p)}
+                        >
+                          {p.cover?.url ? (
+                            <img src={p.cover.url} alt={p.name} loading="lazy" />
+                          ) : (
+                            <span>{p.name[0]}</span>
+                          )}
+                        </button>
+                        <div>
+                          <Status value={p.status} />
+                          <h3>{p.name}</h3>
+                          <p>
+                            <CreatorCredit product={p} prefix="Made by " />
+                          </p>
+                          <p>
+                            {p.category} · {new Date(p.created_at).toLocaleDateString()}
+                          </p>
+                          {p.pendingEdit && (
+                            <p className="review-queue-note">
+                              Edit to a live post. The current version stays up until approved.
+                            </p>
+                          )}
+                          {p.review_note && <p className="review-queue-note">{p.review_note}</p>}
+                        </div>
+                        <button className="button button-dark" onClick={() => setReview(p)}>
+                          Review <ArrowRight size={15} />
+                        </button>
+                      </article>
+                    ))}
                   {!data.products.some(
                     (p) => productStatus === 'all' || p.status === productStatus,
                   ) && (
                     <Empty title="Nothing in this queue.">
-                      Choose another listing status to see the rest of the collection.
+                      Choose another status to see more work.
                     </Empty>
                   )}
                 </div>
               </section>
             )}
-            {cloudMode && ['Content', 'Queue', 'Connection'].includes(tab) && (
+            {cloudMode && ['Content', 'Queue', 'Connection', 'Tools'].includes(tab) && (
               <section className="studio-panel">
                 <h2>Your desktop handles the heavy lifting.</h2>
-                <p>Website previews run through your local worker. Video editing, rendering, and publishing stay in the desktop studio for the free launch.</p>
-                <p>Last preview worker check: {data.connection.worker ? new Date(data.connection.worker).toLocaleString() : 'Waiting for the worker.'}</p>
-                <p>Run <code>npm run worker:cloud</code> on your computer for queued website previews. Run <code>npm run sync:cloud</code> before preparing videos to refresh the desktop catalog.</p>
-                <a className="button button-dark" href="http://127.0.0.1:3000/studio" target="_blank" rel="noreferrer">Open desktop studio <ArrowUpRight size={16} /></a>
+                <p>
+                  Website previews run through your local worker. Video editing, rendering, and
+                  publishing stay in the desktop studio for the free launch.
+                </p>
+                <p>
+                  Last preview worker check:{' '}
+                  {data.connection.worker
+                    ? new Date(data.connection.worker).toLocaleString()
+                    : 'Waiting for the worker.'}
+                </p>
+                <p>
+                  Run <code>npm run worker:cloud</code> on your computer for queued website
+                  previews. Run <code>npm run sync:cloud</code> before preparing videos to refresh
+                  the desktop catalog.
+                </p>
+                <a
+                  className="button button-dark"
+                  href="http://127.0.0.1:3000/studio"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open desktop studio <ArrowUpRight size={16} />
+                </a>
               </section>
             )}
             {!cloudMode && tab === 'Content' && (
@@ -538,9 +612,16 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                 <div className="panel-title">
                   <div>
                     <h2>A little consistency, planned ahead.</h2>
-                    <p>Times display in your browser’s timezone. The daily cap uses UTC dates.</p>
+                    <p>
+                      Times display in your browser’s timezone.
+                      {data.connection.dailyLimit != null && ' The daily cap uses UTC dates.'}
+                    </p>
                   </div>
-                  <span className="soft-tag">{data.connection.dailyLimit} post / day</span>
+                  <span className="soft-tag">
+                    {data.connection.dailyLimit == null
+                      ? 'No daily cap'
+                      : `${data.connection.dailyLimit} posts / day`}
+                  </span>
                 </div>
                 {!data.connection.publishingEnabled && (
                   <div className="info-note">
@@ -726,11 +807,15 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                     </small>
                   </section>
                   <section className="studio-panel">
-                    <h3>Daily limit</h3>
-                    <p>{data.connection.dailyLimit} post(s) per UTC day.</p>
+                    <h3>Daily posting cap</h3>
+                    <p>
+                      {data.connection.dailyLimit == null
+                        ? 'Off — no daily posting cap.'
+                        : `${data.connection.dailyLimit} post(s) per UTC day.`}
+                    </p>
                     <small>
-                      Change <code>DAILY_POST_LIMIT</code> in the environment. Uncertain
-                      publications stop automatic retries until investigated.
+                      Set <code>DAILY_POST_LIMIT</code> to 0 for no cap, or a positive number to
+                      restore one. Uncertain publications stop automatic retries until investigated.
                     </small>
                   </section>
                 </div>
@@ -766,18 +851,21 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
   );
 }
 function ProductReview({ product: p, busy, action, onClose }) {
+  const art = isArtwork(p);
   const coverState = useProductCover(p.cover);
   const [savedCoverId, setSavedCoverId] = useState(p.cover?.id || null);
   const coverChanged = (coverState.cover?.id || null) !== savedCoverId;
   const [checked, setChecked] = useState(false);
   const [sponsored, setSponsored] = useState(p.sponsored);
+  const [feedback, setFeedback] = useState(p.review_note || ''),
+    [feedbackError, setFeedbackError] = useState('');
   return (
     <div>
-      <span className="eyebrow">PRODUCT REVIEW</span>
+      <span className="eyebrow">{art ? 'CREATIVE WORK REVIEW' : 'PRODUCT REVIEW'}</span>
       <h2>{p.name}</h2>
       <p className="form-intro">{p.description}</p>
       <div className="studio-cover">
-        <CoverEditor state={coverState} website={p.url} name={p.name} />
+        <CoverEditor state={coverState} website={p.url} name={p.name} artwork={art} allowVideo />
         {coverChanged && (
           <button
             className="button"
@@ -807,7 +895,7 @@ function ProductReview({ product: p, busy, action, onClose }) {
       <div className="review-meta">
         <span className="soft-tag">{p.category}</span>
         <span className="soft-tag">{p.audience}</span>
-        <span className="soft-tag">{p.pricing}</span>
+        {!art && <span className="soft-tag">{p.pricing}</span>}
       </div>
       {!!p.submission?.platforms?.length && (
         <p>Available on: {p.submission.platforms.join(', ')}</p>
@@ -819,7 +907,18 @@ function ProductReview({ product: p, busy, action, onClose }) {
           </a>
         </p>
       )}
-      <h3>Recorded source facts</h3>
+      <h3>{art ? 'Creator’s submission' : 'Recorded source facts'}</h3>
+      {art && (
+        <p className="form-intro">
+          <CreatorCredit product={p} prefix="Made by " />.{' '}
+          {p.submission.onBehalf
+            ? 'Submitted on the creator’s behalf with permission.'
+            : 'The submitter confirmed this is their work or they have permission to share it.'}
+        </p>
+      )}
+      {art && p.submission.imageDescription && (
+        <p>Image description: {p.submission.imageDescription}</p>
+      )}
       <ul className="facts-list">
         {p.facts.map((f) => (
           <li key={f}>
@@ -828,17 +927,23 @@ function ProductReview({ product: p, busy, action, onClose }) {
           </li>
         ))}
       </ul>
-      {!p.facts.length && (
+      {!art && !p.facts.length && (
         <p className="form-intro">
           No separate capabilities were added. Review the description and product website.
         </p>
       )}
-      <a className="button" href={p.source} target="_blank" rel="noreferrer">
-        Open source <ExternalLink size={15} />
-      </a>
+      {p.source && (
+        <a className="button" href={p.source} target="_blank" rel="noreferrer">
+          Open source <ExternalLink size={15} />
+        </a>
+      )}
       <label className="check-field review-check">
-        <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} /> I
-        checked these details against the source and they accurately describe the product.
+        <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} />
+        {p.cover?.video
+          ? 'I watched the video and reviewed its attribution and description. This work is suitable to publish.'
+          : art
+            ? 'I reviewed the image, attribution, and description. This work is suitable to publish.'
+            : 'I checked these details against the source and they accurately describe the product.'}
       </label>
       <label className="check-field">
         <input
@@ -864,26 +969,76 @@ function ProductReview({ product: p, busy, action, onClose }) {
             const r = await action(
               'product',
               { id: p.id, action: 'verify', confirmed: true },
-              'Product facts checked and listing published.',
+              'Work published. It now appears on the public site.',
             );
             if (r) onClose();
           }}
         >
-          <Check size={16} /> Verify & publish listing
+          <Check size={16} /> Publish work
+        </button>
+      </div>
+      <div className="review-response">
+        <label htmlFor="review-feedback">Feedback for the creator</label>
+        <textarea
+          id="review-feedback"
+          value={feedback}
+          maxLength={1000}
+          rows={3}
+          onChange={(e) => {
+            setFeedback(e.target.value);
+            setFeedbackError('');
+          }}
+          placeholder="What needs changing, or why wasn’t this selected?"
+        />
+        <p>This note is private to the creator and the studio.</p>
+        {feedbackError && (
+          <p className="form-error" role="alert">
+            {feedbackError}
+          </p>
+        )}
+      </div>
+      <div className="action-row">
+        <button
+          className="button"
+          disabled={busy}
+          onClick={async () => {
+            if (feedback.trim().length < 3) {
+              setFeedbackError('Add a short note so the creator knows what to change.');
+              return;
+            }
+            if (
+              await action(
+                'product',
+                { id: p.id, action: 'changes', feedback },
+                'Feedback sent to My work.',
+              )
+            )
+              onClose();
+          }}
+        >
+          Request changes
         </button>
         <button
           className="button"
           disabled={busy}
           onClick={async () => {
+            if (feedback.trim().length < 3) {
+              setFeedbackError('Add a short note explaining this decision.');
+              return;
+            }
             if (
               confirm('Remove this listing from discovery and archive its unpublished content?')
             ) {
-              const r = await action('product', { id: p.id, action: 'reject' }, 'Listing removed.');
+              const r = await action(
+                'product',
+                { id: p.id, action: 'reject', feedback },
+                'Work not selected. Feedback saved.',
+              );
               if (r) onClose();
             }
           }}
         >
-          Remove listing
+          Reject work
         </button>
       </div>
     </div>

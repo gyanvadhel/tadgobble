@@ -50,7 +50,7 @@ For a single step, use the studio's **Run one workflow step** button. The worker
 - Creator submissions with an operator review queue. Pending submissions are not public.
 - Content drafts generated from recorded product facts: script, caption, and shot list.
 - Upload of an authorised MP4 demo and rendering of a real 1080×1920 H.264 Reel.
-- Human review, approval, scheduling, daily posting cap, and persistent job states.
+- Human review, approval, scheduling, an optional daily posting cap, and persistent job states.
 - Official Instagram publishing adapter, disabled until explicitly configured.
 - Anonymous visitor counts, returning visitors, saved products, outbound clicks, and campaign sources.
 - Partnership inquiries and sponsored-listing disclosure support. No fabricated revenue or traffic.
@@ -86,7 +86,8 @@ INSTAGRAM_ACCOUNT_ID=your-instagram-professional-account-id
 INSTAGRAM_ACCESS_TOKEN=your-page-access-token
 INSTAGRAM_GRAPH_VERSION=the-supported-version-from-your-Meta-dashboard
 INSTAGRAM_PUBLISH_ENABLED=true
-DAILY_POST_LIMIT=1
+# 0 = no app-imposed daily cap; set a positive number to restore one.
+DAILY_POST_LIMIT=0
 ```
 
 `INSTAGRAM_GRAPH_VERSION` must have the form `vNN.N`. Select a supported version in the Meta dashboard. Tokens are never returned to the browser. Media must be reachable by Meta over public HTTPS. Only approved or later-stage video files are publicly served; unapproved previews require a studio session.

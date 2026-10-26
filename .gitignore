@@ -16,3 +16,7 @@ hosting/public/
 hosting/app/icon.svg
 .firebase/
 supabase/.temp/
+deliverables/*.mp4
+deliverables/*.wav
+deliverables/*.mp3
+deliverables/*.png

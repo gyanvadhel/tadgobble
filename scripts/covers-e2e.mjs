@@ -58,29 +58,25 @@ try {
   await page.getByLabel('Email', { exact: true }).fill('maker@test.example');
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Create your account', exact: true }).click();
-  await page.getByLabel('Product name', { exact: true }).fill('Cover Lab');
-  await page.getByLabel('Product website', { exact: true }).fill('https://example.com');
+  await page.getByRole('button', { name: 'Skip for now', exact: true }).click();
+  await page.waitForURL('**/discover*');
+  await page.getByRole('radio', { name: 'App or tool', exact: true }).check();
+  await page.getByLabel('App or tool name', { exact: true }).fill('Cover Lab');
+  await page.getByLabel('Website link', { exact: true }).fill('https://example.com');
   await page
-    .getByLabel('One sentence that says it all', { exact: true })
+    .getByLabel('What does it do?', { exact: true })
     .fill('A place to give your ideas their first impression.');
   const capturedResponse = page.waitForResponse((response) =>
     response.url().endsWith('/api/covers/capture'),
   );
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page
-    .getByRole('group', { name: 'Product category', exact: true })
-    .getByRole('button', { name: 'Design', exact: true })
-    .click();
+  await page.getByRole('button', { name: 'Capture website', exact: true }).click();
   const response = await capturedResponse;
   assert.equal(response.status(), 200, await response.text());
   const captured = (await response.json()).cover;
-  await page.locator('.ticket-cover').waitFor();
-  assert.equal(await page.locator('.ticket-cover').evaluate((img) => img.naturalWidth), 1600);
+  await page.locator('.cover-stage img').waitFor();
+  assert.equal(await page.locator('.cover-stage img').evaluate((img) => img.naturalWidth), 1600);
   assert.equal((await fetch(origin + captured.url)).status, 404);
-  pass(
-    'A real public website is captured automatically while choosing a category; the cover remains private',
-  );
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  pass('A real public website is captured on request; the cover remains private');
   await page.locator('.submission-modal').evaluate((el) => el.scrollTo(0, 0));
   await page
     .locator('.submission-modal')
@@ -95,25 +91,23 @@ try {
   await page
     .getByLabel('Upload cover image')
     .setInputFiles({ name: 'cover.png', mimeType: 'image/png', buffer: upload });
-  await page.getByText('Your uploaded cover', { exact: true }).waitFor();
-  const chosenUrl = await page.locator('.ticket-cover').getAttribute('src');
+  await page.getByText('Image ready', { exact: true }).waitFor();
+  const chosenUrl = await page.locator('.cover-stage img').getAttribute('src');
   assert.notEqual(chosenUrl, captured.url);
-  await page
-    .getByLabel('Upload cover image')
-    .setInputFiles({
-      name: 'fake.png',
-      mimeType: 'image/png',
-      buffer: Buffer.from('not an image'),
-    });
+  await page.getByLabel('Upload cover image').setInputFiles({
+    name: 'fake.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('not an image'),
+  });
   await page.locator('.cover-error').waitFor();
-  assert.equal(await page.locator('.ticket-cover').getAttribute('src'), chosenUrl);
+  assert.equal(await page.locator('.cover-stage img').getAttribute('src'), chosenUrl);
   await page.getByRole('button', { name: 'Remove', exact: true }).click();
-  assert.equal(await page.locator('.ticket-cover').count(), 0);
+  assert.equal(await page.locator('.cover-stage img').count(), 0);
   await page
     .getByLabel('Upload cover image')
     .setInputFiles({ name: 'cover.png', mimeType: 'image/png', buffer: upload });
-  await page.getByText('Your uploaded cover', { exact: true }).waitFor();
-  const finalCoverUrl = await page.locator('.ticket-cover').getAttribute('src');
+  await page.getByText('Image ready', { exact: true }).waitFor();
+  const finalCoverUrl = await page.locator('.cover-stage img').getAttribute('src');
   for (const width of [1440, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.locator('.submission-modal').evaluate((el) => el.scrollTo(0, 0));
@@ -129,8 +123,7 @@ try {
   pass(
     'Upload replaces the capture, invalid files preserve the chosen image, remove works, and cover controls fit through 320px',
   );
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page.getByRole('checkbox', { name: /I’m the maker/ }).check();
+  await page.getByRole('checkbox', { name: /This is my work/ }).check();
   await page.getByRole('button', { name: 'Send for review', exact: true }).click();
   await page.getByText('In the review queue', { exact: true }).waitFor();
   assert.equal((await fetch(origin + finalCoverUrl)).status, 404);
@@ -145,7 +138,7 @@ try {
   assert.equal(await admin.locator('.cover-stage img').getAttribute('src'), finalCoverUrl);
   await admin.locator('.modal').screenshot({ path: path.join(dir, 'admin-cover.png') });
   await admin.getByRole('checkbox', { name: /I checked these details/ }).check();
-  await admin.getByRole('button', { name: 'Verify & publish listing', exact: true }).click();
+  await admin.getByRole('button', { name: 'Publish work', exact: true }).click();
   await admin.locator('.modal').waitFor({ state: 'hidden' });
   assert.equal((await fetch(origin + finalCoverUrl)).status, 200);
   assert.equal((await fetch(origin + captured.url)).status, 404);
@@ -157,7 +150,7 @@ try {
     await page.setViewportSize({ width, height: 1000 });
     for (const [name, pathname, selector] of [
       ['landing', '/', '.drawer-cover'],
-      ['catalog', '/discover', '.catalog-cover img'],
+      ['catalog', '/discover', '.showcase-media img'],
       ['detail', '/product/' + product.slug, '.product-cover-figure img'],
     ]) {
       await page.goto(origin + pathname);
@@ -200,27 +193,22 @@ try {
   );
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(origin + '/discover?submit=1');
-  await page.getByLabel('Product name', { exact: true }).fill('No Cover Yet');
-  await page.getByLabel('Product website', { exact: true }).fill('http://127.0.0.1');
+  await page.getByRole('radio', { name: 'App or tool', exact: true }).check();
+  await page.getByLabel('App or tool name', { exact: true }).fill('No Cover Yet');
+  await page.getByLabel('Website link', { exact: true }).fill('http://127.0.0.1');
   await page
-    .getByLabel('One sentence that says it all', { exact: true })
+    .getByLabel('What does it do?', { exact: true })
     .fill('Capture failure never blocks a submission.');
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page
-    .getByRole('group', { name: 'Product category', exact: true })
-    .getByRole('button', { name: 'Play', exact: true })
-    .click();
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByRole('button', { name: 'Capture website', exact: true }).click();
   await page.locator('.cover-error').waitFor();
   await page
     .locator('.submission-modal')
     .screenshot({ path: path.join(dir, 'capture-failure.png') });
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page.getByRole('checkbox', { name: /I’m the maker/ }).check();
+  await page.getByRole('checkbox', { name: /This is my work/ }).check();
   await page.getByRole('button', { name: 'Send for review', exact: true }).click();
   await page.getByText('In the review queue', { exact: true }).waitFor();
   pass('An uncapturable site has actionable feedback and can still be submitted without a cover');
-  await page.getByRole('button', { name: 'Back to the good stuff' }).click();
+  await page.getByRole('button', { name: 'Back to discoveries' }).click();
   let releaseCapture;
   const delayed = new Promise((resolve) => (releaseCapture = resolve));
   await page.route('**/api/covers/capture', async (route) => {
@@ -228,25 +216,22 @@ try {
     await route.fulfill({ json: { cover: captured } }).catch(() => {});
   });
   await page.goto(origin + '/discover?submit=1');
-  await page.getByLabel('Product name', { exact: true }).fill('Another Little Thing');
-  await page.getByLabel('Product website', { exact: true }).fill('https://example.com');
+  await page.getByRole('radio', { name: 'App or tool', exact: true }).check();
+  await page.getByLabel('App or tool name', { exact: true }).fill('Another Little Thing');
+  await page.getByLabel('Website link', { exact: true }).fill('https://example.com');
   await page
-    .getByLabel('One sentence that says it all', { exact: true })
+    .getByLabel('What does it do?', { exact: true })
     .fill('Keep the cover I chose, even when captures finish late.');
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page
-    .getByRole('group', { name: 'Product category', exact: true })
-    .getByRole('button', { name: 'Design', exact: true })
-    .click();
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByRole('button', { name: 'Capture website', exact: true }).click();
+  await page.getByRole('button', { name: 'Cancel upload', exact: true }).click();
   await page
     .getByLabel('Upload cover image')
     .setInputFiles({ name: 'cover.png', mimeType: 'image/png', buffer: upload });
-  await page.getByText('Your uploaded cover', { exact: true }).waitFor();
-  const override = await page.locator('.ticket-cover').getAttribute('src');
+  await page.getByText('Image ready', { exact: true }).waitFor();
+  const override = await page.locator('.cover-stage img').getAttribute('src');
   releaseCapture();
   await page.waitForTimeout(250);
-  assert.equal(await page.locator('.ticket-cover').getAttribute('src'), override);
+  assert.equal(await page.locator('.cover-stage img').getAttribute('src'), override);
   pass('A slow automatic capture cannot overwrite a newer manual cover choice');
   assert.deepEqual(errors, []);
   writeFileSync(

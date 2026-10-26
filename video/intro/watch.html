@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Watch the tadgobble intro</title
+  ><style>
+    @font-face {
+      font-family: B;
+      src: url('/public/fonts/font-1.woff2');
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: #39245a;
+      color: #f9f4a7;
+      font-family: B, sans-serif;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 40px;
+      padding: 30px 8vw;
+      min-height: 100vh;
+    }
+    video {
+      height: 90vh;
+      max-width: 100%;
+      justify-self: end;
+      border-radius: 10px;
+      box-shadow: 0 30px 80px #0004;
+    }
+    h1 {
+      font-size: clamp(40px, 5vw, 80px);
+      line-height: 1;
+      margin: 15px 0 30px;
+    }
+    p {
+      font-size: 18px;
+      line-height: 1.5;
+      max-width: 430px;
+      color: #c5b5f5;
+    }
+    a {
+      color: #39245a;
+      background: #f9f4a7;
+      padding: 16px 25px;
+      border-radius: 99px;
+      display: inline-block;
+      text-decoration: none;
+      margin: 8px 6px 0 0;
+    }
+    a.secondary {
+      border: 1px solid #c5b5f5;
+      background: transparent;
+      color: #f9f4a7;
+    }
+    @media (max-width: 800px) {
+      body {
+        grid-template-columns: 1fr;
+        padding: 20px;
+      }
+      video {
+        height: 75vh;
+        justify-self: center;
+      }
+      h1 {
+        font-size: 48px;
+      }
+    }</style
+  ><video
+    controls
+    playsinline
+    preload="metadata"
+    poster="/deliverables/tadgobble-intro-cover.png"
+    src="/deliverables/tadgobble-intro.mp4"
+  ></video>
+  <div>
+    <span>tadgobble / THE INTRO</span>
+    <h1>A better<br />rabbit hole.</h1>
+    <p>40 seconds. Good finds. Questionable screen time. And a new home for Gobblers.</p>
+    <a href="/deliverables/tadgobble-intro.mp4" download>Download the MP4 ↗</a
+    ><a class="secondary" href="/">Open the edit</a>
+    <p style="font-size: 13px; margin-top: 35px">
+      1080 × 1920 · 60 fps · AI-generated voiceover<br />Populated demo catalog; live listings
+      unchanged.
+    </p>
+  </div>
+</html>

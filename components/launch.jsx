@@ -16,6 +16,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Brand } from './art';
 import { Gobble } from './gobble';
+import { isArtwork } from '../lib/product-options.mjs';
 import ProductShowcase, { ProductDemo, productSceneColor } from './product-showcase';
 import { paletteStyle } from '../lib/design-tokens.mjs';
 import '../app/launch.css';
@@ -57,7 +58,9 @@ export default function Launch({ products }) {
       source = params.get('utm_source') || sessionStorage.getItem('ap_source') || 'direct';
       sessionStorage.setItem('ap_source', source);
     } catch {}
-    api('events', { kind: 'visit', source, campaign: params.get('utm_campaign') || '' }).catch(() => {});
+    api('events', { kind: 'visit', source, campaign: params.get('utm_campaign') || '' }).catch(
+      () => {},
+    );
     return () => {
       media.removeEventListener('change', update);
       feedTween.current?.kill();
@@ -214,7 +217,7 @@ export default function Launch({ products }) {
           </a>
         </nav>
         <div className="launch-header-actions">
-          <a className="header-submit" href="/discover?submit=1" aria-label="Share your product">
+          <a className="header-submit" href="/discover?submit=1" aria-label="Share your work">
             Made something? <Plus size={18} />
           </a>
           <button
@@ -243,7 +246,7 @@ export default function Launch({ products }) {
                 “wait, this exists?”
               </h2>
               <p>
-                Useful apps. Oddly brilliant tools. <br />A new obsession, probably.
+                Art. Design. Oddly brilliant apps. <br />A new obsession, probably.
               </p>
               {products.length ? (
                 <button
@@ -280,9 +283,7 @@ export default function Launch({ products }) {
                   ref={snack}
                   className="gobble-snack"
                   href={featured ? `/product/${featured.slug}` : '/discover?submit=1'}
-                  aria-label={
-                    featured ? `Preview ${featured.name}` : 'Share your product with Gobble'
-                  }
+                  aria-label={featured ? `Preview ${featured.name}` : 'Share your work with Gobble'}
                   onClick={(event) => {
                     if (!featured) return;
                     event.preventDefault();
@@ -369,8 +370,8 @@ export default function Launch({ products }) {
                 and a bookmark nobody opens.
               </p>
               <p className="maker-detail">
-                Share your working product. We review every submission for the menu, so curious
-                people can discover it, try it, and talk about it.
+                Share a painting, a design, or an app. No portfolio needed. We review every
+                submission so curious people can discover your work and talk about it.
               </p>
               <a className="launch-button plum-button" href="/discover?submit=1">
                 Put your thing on the menu <ArrowUpRight size={20} />
@@ -439,7 +440,7 @@ export default function Launch({ products }) {
           <div className="snack-dialog-content">
             <button
               className="snack-dialog-close"
-              aria-label="Close product preview"
+              aria-label="Close discovery preview"
               onClick={() => setPreview(null)}
               autoFocus
             >
@@ -454,7 +455,7 @@ export default function Launch({ products }) {
               <p>{preview.description}</p>
               <div className="preview-meta">
                 <span>{preview.category}</span>
-                <span>{preview.pricing}</span>
+                {!isArtwork(preview) && <span>{preview.pricing}</span>}
                 {preview.sponsored && <span>Paid feature</span>}
               </div>
               <a className="launch-button plum-button" href={`/product/${preview.slug}`}>

@@ -244,13 +244,16 @@ try {
   pass('Desktop, tablet, 390px and 320px layouts fit; mobile navigation works');
 
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.getByRole('link', { name: 'Share your product', exact: true }).click();
+  await page.getByRole('link', { name: 'Share your work', exact: true }).click();
   await page.getByRole('button', { name: 'New here? Create an account' }).click();
   await page.getByLabel('Your name', { exact: true }).fill('Launch Explorer');
   await page.getByLabel('Email', { exact: true }).fill('launch@test.example');
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Create your account', exact: true }).click();
-  await page.getByLabel('Product name', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Skip for now', exact: true }).click();
+  await page.waitForURL('**/discover*');
+  await page.getByRole('radio', { name: 'App or tool', exact: true }).check();
+  await page.getByLabel('App or tool name', { exact: true }).waitFor();
   await page.getByRole('button', { name: 'Close dialog' }).click();
   pass('Maker CTA continues from registration into product submission');
   await page.goto(origin + '/?from=instagram&utm_source=instagram&utm_campaign=old-link');
@@ -259,8 +262,8 @@ try {
   await page.goto(origin + '/discover?audience=Developers');
   await page.locator('.product-card').first().waitFor();
   assert.equal(
-    await page.getByRole('combobox', { name: 'Filter by audience' }).inputValue(),
-    'Developers',
+    await page.getByRole('button', { name: /^Filter by audience/ }).getAttribute('aria-label'),
+    'Filter by audience: Developers',
   );
   assert.equal(await page.locator('.product-card').count(), 2);
   pass('Existing campaign URLs and catalog audience links remain functional');

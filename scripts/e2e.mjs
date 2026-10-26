@@ -63,12 +63,14 @@ try {
   await page.getByLabel('Email', { exact: true }).fill('explorer@test.example');
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Create your account', exact: true }).click();
+  await page.getByRole('button', { name: 'Skip for now', exact: true }).click();
+  await page.waitForURL('**/discover*');
   await page.locator('.modal').waitFor({ state: 'hidden' });
   await page.getByRole('button', { name: 'Save Tally', exact: true }).click();
   await page.getByRole('button', { name: 'Unsave Tally', exact: true }).waitFor();
   await page.getByRole('button', { name: /^Saved/ }).click();
   assert.equal(await page.locator('.product-card').count(), 1);
-  await page.locator('.catalog-product-title').click();
+  await page.locator('.showcase-title').click();
   await page.getByRole('heading', { name: 'Tally', exact: true }).waitFor();
   await page
     .getByPlaceholder('What caught your curiosity?')
@@ -81,37 +83,29 @@ try {
   });
   assert.equal(redirect.status(), 302);
   assert.match(redirect.headers().location, /tally.so/);
-  await page.getByRole('button', { name: 'Share your product', exact: true }).click();
-  await page.getByLabel('Product name', { exact: true }).fill('Workflow Fixture');
-  await page.getByLabel('Product website', { exact: true }).fill('https://example.com/demo');
+  await page.getByRole('button', { name: 'Share your work', exact: true }).first().click();
+  await page.getByRole('radio', { name: 'App or tool', exact: true }).check();
+  await page.getByLabel('App or tool name', { exact: true }).fill('Workflow Fixture');
+  await page.getByLabel('Website link', { exact: true }).fill('https://example.com/demo');
   await page
-    .getByLabel('One sentence that says it all')
+    .getByLabel('What does it do?')
     .fill('A demo product for checking the complete workflow.');
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page
-    .getByRole('group', { name: 'Product category', exact: true })
-    .getByRole('button', { name: 'Developer tools', exact: true })
-    .click();
-  await page
-    .getByRole('group', { name: 'Product audience', exact: true })
-    .getByRole('button', { name: 'Developers', exact: true })
-    .click();
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page.getByRole('button', { name: 'Free', exact: true }).click();
+  await page.locator('.share-extras summary').click();
+  await page.getByLabel('Category', { exact: true }).selectOption('Developer tools');
+  await page.getByLabel('Who is it for?').selectOption('Developers');
+  await page.getByLabel('Pricing', { exact: true }).selectOption('Free');
   await page.getByLabel('Pricing details', { exact: true }).fill('Test only');
-  await page.getByText('Add a little more context', { exact: false }).click();
   await page
-    .getByLabel('Tell us about it')
+    .getByLabel('Tell us more')
     .fill('This test listing only exists in an isolated test database.');
   await page
     .getByLabel('Key capabilities')
     .fill('Demonstrates the content workflow\nProvides a test recording');
-  await page.getByLabel('Documentation or source link').fill('https://example.com/demo');
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page.getByRole('checkbox').check();
+  await page.getByLabel('Source for those details').fill('https://example.com/demo');
+  await page.getByRole('checkbox', { name: /This is my work/ }).check();
   await page.getByRole('button', { name: 'Send for review' }).click();
   await page.getByText('In the review queue', { exact: true }).waitFor();
-  await page.getByRole('button', { name: 'Back to the good stuff' }).click();
+  await page.getByRole('button', { name: 'Back to discoveries' }).click();
   await page.locator('.modal').waitFor({ state: 'hidden' });
   const denied = await context.request.get(origin + '/api/studio');
   assert.equal(denied.status(), 403);

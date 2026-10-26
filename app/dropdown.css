@@ -1,0 +1,120 @@
+.dropdown {
+  position: relative;
+  flex: none;
+}
+.dropdown-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  max-width: 240px;
+  padding: 10px 14px 10px 16px;
+  border: 1px solid #39245a30;
+  border-radius: 999px;
+  background: #fff;
+  color: #39245a;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.dropdown-button > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dropdown-button:hover,
+.dropdown.is-open .dropdown-button {
+  border-color: #39245a;
+}
+.dropdown.is-open .dropdown-button {
+  background: #f6f2ff;
+}
+.dropdown-chevron {
+  margin-left: 2px;
+  opacity: 0.7;
+  transition: transform 0.2s;
+}
+.dropdown.is-open .dropdown-chevron {
+  transform: rotate(180deg);
+}
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  min-width: max(100%, 200px);
+  max-height: min(340px, 60dvh);
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid #39245a1f;
+  border-radius: 16px;
+  background: #fffdf8;
+  box-shadow:
+    0 2px 6px #39245a14,
+    0 20px 44px -14px #39245a55;
+  outline: none;
+  transform-origin: top left;
+  animation: dropdown-pop 0.16s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.sort-select .dropdown-menu,
+.audience-select .dropdown-menu {
+  left: auto;
+  right: 0;
+  transform-origin: top right;
+}
+@keyframes dropdown-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+.dropdown-menu li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #39245a;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.dropdown-menu li svg {
+  flex: none;
+  opacity: 0.75;
+}
+.dropdown-menu li.is-active {
+  background: #efe9ff;
+}
+.dropdown-menu li[aria-selected='true'] {
+  font-weight: 600;
+}
+.dropdown-menu .dropdown-check {
+  margin-left: auto;
+  padding-left: 12px;
+  box-sizing: content-box;
+  opacity: 1;
+}
+@media (max-width: 580px) {
+  .dropdown-button {
+    font-size: 13px;
+    padding: 9px 12px 9px 14px;
+  }
+  .dropdown-menu {
+    max-width: calc(100vw - 32px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-menu {
+    animation: none;
+  }
+  .dropdown-chevron {
+    transition: none;
+  }
+}

@@ -17,6 +17,9 @@
   border: 0;
   height: 96px;
 }
+.catalog-app .site-header nav .mobile-share-work {
+  display: none;
+}
 .catalog-app .header-inner {
   max-width: none;
   padding: 0 5%;
@@ -65,6 +68,7 @@
   padding-right: 5%;
 }
 .catalog-poster svg {
+  cursor: pointer;
   width: 100px;
   height: 90px;
   margin-bottom: 18px;
@@ -99,25 +103,20 @@
 .catalog-app .section-heading h2 {
   font-size: 25px;
 }
-.catalog-app .category-tabs button {
+.catalog-app .category-tabs > button {
   border-radius: 25px;
   font-size: 11px;
 }
-.catalog-app .category-tabs button.selected {
+.catalog-app .category-tabs > button.selected {
   background: #39245a;
   color: #fff;
   border-color: #39245a;
 }
-.catalog-app .search-input,
-.catalog-app .audience-select {
+.catalog-app .search-input {
   border-radius: 0;
   border: 0;
   border-bottom: 1px solid #39245a60;
   background: #fff;
-}
-.catalog-list {
-  display: grid;
-  gap: 0;
 }
 .catalog-first-find {
   background: #c5b5f5;
@@ -140,85 +139,8 @@
   margin: 0 auto 25px;
   font-size: 13px;
 }
-.catalog-more-categories {
-  border: 1px solid #39245a25;
-  border-radius: 20px;
-  padding: 9px 12px;
-  font-size: 11px;
-  color: #39245a;
-  background: white;
-  max-width: 160px;
-}
 .catalog-app .category-tabs {
   flex-wrap: wrap;
-}
-.catalog-app .catalog-product {
-  display: grid;
-  grid-template-columns: 1fr 180px 140px;
-  gap: 25px;
-  align-items: center;
-  padding: 32px 35px;
-  border: 0;
-  border-top: 1px solid #39245a30;
-  border-radius: 0;
-  background: var(--product-color);
-  color: #39245a;
-  box-shadow: none;
-  overflow: visible;
-  transition: none;
-}
-.catalog-app .catalog-product:hover {
-  transform: none;
-  box-shadow: none;
-}
-.catalog-product-title h3 {
-  overflow-wrap: anywhere;
-  font: 650 clamp(35px, 4vw, 60px)/1 var(--display);
-  letter-spacing: -0.035em;
-  margin: 0 0 10px;
-}
-.catalog-product-title p {
-  font-size: 13px;
-  margin: 0;
-  line-height: 1.5;
-}
-.catalog-product-meta {
-  display: grid;
-  gap: 12px;
-  justify-items: start;
-}
-.catalog-product-meta > span {
-  font-size: 12px;
-  padding: 7px 12px;
-  border: 1px solid #39245a60;
-  border-radius: 20px;
-}
-.catalog-product-meta small {
-  font-size: 10px;
-}
-.catalog-product-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-}
-.catalog-product-actions .save-button,
-.catalog-product-actions > a {
-  position: static;
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  background: transparent;
-  color: #39245a;
-  border: 1px solid #39245a70;
-  border-radius: 50%;
-}
-.catalog-product-actions .save-button:hover,
-.catalog-product-actions .save-button.is-saved,
-.catalog-product-actions > a:hover {
-  color: var(--product-color);
-  background: #39245a;
 }
 .catalog-app .maker-banner {
   border-radius: 0;
@@ -235,7 +157,7 @@
 }
 .catalog-app .editorial-note,
 .catalog-app .collection-note,
-.catalog-app .category-tabs button:not(.selected),
+.catalog-app .category-tabs > button:not(.selected),
 .catalog-app .site-header nav button:not(.active) {
   color: #665578;
 }
@@ -353,11 +275,6 @@
     font-size: 11px;
     padding: 12px;
   }
-  .catalog-app .catalog-product {
-    grid-template-columns: 1fr 120px 110px;
-    padding: 28px;
-    gap: 15px;
-  }
 }
 @media (max-width: 800px) {
   .catalog-app .site-header {
@@ -399,17 +316,6 @@
   .catalog-poster p {
     font-size: 11px;
   }
-  .catalog-app .catalog-product {
-    grid-template-columns: 1fr auto;
-  }
-  .catalog-product-meta {
-    display: none;
-  }
-  .catalog-product-actions .save-button,
-  .catalog-product-actions > a {
-    width: 42px;
-    height: 42px;
-  }
   .catalog-app .maker-banner {
     flex-wrap: wrap;
     gap: 20px;
@@ -438,7 +344,19 @@
     font-size: 12px;
   }
   .catalog-app .site-header nav {
-    gap: 24px;
+    gap: 18px;
+  }
+  .catalog-app .site-header nav button.mobile-share-work {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #39245a;
+    border-radius: 24px;
+    background: #39245a;
+    color: #fffdf8;
   }
   .catalog-poster {
     display: block;
@@ -475,7 +393,7 @@
     overflow: visible;
     gap: 5px;
   }
-  .catalog-app .category-tabs button {
+  .catalog-app .category-tabs > button {
     padding: 9px 12px;
     font-size: 10px;
   }
@@ -484,28 +402,6 @@
   }
   .catalog-app .search-input {
     width: 100%;
-  }
-  .catalog-app .catalog-product {
-    padding: 25px 20px;
-    gap: 10px;
-  }
-  .catalog-product-title h3 {
-    font-size: 35px;
-  }
-  .catalog-product-title p {
-    font-size: 11px;
-  }
-  .catalog-product-actions {
-    flex-direction: column-reverse;
-    gap: 8px;
-  }
-  .catalog-product-actions .save-button,
-  .catalog-product-actions > a {
-    width: 36px;
-    height: 36px;
-  }
-  .catalog-product-actions svg {
-    width: 18px;
   }
   .catalog-app .maker-banner {
     padding: 25px;
@@ -540,4 +436,83 @@
   .catalog-app .product-detail {
     gap: 30px;
   }
+}
+
+/* Readable sizes for the Discover page. Placed last so they win over the
+   compact defaults above. */
+.catalog-app .collection-hero p,
+.catalog-app .hero-copy > p,
+.catalog-app .catalog-poster p {
+  font-size: 16px;
+}
+.catalog-app .section-heading h2 {
+  font-size: 34px;
+}
+.catalog-app .collection-note {
+  font-size: 13px;
+}
+.catalog-app .category-tabs {
+  gap: 8px;
+  align-items: center;
+}
+.catalog-app .category-tabs > button {
+  font-size: 14px;
+  padding: 11px 18px;
+}
+.catalog-app .search-controls {
+  margin-top: 20px;
+  gap: 12px;
+}
+.catalog-app .search-input {
+  width: 380px;
+  padding-bottom: 8px;
+}
+.catalog-app .search-input input {
+  font-size: 15px;
+}
+.catalog-app .maker-banner p {
+  font-size: 14px;
+}
+.catalog-app .editorial-note p {
+  font-size: 13px;
+}
+.catalog-app .footer > p,
+.catalog-app .footer > div > button,
+.catalog-app .footer > div > a {
+  font-size: 13px;
+}
+.catalog-app .footer > span {
+  font-size: 12px;
+}
+@media (max-width: 580px) {
+  .catalog-app .section-heading h2 {
+    font-size: 26px;
+  }
+  .catalog-app .category-tabs > button {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+  .catalog-app .search-input input {
+    font-size: 16px;
+  }
+  .catalog-app .collection-hero p,
+  .catalog-app .hero-copy > p,
+  .catalog-app .catalog-poster p {
+    font-size: 15px;
+  }
+}
+
+/* The headline waits for its letter drop (Poster in components/motion.jsx). If
+   scripts never arrive it shows anyway after a moment. */
+.catalog-poster h1 {
+  visibility: hidden;
+  animation: poster-show 0s 1.5s forwards;
+}
+@keyframes poster-show {
+  to {
+    visibility: visible;
+  }
+}
+.nav-count {
+  display: inline-block;
 }

@@ -54,7 +54,7 @@ try {
   for (const width of [1440, 390, 320]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto(`${origin}/discover`);
-    await page.locator('.catalog-product').first().waitFor();
+    await page.locator('.showcase-card').first().waitFor();
     await page.screenshot({ path: `${dir}/catalog-${width}.png`, fullPage: true });
     await page.getByRole('link', { name: 'Explore Tally', exact: true }).click();
     await page.getByRole('heading', { name: 'Tally', exact: true }).waitFor();

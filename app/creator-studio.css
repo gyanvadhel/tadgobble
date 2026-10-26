@@ -1,0 +1,155 @@
+.review-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.review-queue-item {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr) auto;
+  gap: 25px;
+  align-items: center;
+  padding: 25px 0;
+  border-top: 1px solid var(--line);
+}
+.review-queue-image {
+  position: relative;
+  height: 150px;
+  width: 170px;
+  background: #efebf6;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  overflow: hidden;
+  cursor: pointer;
+  color: #39245a;
+  font-size: 35px;
+}
+.review-queue-image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.review-queue-item h3 {
+  font: 700 25px/1.2 var(--display);
+  margin: 12px 0 8px;
+  overflow-wrap: anywhere;
+}
+.review-queue-item p {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 7px 0;
+}
+.review-queue-note {
+  max-width: 60ch;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.review-response {
+  margin: 25px 0;
+}
+.review-response label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.review-response textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  font: 16px/1.5 var(--font);
+  resize: vertical;
+}
+.review-response > p {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.account-shortcuts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 25px 0;
+}
+.studio-shell .creator-credit {
+  color: inherit;
+}
+.studio-shell .button:focus-visible,
+.studio-shell button:focus-visible {
+  outline: 3px solid #7560aa;
+  outline-offset: 3px;
+}
+@media (max-width: 800px) {
+  .studio-sidebar {
+    position: static !important;
+    width: 100% !important;
+    padding: 18px !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+  .studio-sidebar .brand {
+    font-size: 28px !important;
+  }
+  .studio-sidebar .workspace-label,
+  .studio-sidebar-bottom,
+  .studio-sidebar .brand > small {
+    display: none !important;
+  }
+  .studio-sidebar nav {
+    flex-direction: row !important;
+    overflow: auto;
+    margin-top: 15px;
+    gap: 6px !important;
+  }
+  .studio-sidebar nav > button {
+    font-size: 12px !important;
+    padding: 12px !important;
+    min-height: 44px;
+    flex-shrink: 0;
+    gap: 7px !important;
+  }
+  .studio-sidebar .sidebar-count {
+    display: inline-block;
+  }
+  .studio-main {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 24px 18px !important;
+  }
+  .studio-shell {
+    display: block !important;
+  }
+  .review-queue-item {
+    grid-template-columns: 110px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+  .review-queue-image {
+    width: 110px;
+    height: 130px;
+  }
+  .review-queue-item > .button {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .review-queue-item h3 {
+    font-size: 22px;
+  }
+  .studio-panel {
+    padding: 20px !important;
+  }
+  .studio-panel .panel-title {
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .review-response textarea {
+    font-size: 16px;
+  }
+  .action-row .button {
+    min-height: 44px;
+  }
+}

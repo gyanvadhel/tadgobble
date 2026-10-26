@@ -4,14 +4,15 @@ import { randomBytes } from 'node:crypto';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
+import sharp from 'sharp';
 
 mkdirSync('test-results', { recursive: true });
 const dir = mkdtempSync(path.resolve('test-results/submission-qa-'));
-const origin = 'http://127.0.0.1:3102',
+const origin = 'http://127.0.0.1:3191',
   password = randomBytes(18).toString('hex');
 const server = spawn(
   process.execPath,
-  ['node_modules/next/dist/bin/next', 'start', '--hostname', '127.0.0.1', '--port', '3102'],
+  ['node_modules/next/dist/bin/next', 'start', '--hostname', '127.0.0.1', '--port', '3191'],
   {
     env: {
       ...process.env,
@@ -30,15 +31,24 @@ const server = spawn(
 );
 let log = '',
   browser;
-server.stdout.on('data', (chunk) => (log += chunk));
-server.stderr.on('data', (chunk) => (log += chunk));
-const report = { checks: [], screenshots: dir };
+server.stdout.on('data', (c) => (log += c));
+server.stderr.on('data', (c) => (log += c));
+const checks = [],
+  errors = [];
 const pass = (message) => {
-  report.checks.push(message);
-  console.log(`PASS: ${message}`);
+  checks.push(message);
+  console.log('PASS: ' + message);
 };
+const image = await sharp(
+  Buffer.from(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="700" height="1000" viewBox="0 0 700 1000"><rect width="700" height="1000" fill="#f4e4cb"/><circle cx="440" cy="290" r="160" fill="#df6945"/><path d="M0 480 Q180 270 370 490 T700 420V1000H0" fill="#6c8f90"/><path d="M0 660 Q170 470 370 710 T700 570V1000H0" fill="#324c61"/><path d="M0 830 Q230 650 430 840 T700 810V1000H0" fill="#bd8e6c"/><path d="M70 925H230" stroke="#f4e4cb" stroke-width="7"/></svg>`,
+  ),
+)
+  .png()
+  .toBuffer();
+const imageFile = { name: 'sunday-painting.png', mimeType: 'image/png', buffer: image };
 try {
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 60; i++) {
     try {
       if ((await fetch(origin + '/api/health')).ok) break;
     } catch {}
@@ -46,226 +56,152 @@ try {
   }
   browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
-    viewport: { width: 1440, height: 1000 },
+    viewport: { width: 1440, height: 1080 },
     reducedMotion: 'reduce',
   });
-  const page = await context.newPage(),
-    errors = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto(origin);
-  await page.getByRole('heading', { name: 'First bite’s yours.' }).waitFor();
-  assert.equal(await page.locator('.product-drawer').count(), 0);
-  assert.equal(await page.getByRole('textbox', { name: 'Search products' }).count(), 0);
-  assert.equal(
-    (await (await context.request.get(origin + '/api/bootstrap')).json()).products.length,
-    0,
-  );
-  await page.screenshot({ path: path.join(dir, 'empty-landing.png'), fullPage: true });
-  await page.getByRole('link', { name: 'Be the first find', exact: true }).click();
-  await page.getByRole('button', { name: 'New here? Create an account' }).click();
-  await page.getByLabel('Your name', { exact: true }).fill('Curious Maker');
-  await page.getByLabel('Email', { exact: true }).fill('maker@test.example');
-  await page.getByLabel('Password', { exact: true }).fill(password);
-  await page.getByRole('button', { name: 'Create your account', exact: true }).click();
-  await page.getByRole('heading', { name: 'What did you make?' }).waitFor();
-  pass('Empty discoveries invite a first submission; registration opens the guided form');
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  assert.ok(await page.getByRole('heading', { name: 'What did you make?' }).isVisible());
-  await page.getByLabel('Product name', { exact: true }).fill('Oddly Useful');
-  await page.getByLabel('Product website', { exact: true }).fill('https://example.com/oddly');
-  await page
-    .getByLabel('One sentence that says it all', { exact: true })
-    .fill('Keep your research notes in one curious place.');
-  assert.equal(await page.locator('.ticket-copy h3').textContent(), 'Oddly Useful');
+  const page = await context.newPage();
+  page.on('pageerror', (e) => errors.push(e.message));
+  const headers = { origin };
+  const signup = await context.request.post(origin + '/api/auth/register', {
+    headers,
+    data: { name: 'Curious Artist', email: 'artist@test.example', password },
+  });
+  assert.equal(signup.status(), 200);
+  await page.goto(origin + '/discover?submit=1');
+  await page.getByRole('heading', { name: /Made something/ }).waitFor();
   await page
     .locator('.submission-modal')
-    .screenshot({ path: path.join(dir, 'basics-desktop.png') });
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page.locator('.submission-error').waitFor();
-  assert.equal(
-    await page
-      .getByRole('group', { name: 'Product category', exact: true })
-      .getByRole('button')
-      .count(),
-    22,
-  );
-  assert.equal(
-    await page
-      .getByRole('group', { name: 'Product audience', exact: true })
-      .getByRole('button')
-      .count(),
-    8,
-  );
-  await page.getByRole('textbox', { name: 'Find a category' }).fill('research');
-  await page
-    .getByRole('group', { name: 'Product category', exact: true })
-    .getByRole('button', { name: 'Research', exact: true })
-    .click();
-  await page.getByRole('textbox', { name: 'Find a category' }).fill('');
-  await page
-    .getByRole('group', { name: 'Product audience', exact: true })
-    .getByRole('button', { name: 'Students', exact: true })
-    .click();
-  await page.getByText('Where can people use it?', { exact: false }).click();
-  await page.getByRole('button', { name: 'Web app', exact: true }).click();
-  await page.getByRole('button', { name: 'API', exact: true }).click();
-  await page
-    .locator('.submission-modal')
-    .screenshot({ path: path.join(dir, 'people-desktop.png') });
-  pass(
-    'Required fields validate; live preview, category search and audience/platform choices respond',
-  );
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  assert.equal(await page.getByLabel('Key capabilities', { exact: true }).isVisible(), false);
-  await page.getByRole('button', { name: 'Free plan + paid upgrades', exact: true }).click();
-  await page.getByLabel('Pricing details', { exact: true }).fill('from $8/month');
-  await page.getByRole('button', { name: 'Sky', exact: true }).click();
-  await page.getByText('Add a little more context', { exact: false }).click();
-  await page
-    .getByLabel('Tell us about it', { exact: true })
-    .fill('A tiny research notebook for ideas that would otherwise get lost in your tabs.');
-  await page
-    .getByLabel('Key capabilities', { exact: true })
-    .fill('Save research notes\nOrganize ideas');
-  await page
-    .getByLabel('Documentation or source link', { exact: true })
-    .fill('https://example.com/docs');
-  await page.getByLabel('Demo link', { exact: true }).fill('https://example.com/demo');
-  await page
-    .locator('.submission-modal')
-    .screenshot({ path: path.join(dir, 'details-desktop.png') });
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page.getByRole('button', { name: 'Edit basics', exact: true }).click();
-  assert.equal(await page.getByLabel('Product name', { exact: true }).inputValue(), 'Oddly Useful');
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  assert.equal(
-    await page.getByRole('button', { name: 'Research', exact: true }).getAttribute('aria-pressed'),
-    'true',
-  );
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  assert.equal(
-    await page.getByLabel('Pricing details', { exact: true }).inputValue(),
-    'from $8/month',
-  );
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page
-    .locator('.submission-modal')
-    .screenshot({ path: path.join(dir, 'review-desktop.png') });
+    .screenshot({ path: path.join(dir, 'art-empty-desktop.png') });
+  assert.equal(await page.getByLabel('Give it a title').isVisible(), true);
+  assert.equal(await page.getByLabel('A link, if you have one').isVisible(), false);
+  await page.getByLabel('Give it a title').fill('Sunday, somewhere quiet');
+  await page.getByRole('checkbox', { name: /This is my work/ }).check();
   await page.getByRole('button', { name: 'Send for review', exact: true }).click();
-  assert.equal(await page.locator('.submission-success').count(), 0);
-  await page.getByRole('checkbox', { name: /I’m the maker/ }).check();
+  await page.locator('.share-error').waitFor();
+  assert.ok(await page.locator('.share-error').evaluate((el) => document.activeElement === el));
+  await page.getByLabel('Add a photo of your work').setInputFiles(imageFile);
+  await page.getByText('Image ready', { exact: true }).waitFor();
+  assert.deepEqual(
+    await page.locator('.cover-stage img').evaluate((img) => [img.naturalWidth, img.naturalHeight]),
+    [700, 1000],
+  );
+  assert.equal(
+    await page.locator('.cover-stage img').evaluate((el) => getComputedStyle(el).objectFit),
+    'contain',
+  );
+  await page.locator('.share-extras summary').focus();
+  await page.keyboard.press('Enter');
+  assert.equal(await page.getByLabel('Category', { exact: true }).isVisible(), true);
+  await page.getByLabel('Category', { exact: true }).selectOption('Painting');
+  await page
+    .getByLabel('A little about it', { exact: true })
+    .fill('An imaginary place to take a breath. Acrylic on paper.');
+  await page
+    .getByLabel('Describe the image', { exact: true })
+    .fill('A rust orange sun above layered blue and terracotta hills.');
+  await page.locator('.share-extras summary').click();
+  await page.locator('.submission-modal').evaluate((el) => el.scrollTo(0, 0));
+  await page
+    .locator('.submission-modal')
+    .screenshot({ path: path.join(dir, 'art-filled-desktop.png') });
+  pass(
+    'Image-first form, keyboard disclosure, focused error, optional link, and full portrait preview work.',
+  );
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page
+    .locator('.submission-modal')
+    .screenshot({ path: path.join(dir, 'art-mobile-top.png') });
+  await page.getByRole('button', { name: 'Send for review', exact: true }).scrollIntoViewIfNeeded();
+  assert.ok(
+    await page.locator('.submission-modal').evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+  );
+  await page.screenshot({ path: path.join(dir, 'art-mobile-submit.png') });
   await page.getByRole('button', { name: 'Send for review', exact: true }).click();
   await page.getByText('In the review queue', { exact: true }).waitFor();
-  await page.locator('.submission-modal').screenshot({ path: path.join(dir, 'success.png') });
-  assert.equal(
-    (await (await context.request.get(origin + '/api/bootstrap')).json()).products.length,
-    0,
-  );
-  await page.getByRole('button', { name: 'Back to the good stuff' }).click();
-  pass(
-    'Back/edit preserves input; confirmation submits once and keeps the product off the public menu',
-  );
+  const publicData = await (await context.request.get(origin + '/api/bootstrap')).json();
+  assert.equal(publicData.products.length, 0);
+  pass('390px mobile submission succeeds with no website and stays out of public discoveries.');
 
   const adminContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-  const admin = await adminContext.newPage();
-  admin.on('pageerror', (error) => errors.push(error.message));
-  await admin.goto(origin + '/studio?tab=products&status=pending');
-  await admin.getByRole('button', { name: 'Sign in to the studio' }).click();
-  await admin.getByLabel('Email', { exact: true }).fill('owner@test.example');
-  await admin.getByLabel('Password', { exact: true }).fill(password);
-  await admin.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await admin.getByRole('heading', { name: 'Products', exact: true }).waitFor();
+  assert.equal(
+    (
+      await adminContext.request.post(origin + '/api/auth/login', {
+        headers,
+        data: { email: 'owner@test.example', password },
+      })
+    ).status(),
+    200,
+  );
   const studio = await (await adminContext.request.get(origin + '/api/studio')).json();
-  assert.equal(studio.products.length, 1);
-  const product = studio.products[0];
-  assert.equal(product.category, 'Research');
-  assert.equal(product.audience, 'Students');
-  assert.deepEqual(product.submission.platforms, ['Web app', 'API']);
-  assert.equal(product.submission.demoUrl, 'https://example.com/demo');
-  assert.equal(product.color, 'blue');
-  await admin
-    .locator('tr')
-    .filter({ hasText: 'Oddly Useful' })
-    .getByRole('button', { name: 'Review' })
-    .click();
-  assert.ok(await admin.getByText('Available on: Web app, API', { exact: true }).isVisible());
-  assert.equal(
-    await admin.getByRole('link', { name: 'Open demo', exact: true }).getAttribute('href'),
-    'https://example.com/demo',
+  const work = studio.products.find((p) => p.name === 'Sunday, somewhere quiet');
+  assert.equal(work.url, '');
+  assert.equal(work.submission.kind, 'art');
+  assert.equal(work.category, 'Painting');
+  const adminPage = await adminContext.newPage();
+  adminPage.on('pageerror', (e) => errors.push(e.message));
+  await adminPage.goto(origin + '/studio?tab=products&status=pending');
+  await adminPage.getByRole('button', { name: 'Review', exact: true }).first().click();
+  await adminPage.getByText('CREATIVE WORK REVIEW', { exact: true }).waitFor();
+  assert.equal(await adminPage.getByRole('link', { name: 'Open source', exact: false }).count(), 0);
+  await adminPage.getByRole('checkbox', { name: /I reviewed the image/ }).check();
+  await adminPage.getByRole('button', { name: 'Publish work', exact: true }).click();
+  await adminPage.getByText('CREATIVE WORK REVIEW', { exact: true }).waitFor({ state: 'hidden' });
+  await page.goto(origin + '/product/' + work.slug);
+  await page.getByRole('heading', { name: work.name, exact: true }).waitFor();
+  assert.equal(await page.getByRole('link', { name: /Try Sunday/ }).count(), 0);
+  assert.ok(
+    await page
+      .getByAltText('A rust orange sun above layered blue and terracotta hills.')
+      .isVisible(),
   );
-  await admin.locator('.modal').screenshot({ path: path.join(dir, 'admin-review.png') });
-  await admin.getByRole('checkbox', { name: /I checked these details/ }).check();
-  await admin.getByRole('button', { name: 'Verify & publish listing' }).click();
-  await admin.locator('.modal').waitFor({ state: 'hidden' });
-  await page.goto(origin + '/discover');
-  await page.locator('.catalog-product').waitFor();
-  await page
-    .getByRole('combobox', { name: 'More categories', exact: true })
-    .selectOption('Research');
-  await page
-    .getByRole('combobox', { name: 'Filter by audience', exact: true })
-    .selectOption('Students');
-  assert.equal(await page.locator('.catalog-product').count(), 1);
-  assert.equal(
-    await page.locator('.catalog-product').evaluate((el) => getComputedStyle(el).backgroundColor),
-    'rgb(191, 220, 245)',
-  );
+  await page.getByLabel('Your comment').fill('Love the colours. How did you choose them?');
+  await page.getByRole('button', { name: 'Join the conversation', exact: true }).click();
+  await page.getByText('Love the colours. How did you choose them?', { exact: true }).waitFor();
+  await page.screenshot({ path: path.join(dir, 'art-detail-mobile.png'), fullPage: true });
+  await page.goto(origin + '/go/' + work.slug);
+  await page.waitForURL('**/product/' + work.slug);
   pass(
-    'Direct pending-review URL works; optional metadata survives review and approval publishes into matching filters',
+    'Admin can review art; public work shows its whole image, alt text and comments without dead website links.',
   );
 
-  for (const width of [768, 390, 320]) {
-    await page.setViewportSize({ width, height: 900 });
-    await page.goto(origin + '/discover?submit=1');
-    await page.getByLabel('Product name', { exact: true }).fill('Tiny Thing');
-    await page.getByLabel('Product website', { exact: true }).fill('https://example.com/tiny');
-    await page
-      .getByLabel('One sentence that says it all', { exact: true })
-      .fill('A tiny thing for your next side quest.');
-    for (let step = 0; step < 4; step++) {
-      if (step === 1)
-        await page
-          .getByRole('group', { name: 'Product category', exact: true })
-          .getByRole('button', { name: 'Play', exact: true })
-          .click();
-      assert.ok(
-        await page
-          .locator('.submission-modal')
-          .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
-        `Step ${step + 1} fits ${width}px`,
-      );
-      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-      await page
-        .locator('.submission-modal')
-        .screenshot({ path: path.join(dir, `step-${step + 1}-${width}.png`) });
-      if (step < 3) await page.getByRole('button', { name: 'Continue', exact: true }).click();
-    }
-    if (width === 320) {
-      await page.getByRole('checkbox', { name: /I’m the maker/ }).check();
-      await page.getByRole('button', { name: 'Send for review', exact: true }).click();
-      await page.getByText('In the review queue', { exact: true }).waitFor();
-    }
-    await page.getByRole('button', { name: 'Close dialog' }).click();
-  }
-  const latest = await (await adminContext.request.get(origin + '/api/studio')).json();
-  const minimal = latest.products.find((item) => item.name === 'Tiny Thing');
-  assert.equal(minimal.status, 'pending');
-  assert.equal(minimal.source, 'https://example.com/tiny');
-  assert.equal(minimal.pricing, 'See current pricing');
-  assert.deepEqual(minimal.facts, []);
-  assert.deepEqual(minimal.submission.platforms, []);
+  await page.goto(origin + '/discover?submit=1');
+  await page.getByRole('radio', { name: 'App or tool', exact: true }).check();
+  await page.getByLabel('App or tool name').fill('Oddly Useful');
+  await page.getByLabel('Website link').fill('https://example.com/oddly');
+  await page.getByLabel('What does it do?').fill('Keep your research notes in one curious place.');
+  await page.locator('.share-extras summary').click();
+  await page.getByLabel('Category', { exact: true }).selectOption('Research');
+  await page.getByLabel('Who is it for?').selectOption('Students');
+  await page.getByRole('checkbox', { name: 'Web app', exact: true }).check();
+  await page.getByLabel('Pricing', { exact: true }).selectOption('Free');
+  await page.getByLabel('Demo video link').fill('https://example.com/demo');
+  await page.locator('.share-extras summary').click();
+  await page.getByRole('checkbox', { name: /This is my work/ }).check();
+  await page.getByRole('button', { name: 'Send for review', exact: true }).click();
+  await page.getByText('In the review queue', { exact: true }).waitFor();
+  const app = (await (await adminContext.request.get(origin + '/api/studio')).json()).products.find(
+    (p) => p.name === 'Oddly Useful',
+  );
+  assert.equal(app.url, 'https://example.com/oddly');
+  assert.equal(app.category, 'Research');
+  assert.equal(app.submission.kind, 'app');
+  assert.deepEqual(app.submission.platforms, ['Web app']);
+  assert.equal(app.submission.demoUrl, 'https://example.com/demo');
+  await page.goto(origin + '/discover');
+  await page.getByRole('button', { name: 'Art & design', exact: true }).click();
+  assert.equal(await page.locator('.showcase-card').count(), 1);
+  await page.getByRole('button', { name: 'Apps & tools', exact: true }).click();
+  assert.equal(await page.locator('.showcase-card').count(), 0);
   pass(
-    'All four steps fit tablet/phone widths through 320px; minimal submissions need no optional details',
+    'Existing app fields still submit correctly; creative and app discovery filters separate the two.',
   );
   assert.deepEqual(errors, []);
-  pass('No uncaught browser errors');
-  writeFileSync(path.join(dir, 'report.json'), JSON.stringify(report, null, 2));
-  console.log(JSON.stringify(report, null, 2));
+  writeFileSync(path.join(dir, 'report.json'), JSON.stringify({ checks, errors }, null, 2));
+  console.log('Evidence: ' + dir);
 } catch (error) {
-  writeFileSync(path.join(dir, 'server.log'), log);
-  console.error(error);
-  process.exitCode = 1;
+  console.error(log.slice(-2500));
+  throw error;
 } finally {
   await browser?.close();
   server.kill();

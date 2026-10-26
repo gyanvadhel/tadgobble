@@ -1,0 +1,45 @@
+TADGOBBLE — FIRST POST
+
+Post the three numbered images together, in this order:
+1. 01-you-cooked.jpg
+2. 02-your-work.jpg
+3. 03-drop-your-work.jpg
+
+Each image is 1080 × 1350. PNG versions are also included.
+carousel-preview.png is an overview, not an extra slide.
+caption.txt contains the ready-to-paste caption.
+
+Set the profile's website link to https://tadgobble.web.app before posting,
+so the "link in bio" invitation leads to the site.
+
+ALT TEXT
+
+Slide 1:
+Butter-yellow poster with the Tadgobble logo, oversized purple words
+"you cooked", and "we brought the chronically online". Gobble, a rounded
+purple blob with big eyes and a hungry mouth, sits beside the text.
+The footer says "meet tadgobble" and invites you to swipe.
+
+Slide 2:
+Deep-purple poster reading "ur work deserves witnesses". Three overlapping
+illustrated sheets show a flower sketch, a graphic design, and a tiny app
+with the Gobble mascot. The footer reads "art. design. tiny apps.
+all ur weird little side quests."
+
+Slide 3:
+Lavender poster reading "no portfolio? no problem". A taped paper note says
+"got art? photo + title. that's enough to send it our way", with a reminder
+that work is reviewed before it goes live. Gobble smiles beside it.
+The bottom says "drop ur work", tadgobble.web.app, and "link in bio".
+
+EDITABLE SOURCE
+
+Open editable-post.html in a browser to see all three slides. The HTML
+contains its own fonts and illustrations. Font licenses are included in
+font-licenses.txt. The illustrated work is original artwork for this post,
+not real user submissions.
+
+Rebuild from the project root:
+rtk proxy node design/social/first-post/render.mjs
+
+Created for review and manual posting. Nothing has been published to Instagram.

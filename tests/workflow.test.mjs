@@ -17,12 +17,14 @@ const {
   updateDraft,
   requestRender,
   resolvePublication,
+  connectionStatus,
 } = await import('../lib/workflow.mjs');
 const { tick } = await import('../lib/worker.mjs');
 const { renderReel, command } = await import('../lib/render.mjs');
 const { hashPassword, verifyPassword, createSession } = await import('../lib/auth.mjs');
 const { handle } = await import('../lib/api.mjs');
 beforeEach(() => {
+  process.env.DAILY_POST_LIMIT = '1';
   db.exec(
     'DELETE FROM audit; DELETE FROM events; DELETE FROM jobs; DELETE FROM comments; DELETE FROM saves; DELETE FROM products; DELETE FROM sessions; DELETE FROM users; DELETE FROM settings; DELETE FROM rate_limits;',
   );
@@ -84,6 +86,31 @@ test('only approved content is scheduled and the daily cap is transactional', ()
   unscheduleJob(a.id);
   scheduleJob(b.id, when);
   assert.equal(get('SELECT status FROM jobs WHERE id=?', b.id).status, 'queued');
+});
+test('a disabled cap allows multiple approved posts to be scheduled and published on one day', async () => {
+  delete process.env.DAILY_POST_LIMIT;
+  assert.equal(connectionStatus().dailyLimit, null);
+  process.env.DAILY_POST_LIMIT = '0';
+  assert.equal(connectionStatus().dailyLimit, null);
+  const unapproved = ready('unapproved');
+  assert.throws(
+    () => scheduleJob(unapproved.id, new Date(Date.now() + 60000).toISOString()),
+    /Only approved/,
+  );
+  const jobs = Array.from({ length: 6 }, (_, i) => due(`uncapped-${i}`));
+  let publications = 0;
+  const client = {
+    create: async (job) => job.id,
+    status: async () => 'FINISHED',
+    publish: async () => String(++publications),
+    permalink: async () => '',
+  };
+  for (const job of jobs) {
+    assert.equal((await tick({ forceConnection: true, client })).action, 'published');
+    assert.equal(get('SELECT status FROM jobs WHERE id=?', job.id).status, 'published');
+  }
+  assert.equal(publications, 6);
+  assert.equal((await tick({ forceConnection: true, client })).action, 'idle');
 });
 test('editing clears approval, and a scheduled post cannot be changed underneath the worker', () => {
   const j = ready();

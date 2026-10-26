@@ -4,10 +4,12 @@ export function Gobble({ className = '', eyesOnly = false, hungry = false, ...pr
   return (
     <svg className={className} viewBox="0 0 100 90" fill="none" aria-hidden="true" {...props}>
       {!eyesOnly && <path d={blobPath} fill="currentColor" />}
-      <ellipse cx="34" cy="40" rx="10" ry="15" fill="#fffef6" />
-      <ellipse cx="61" cy="40" rx="10" ry="15" fill="#fffef6" />
-      <ellipse cx="37" cy="42" rx="4" ry="8" fill="#191a1c" />
-      <ellipse cx="64" cy="42" rx="4" ry="8" fill="#191a1c" />
+      {[34, 61].map((x) => (
+        <g className="gobble-eye" key={x}>
+          <ellipse cx={x} cy="40" rx="10" ry="15" fill="#fffef6" />
+          <ellipse className="gobble-pupil" cx={x + 3} cy="42" rx="4" ry="8" fill="#191a1c" />
+        </g>
+      ))}
       {!eyesOnly &&
         (hungry ? (
           <ellipse cx="50" cy="65" rx="12" ry="10" fill="#191a1c" />
