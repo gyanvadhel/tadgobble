@@ -141,6 +141,8 @@
 }
 .catalog-app .category-tabs {
   flex-wrap: wrap;
+  /* The tabs wrap rather than scroll, and the category menu must hang below. */
+  overflow: visible;
 }
 .catalog-app .maker-banner {
   border-radius: 0;

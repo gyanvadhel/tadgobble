@@ -23,8 +23,15 @@ export function Dropdown({ label, value, options, onChange, icon: Icon, classNam
     document.addEventListener('pointerdown', close);
     return () => document.removeEventListener('pointerdown', close);
   }, [open]);
+  // Keeps the highlighted option in view by scrolling the menu alone.
+  // scrollIntoView would also scroll any clipping parent and shift the page.
   useEffect(() => {
-    if (open) list.current?.children[active]?.scrollIntoView({ block: 'nearest' });
+    const menu = list.current,
+      item = menu?.children[active];
+    if (!open || !item) return;
+    if (item.offsetTop < menu.scrollTop) menu.scrollTop = item.offsetTop;
+    else if (item.offsetTop + item.offsetHeight > menu.scrollTop + menu.clientHeight)
+      menu.scrollTop = item.offsetTop + item.offsetHeight - menu.clientHeight;
   }, [open, active]);
 
   function show() {
