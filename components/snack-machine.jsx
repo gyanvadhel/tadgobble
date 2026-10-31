@@ -1,8 +1,25 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUpRight, RotateCw } from 'lucide-react';
 import gsap from 'gsap';
-import { productSceneColor } from './product-showcase';
+const candy = [
+  '#ff7547',
+  '#ffd23f',
+  '#3fb8af',
+  '#f6a5c0',
+  '#4a6fb5',
+  '#7fae6b',
+  '#ffffff',
+  '#e8b04b',
+  '#c5b5f5',
+];
+// One colour per category, handed out from the most common category down.
+function candyMap(products) {
+  const counts = {};
+  for (const p of products) counts[p.category] = (counts[p.category] || 0) + 1;
+  const order = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+  return (product) => candy[Math.max(order.indexOf(product?.category), 0) % candy.length];
+}
 
 const BALLS = 12;
 const moods = [
@@ -97,6 +114,7 @@ export default function SnackMachine({ products, motion, onPick }) {
     [prize, setPrize] = useState(null),
     [turns, setTurns] = useState(0);
   const pool = products.length ? products : [null];
+  const candyFor = useMemo(() => candyMap(products), [products]);
   const picks = Array.from({ length: BALLS }, (_, i) => pool[(i + round * BALLS) % pool.length]);
 
   useEffect(() => {
@@ -256,10 +274,7 @@ export default function SnackMachine({ products, motion, onPick }) {
             ref={(el) => (els.current[i] = el)}
             className="gumball"
             aria-hidden="true"
-            style={{
-              backgroundColor: p ? productSceneColor(p) : ['#ff7547', '#c5b5f5', '#7fae6b'][i % 3],
-              backgroundImage: p?.cover?.url ? `url(${p.cover.url})` : undefined,
-            }}
+            style={{ backgroundColor: candyFor(p) }}
           />
         ))}
       </button>
@@ -288,14 +303,11 @@ export default function SnackMachine({ products, motion, onPick }) {
               onPick(found, event.currentTarget);
             }}
           >
-            <span
-              className="capsule-art"
-              style={{
-                backgroundColor: productSceneColor(found),
-                backgroundImage: found.cover?.url ? `url(${found.cover.url})` : undefined,
-              }}
-            />
-            <span className="capsule-name">{found.name}</span>
+            <span className="capsule-art" style={{ backgroundColor: candyFor(found) }} />
+            <span className="capsule-name">
+              {found.name}
+              <small>{found.category}</small>
+            </span>
             <ArrowUpRight size={16} />
           </a>
         ) : prize ? (

@@ -366,8 +366,7 @@
   aspect-ratio: 1;
   border-radius: 50%;
   border: 2.5px solid var(--ink);
-  background-size: cover;
-  background-position: center;
+  background-image: radial-gradient(circle at 32% 28%, #ffffffb0 0 12%, transparent 13%);
   box-shadow: inset -5px -6px 0 #39245a30;
   will-change: transform;
 }
@@ -445,13 +444,22 @@
   height: 38px;
   border-radius: 50%;
   border: 2px solid var(--ink);
-  background-size: cover;
-  background-position: center;
+  background-image: radial-gradient(circle at 32% 28%, #ffffffb0 0 12%, transparent 13%);
 }
 .capsule-name {
+  display: grid;
+  line-height: 1.15;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.capsule-name small {
+  font-family: var(--body, inherit);
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .machine-capsule svg {
   flex: none;
