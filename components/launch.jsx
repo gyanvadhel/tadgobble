@@ -39,6 +39,12 @@ export default function Launch({ products }) {
     [heroIndex, setHeroIndex] = useState(0),
     [boops, setBoops] = useState(0);
   const featured = products[heroIndex % Math.max(products.length, 1)];
+  const art = products.filter(isArtwork).length;
+  const tally = {
+    art,
+    apps: products.length - art,
+    makers: new Set(products.map((p) => p.owner_name).filter(Boolean)).size,
+  };
   const openPreview = useCallback((product, fromFeed = false, trigger = null) => {
     if (!product) return;
     lastFocus.current = trigger || document.activeElement;
@@ -239,31 +245,37 @@ export default function Launch({ products }) {
           </h1>
           <div className="poster-bottom">
             <div className="poster-intro">
+              <span className="intro-eyebrow">
+                <i aria-hidden="true" />
+                {products.length
+                  ? `${products.length} ${products.length === 1 ? 'find' : 'finds'} on the menu`
+                  : 'The menu opens soon'}
+              </span>
               <h2>
-                Your next <br />
-                “wait, this exists?”
+                Small wonders, <br />
+                made by <span className="intro-mark">real people.</span>
               </h2>
-              <p>
-                Art. Design. Oddly brilliant apps. <br />A new obsession, probably.
-              </p>
-              {products.length ? (
-                <button
-                  className="feed-button launch-button plum-button"
-                  onClick={feed}
-                  disabled={feeding || !products.length}
-                >
-                  <Shuffle size={18} />
-                  {feeding ? 'nom nom nom…' : 'Feed me a find'}
-                </button>
-              ) : (
-                <a className="launch-button plum-button" href="/discover?submit=1">
-                  <Plus size={18} />
-                  Be the first find
+              <p>Art, design and oddly brilliant apps, hand-picked and served one at a time.</p>
+              <div className="intro-actions">
+                {products.length ? (
+                  <button
+                    className="feed-button launch-button plum-button"
+                    onClick={feed}
+                    disabled={feeding || !products.length}
+                  >
+                    <Shuffle size={18} />
+                    {feeding ? 'nom nom nom…' : 'Feed me a find'}
+                  </button>
+                ) : (
+                  <a className="launch-button plum-button" href="/discover?submit=1">
+                    <Plus size={18} />
+                    Be the first find
+                  </a>
+                )}
+                <a className="launch-button outline-button" href="/discover">
+                  Browse all <ArrowUpRight size={18} />
                 </a>
-              )}
-              <a className="poster-explore" href="#fresh-picks">
-                Or browse the menu <ArrowDown size={17} />
-              </a>
+              </div>
             </div>
             <div className="hero-playground">
               <div className="gobble-stage">
@@ -302,22 +314,26 @@ export default function Launch({ products }) {
               </span>
             </div>
             <div className="poster-note">
-              <Asterisk size={65} strokeWidth={1.5} />
-              <p>
-                Less doom.
-                <br />
-                More{' '}
-                <span>
-                  “yo, look
-                  <br />
-                  at this.”
-                </span>
-              </p>
-              <span className="note-small">
-                For people with
-                <br />
-                too many tabs open.
-              </span>
+              <div className="poster-receipt">
+                <p className="receipt-head">Gobble’s receipt</p>
+                <p className="receipt-date">
+                  Table for one · No. {String(products.length).padStart(3, '0')}
+                </p>
+                <dl>
+                  {[
+                    ['Art & design', tally.art],
+                    ['Apps & tools', tally.apps],
+                    ['Makers', tally.makers],
+                    ['Tabs closed', 0],
+                  ].map(([label, count]) => (
+                    <div className="receipt-row" key={label}>
+                      <dt>{label}</dt>
+                      <dd>{count}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="receipt-thanks">Thank you. Come snack again.</p>
+              </div>
             </div>
           </div>
           <div className="poster-foot">
