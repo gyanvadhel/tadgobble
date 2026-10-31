@@ -17,6 +17,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Brand } from './art';
 import { Gobble } from './gobble';
 import { isArtwork } from '../lib/product-options.mjs';
+import SnackMachine from './snack-machine';
 import ProductShowcase, { ProductDemo, productSceneColor } from './product-showcase';
 import { paletteStyle } from '../lib/design-tokens.mjs';
 import '../app/launch.css';
@@ -39,12 +40,7 @@ export default function Launch({ products }) {
     [heroIndex, setHeroIndex] = useState(0),
     [boops, setBoops] = useState(0);
   const featured = products[heroIndex % Math.max(products.length, 1)];
-  const art = products.filter(isArtwork).length;
-  const tally = {
-    art,
-    apps: products.length - art,
-    makers: new Set(products.map((p) => p.owner_name).filter(Boolean)).size,
-  };
+
   const openPreview = useCallback((product, fromFeed = false, trigger = null) => {
     if (!product) return;
     lastFocus.current = trigger || document.activeElement;
@@ -314,26 +310,11 @@ export default function Launch({ products }) {
               </span>
             </div>
             <div className="poster-note">
-              <div className="poster-receipt">
-                <p className="receipt-head">Gobble’s receipt</p>
-                <p className="receipt-date">
-                  Table for one · No. {String(products.length).padStart(3, '0')}
-                </p>
-                <dl>
-                  {[
-                    ['Art & design', tally.art],
-                    ['Apps & tools', tally.apps],
-                    ['Makers', tally.makers],
-                    ['Tabs closed', 0],
-                  ].map(([label, count]) => (
-                    <div className="receipt-row" key={label}>
-                      <dt>{label}</dt>
-                      <dd>{count}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <p className="receipt-thanks">Thank you. Come snack again.</p>
-              </div>
+              <SnackMachine
+                products={products}
+                motion={motion}
+                onPick={(p, el) => openPreview(p, false, el)}
+              />
             </div>
           </div>
           <div className="poster-foot">
