@@ -154,7 +154,7 @@ function Setup({ user }) {
                       disabled={busy}
                       onChange={(e) => setData({ ...data, username: e.target.value.toLowerCase() })}
                     />
-                    <small>tadgobble.web.app/profile/{data.username || 'you'}</small>
+                    <small>tadgobble.in/profile/{data.username || 'you'}</small>
                   </label>
                 </div>
                 <StarterPreferences value={preferences} onChange={setPreferences} disabled={busy} />

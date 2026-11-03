@@ -8,7 +8,7 @@ for (const name of ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_PUBLISHABL
 cpSync('public', 'hosting/public', { recursive: true });
 cpSync('app/icon.svg', 'hosting/app/icon.svg');
 const result = spawnSync(process.execPath, ['node_modules/next/dist/bin/next', 'build', 'hosting'], {
-  stdio: 'inherit', env: { ...process.env, APP_URL: process.env.CLOUD_APP_URL || 'https://tadgobble.web.app', NEXT_PUBLIC_DEPLOYMENT_TARGET: 'firebase' },
+  stdio: 'inherit', env: { ...process.env, APP_URL: process.env.CLOUD_APP_URL || 'https://tadgobble.in', NEXT_PUBLIC_DEPLOYMENT_TARGET: 'firebase' },
 });
 if (result.status) process.exit(result.status);
 if (!existsSync('hosting/out/index.html')) throw new Error('The static export was not created.');

@@ -1,8 +1,8 @@
 project_id = "tadgobble"
 
 [auth]
-site_url = "https://tadgobble.web.app"
-additional_redirect_urls = ["https://tadgobble.firebaseapp.com/auth/callback", "https://tadgobble.web.app/auth/callback", "https://tadgobble.firebaseapp.com/auth/callback?**", "https://tadgobble.web.app/auth/callback?**", "http://127.0.0.1:4173/auth/callback", "http://127.0.0.1:4173/auth/callback?**"]
+site_url = "https://tadgobble.in"
+additional_redirect_urls = ["https://tadgobble.in/auth/callback", "https://tadgobble.in/auth/callback?**", "https://www.tadgobble.in/auth/callback", "https://www.tadgobble.in/auth/callback?**", "https://tadgobble.firebaseapp.com/auth/callback", "https://tadgobble.web.app/auth/callback", "https://tadgobble.firebaseapp.com/auth/callback?**", "https://tadgobble.web.app/auth/callback?**", "http://127.0.0.1:4173/auth/callback", "http://127.0.0.1:4173/auth/callback?**"]
 minimum_password_length = 12
 
 [auth.email]

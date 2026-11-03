@@ -585,7 +585,7 @@ function ProfileSettings({ user, onSaved }) {
               onChange={(e) => update('username', e.target.value.toLowerCase())}
             />
             <small>
-              tadgobble.web.app/profile/{data.username || 'you'}. Changing it changes your profile
+              tadgobble.in/profile/{data.username || 'you'}. Changing it changes your profile
               link.
             </small>
           </label>

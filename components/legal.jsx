@@ -42,7 +42,7 @@ function LegalLayout({ type, title, intro, children }) {
 
 export function PrivacyPage() {
   return <LegalLayout type="privacy" title="Privacy policy." intro="Your stash is yours. Here’s what tadgobble collects, what it’s for, and how to ask us to remove it.">
-    <section><h2>Who this is for</h2><p>This policy explains how the tadgobble team handles information on tadgobble.web.app, our product-discovery community. It covers browsing, signing in, saving discoveries, commenting, submitting products, and contacting us.</p></section>
+    <section><h2>Who this is for</h2><p>This policy explains how the tadgobble team handles information on tadgobble.in, our product-discovery community. It covers browsing, signing in, saving discoveries, commenting, submitting products, and contacting us.</p></section>
     <section><h2>What we collect</h2><ul>
       <li><strong>Account information:</strong> your display name, email address, account identifier, and sign-in information. Existing email/password accounts use a password hash; we do not store their plain-text passwords.</li>
       <li><strong>Your profile and preferences:</strong> your chosen username, optional bio and links, profile photo or blob avatar choices, and optional introduction and interests. Introduction answers and interests are private account preferences; they do not currently change discovery rankings.</li>

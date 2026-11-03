@@ -6,7 +6,7 @@ India's home for new makers: art, design, photos, useful apps, and the people wh
 
 Meet Gobble: the purple blob with excellent taste and absolutely no tab discipline.
 
-**See it live at [tadgobble.web.app](https://tadgobble.web.app).**
+**See it live at [tadgobble.in](https://tadgobble.in).**
 
 ![tadgobble's dark home page with the yellow "Fresh from first-timers." hero and a grid of new work](docs/images/tadgobble.png)
 

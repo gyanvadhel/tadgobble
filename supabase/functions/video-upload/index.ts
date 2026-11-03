@@ -3,6 +3,8 @@ import * as media from 'npm:mediabunny@1.62.0';
 import { inspectVideo, readVideoForm } from '../_shared/video.mjs';
 
 const origins = new Set([
+  'https://tadgobble.in',
+  'https://www.tadgobble.in',
   'https://tadgobble.web.app',
   'https://tadgobble.firebaseapp.com',
   'http://127.0.0.1:3000',
@@ -14,7 +16,7 @@ Deno.serve(async (req) => {
   const headers = {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-store',
-    'Access-Control-Allow-Origin': origins.has(origin) ? origin : 'https://tadgobble.web.app',
+    'Access-Control-Allow-Origin': origins.has(origin) ? origin : 'https://tadgobble.in',
     'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     Vary: 'Origin',
