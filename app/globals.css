@@ -2126,29 +2126,29 @@ tbody tr:last-child td {
   white-space: nowrap;
   display: inline-block;
   background: #eef0e6; /* art */
-  color: #8a9679; /* art */
+  color: #5f6753; /* art */
 }
 .status-published,
 .status-approved {
   background: #e6f0d8; /* art */
-  color: #71904c; /* art */
+  color: #546b38; /* art */
 }
 .status-pending,
 .status-queued,
 .status-render_pending {
   background: #f5edd9; /* art */
-  color: #aa8c4f; /* art */
+  color: #776237; /* art */
 }
 .status-rendered,
 .status-rendering,
 .status-publishing {
   background: #e9e5f4; /* art */
-  color: #8e7ba9; /* art */
+  color: #695b7d; /* art */
 }
 .status-failed,
 .status-needs_attention {
   background: #f9e4df; /* art */
-  color: #b67561; /* art */
+  color: #855547; /* art */
 }
 .verified {
   display: inline-flex;

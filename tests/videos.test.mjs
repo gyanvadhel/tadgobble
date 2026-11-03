@@ -119,3 +119,19 @@ test('video uploads remain private, support seeking, enforce ownership and follo
   assert.equal((await api(null, 'videos/play', { id: vid })).status, 200);
   assert.equal((await api('admin', 'videos/play', { id: vid })).status, 200);
 });
+
+test('reel frames are drawn in the Highlighter palette', async () => {
+  const { reelFrameSvg, REEL_PAD } = await import('../lib/render.mjs');
+  const { sitePalette } = await import('../lib/design-tokens.mjs');
+  const svg = reelFrameSvg({
+    name: 'Tally',
+    tagline: 'Forms that feel like writing a document',
+    category: 'Business',
+    pricing: 'Free',
+    sponsored: false,
+  });
+  assert.match(svg, new RegExp(`<rect width="1080" height="1920" fill="${sitePalette.bg}"`));
+  const used = [...new Set(svg.match(/#[0-9a-f]{6}/gi).map((c) => c.toLowerCase()))];
+  assert.deepEqual(used.filter((c) => !Object.values(sitePalette).includes(c)), []);
+  assert.equal(REEL_PAD, '0x' + sitePalette.surface.slice(1));
+});

@@ -92,3 +92,23 @@ test('brand description speaks to new makers in India', () => {
   assert.match(brand.description, /India/);
   assert.doesNotMatch(brand.description, /zine|font/i);
 });
+
+test('studio status chips meet AA contrast', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync('app/globals.css', 'utf8');
+  const blocks = [...css.matchAll(/((?:\.status[\w-]*,?\s*)+)\{([^}]*)\}/g)].filter(
+    ([, , body]) => /(?:^|[;\s])(?:background|color):/.test(body),
+  );
+  assert.ok(blocks.length >= 5);
+  const base = blocks.find(([, sel]) => sel.trim() === '.status')[2];
+  const colour = (body, prop) =>
+    body.match(new RegExp(String.raw`(?:^|[;\s])${prop}:\s*(#[0-9a-f]{6})`, 'i'))?.[1] ??
+    body.match(new RegExp(String.raw`(?:^|[;\s])${prop}:\s*var\(--([\w-]+)\)`))?.[1];
+  const resolve = (v) =>
+    v?.startsWith('#') ? v : sitePalette[v?.replace(/-(\w)/g, (_, c) => c.toUpperCase())];
+  for (const [, sel, body] of blocks) {
+    const bg = resolve(colour(body, 'background') ?? colour(base, 'background'));
+    const fg = resolve(colour(body, 'color') ?? colour(base, 'color'));
+    assert.ok(contrastRatio(fg, bg) >= 4.5, `${sel.trim()}: ${fg} on ${bg}`);
+  }
+});
