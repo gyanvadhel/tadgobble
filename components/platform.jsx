@@ -255,7 +255,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               )}
             </button>
             <button className="mobile-share-work" onClick={() => actionModal('submit')}>
-              <Plus size={15} /> Share your work
+              <Plus size={15} /> Post your thing
             </button>
           </nav>
           <div className="header-actions">
@@ -264,7 +264,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               className="button button-dark submit-nav"
               onClick={() => actionModal('submit')}
             >
-              <Plus size={16} /> Share your work
+              <Plus size={16} /> Post your thing
             </button>
             {user ? (
               <button
@@ -485,7 +485,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                 className="button button-dark"
                 onClick={() => actionModal('submit')}
               >
-                Share your work <ArrowUpRight size={17} />
+                Post your thing <ArrowUpRight size={17} />
               </button>
             </section>
             <div className="editorial-note">

@@ -435,7 +435,7 @@ export default function CreatorPage({ mode = 'profile', username: providedUserna
                 </p>
                 {!data?.products.length && (
                   <a href="/discover?submit=1" className="button button-dark">
-                    Share your work
+                    Post your thing
                   </a>
                 )}
               </div>

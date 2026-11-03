@@ -10,6 +10,7 @@ import { SplitText } from 'gsap/SplitText';
 import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
 import { Physics2DPlugin } from 'gsap/Physics2DPlugin';
+import { sitePalette } from '../lib/design-tokens.mjs';
 import { CustomEase } from 'gsap/CustomEase';
 import { CustomWiggle } from 'gsap/CustomWiggle';
 import { Draggable } from 'gsap/Draggable';
@@ -217,7 +218,7 @@ export function squish(el) {
 }
 
 // A pop of confetti from where a save button was.
-const confetti = ['#f9f4a7', '#c5b5f5', '#ff7949', '#85b5a3', '#39245a'];
+const confetti = [sitePalette.yellow, '#c5b5f5', '#ff7949', '#85b5a3', sitePalette.violetText];
 export function saveBurst(rect) {
   if (!rect || calm()) return;
   for (let i = 0; i < 12; i++) {

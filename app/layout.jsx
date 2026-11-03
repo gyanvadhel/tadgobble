@@ -11,6 +11,10 @@ export const metadata = {
     images: [{ url: '/social-card.png', width: 1200, height: 630 }],
   },
 };
+export const viewport = {
+  themeColor: '#160b26',
+  colorScheme: 'dark',
+};
 export default function RootLayout({ children }) {
   return (
     <html lang="en">

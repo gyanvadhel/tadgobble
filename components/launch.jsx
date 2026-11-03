@@ -201,7 +201,11 @@ export default function Launch({ products }) {
                       style={{ background: productSceneColor(product) }}
                       aria-hidden="true"
                     >
-                      {product.name.slice(0, 1)}
+                      {product.cover ? (
+                        <img src={product.cover.url} alt="" width="1600" height="1200" />
+                      ) : (
+                        product.name.slice(0, 1)
+                      )}
                     </span>
                     <span className="fresh-card-text">
                       <h3>{product.name}</h3>

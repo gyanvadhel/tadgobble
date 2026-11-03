@@ -1,7 +1,7 @@
 .creator-app {
   min-height: 100dvh;
-  background: #fffdf8;
-  color: #39245a;
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--font);
 }
 .creator-header {
@@ -13,7 +13,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  border-bottom: 1px solid #39245a1a;
+  border-bottom: 1px solid color-mix(in srgb, var(--muted) 10%, transparent);
 }
 .creator-header nav {
   display: flex;
@@ -71,23 +71,27 @@
   border-radius: 24px 24px 85px 24px;
 }
 .theme-lavender {
-  background: #c5b5f5;
+  color: var(--on-yellow);
+  background: #c5b5f5; /* art */
 }
 .theme-butter {
-  background: #f9f4a7;
+  color: var(--on-yellow);
+  background: #f9f4a7; /* art */
 }
 .theme-pond {
-  background: #bfdcf5;
+  color: var(--on-yellow);
+  background: #bfdcf5; /* art */
 }
 .theme-peach {
-  background: #f4dfd1;
+  color: var(--on-yellow);
+  background: #f4dfd1; /* art */
 }
 .creator-avatar {
   position: relative;
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background: #fffdf8;
+  background: var(--surface);
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -143,7 +147,7 @@
   font-size: 14px;
 }
 .creator-intro-actions .button {
-  background: #fffdf8;
+  background: var(--surface);
   border-color: transparent;
 }
 .creator-section-title {
@@ -185,7 +189,7 @@
 }
 .creator-work-image {
   overflow: hidden;
-  background: #f0edf5;
+  background: var(--surface);
   border-radius: inherit;
 }
 .creator-work-image img {
@@ -209,8 +213,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  background: #fffdf8;
-  color: #39245a;
+  background: var(--surface);
+  color: var(--text);
   border-radius: 7px;
   padding: 12px 14px;
   pointer-events: none;
@@ -275,7 +279,7 @@
   margin: auto;
   padding: 25px 5%;
   gap: 25px;
-  border-top: 1px solid #39245a1a;
+  border-top: 1px solid color-mix(in srgb, var(--muted) 10%, transparent);
   font-size: 13px;
 }
 .creator-footer > a:first-child {
@@ -328,7 +332,7 @@
   gap: 8px;
 }
 .work-filters button {
-  border: 1px solid #39245a30;
+  border: 1px solid color-mix(in srgb, var(--muted) 19%, transparent);
   background: transparent;
   color: inherit;
   border-radius: 22px;
@@ -339,8 +343,8 @@
   cursor: pointer;
 }
 .work-filters button[aria-pressed='true'] {
-  background: #39245a;
-  color: #f9f4a7;
+  background: var(--violet);
+  color: var(--on-violet);
 }
 .my-work-list {
   display: flex;
@@ -352,12 +356,12 @@
   grid-template-columns: 230px minmax(0, 1fr);
   gap: 30px;
   padding: 25px 0;
-  border-top: 1px solid #39245a20;
+  border-top: 1px solid color-mix(in srgb, var(--muted) 13%, transparent);
 }
 .my-work-image {
   position: relative;
   height: 230px;
-  background: #f0edf5;
+  background: var(--surface);
   border-radius: 12px;
   display: grid;
   place-items: center;
@@ -389,19 +393,20 @@
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 650;
-  background: #ece7f6;
+  background: #ece7f6; /* art */
+  color: var(--on-yellow);
 }
 .status-published {
-  background: #dceecb;
+  background: #dceecb; /* art */
 }
 .status-needs_changes {
-  background: #f9f4a7;
+  background: #f9f4a7; /* art */
 }
 .status-rejected {
-  background: #f4dfd1;
+  background: #f4dfd1; /* art */
 }
 .review-feedback {
-  background: #f4edf9;
+  background: var(--surface);
   border-radius: 12px;
   padding: 17px 20px;
   margin: 18px 0;
@@ -426,12 +431,12 @@
   max-width: calc(100vw - 32px);
   padding: 12px 18px;
   border-radius: 999px;
-  background: #1c1a17;
-  color: #fff;
-  box-shadow: 0 10px 30px rgb(0 0 0 / 0.18);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--bg) 72%, transparent);
 }
 .undo-bar .text-button {
-  color: #f9f4a7;
+  color: var(--text);
   font-weight: 700;
 }
 .my-work-actions {
@@ -456,7 +461,7 @@
   margin: 0 auto 25px;
 }
 .profile-photo-panel > .button {
-  background: #fffdf8;
+  background: var(--surface);
 }
 .profile-photo-panel > p {
   font-size: 12px;
@@ -480,7 +485,7 @@
   cursor: pointer;
 }
 .avatar-upload:focus-within {
-  outline: 3px solid #39245a;
+  outline: 3px solid var(--yellow);
   outline-offset: 4px;
 }
 .profile-colors {
@@ -497,7 +502,7 @@
   margin-bottom: 14px;
 }
 .profile-colors label {
-  border: 1px solid #39245a55;
+  border: 1px solid color-mix(in srgb, var(--muted) 33%, transparent);
   border-radius: 9px;
   display: flex;
   gap: 5px;
@@ -508,7 +513,7 @@
   cursor: pointer;
 }
 .profile-colors input {
-  accent-color: #39245a;
+  accent-color: var(--violet);
   width: 15px;
   height: 15px;
 }
@@ -533,9 +538,9 @@
 .profile-fields input:not([type='checkbox']):not([type='radio']),
 .profile-fields textarea {
   width: 100%;
-  background: white;
-  color: #39245a;
-  border: 1px solid #39245a40;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--muted) 25%, transparent);
   border-radius: 8px;
   padding: 14px 15px;
   font: 400 16px/1.4 var(--font);
@@ -559,7 +564,7 @@
 .profile-visibility input {
   width: 20px;
   height: 20px;
-  accent-color: #39245a;
+  accent-color: var(--violet);
   flex-shrink: 0;
 }
 .profile-visibility small {
@@ -583,7 +588,7 @@
 .account-settings {
   margin: 55px 0 0;
   padding-top: 30px;
-  border-top: 1px solid #39245a30;
+  border-top: 1px solid color-mix(in srgb, var(--muted) 19%, transparent);
 }
 .account-settings h2 {
   font-size: 32px;
@@ -603,7 +608,7 @@
 }
 .review-edit-note {
   padding: 14px;
-  background: #f9f4a7;
+  background: var(--surface);
   border-radius: 8px;
 }
 .share-credit-note {
@@ -618,7 +623,7 @@
 }
 .embedded-browser-help {
   padding: 18px;
-  background: #f9f4a7;
+  background: var(--surface);
   border-radius: 12px;
   margin: 18px 0;
   font-size: 14px;
@@ -631,7 +636,7 @@
   width: 100%;
   font-size: 13px;
   padding: 10px;
-  border: 1px solid #39245a40;
+  border: 1px solid color-mix(in srgb, var(--muted) 25%, transparent);
   border-radius: 6px;
 }
 .auth-email-options {
@@ -647,7 +652,7 @@
   margin-bottom: 14px;
 }
 .creator-app :is(a, button, input, textarea, summary):focus-visible {
-  outline: 3px solid #39245a;
+  outline: 3px solid var(--yellow);
   outline-offset: 4px;
 }
 @media (max-width: 950px) {

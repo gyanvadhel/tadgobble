@@ -1,19 +1,15 @@
 .catalog-app {
   --display: 'Bricolage Grotesque', Arial, sans-serif;
-  --paper: #fff;
-  --forest: #39245a;
-  --line: #39245a25;
-  --muted: #665578;
   min-height: 100vh;
-  background: #fff;
-  color: #39245a;
+  background: var(--bg);
+  color: var(--text);
 }
 .catalog-app :is(h1, h2, h3) {
   font-family: var(--display);
   letter-spacing: -0.035em;
 }
 .catalog-app .site-header {
-  background: #f9f4a7;
+  background: var(--surface);
   border: 0;
   height: 96px;
 }
@@ -38,9 +34,9 @@
   border-radius: 30px;
 }
 .catalog-app .button-dark {
-  background: #39245a;
-  color: #f9f4a7;
-  border-color: #39245a;
+  background: var(--violet);
+  color: var(--on-violet);
+  border-color: var(--muted);
 }
 .catalog-app .page-shell {
   width: 100%;
@@ -108,18 +104,18 @@
   font-size: 11px;
 }
 .catalog-app .category-tabs > button.selected {
-  background: #39245a;
-  color: #fff;
-  border-color: #39245a;
+  background: var(--violet);
+  color: var(--on-violet);
+  border-color: var(--muted);
 }
 .catalog-app .search-input {
   border-radius: 0;
   border: 0;
-  border-bottom: 1px solid #39245a60;
-  background: #fff;
+  border-bottom: 1px solid color-mix(in srgb, var(--muted) 38%, transparent);
+  background: var(--surface);
 }
 .catalog-first-find {
-  background: #c5b5f5;
+  background: var(--lilac);
   text-align: center;
   padding: 60px 24px;
 }
@@ -146,7 +142,8 @@
 }
 .catalog-app .maker-banner {
   border-radius: 0;
-  background: #ff7547;
+  background: var(--orange);
+  color: var(--on-yellow);
   border: 0;
   margin-top: 45px;
   padding: 35px;
@@ -155,13 +152,13 @@
   font-size: 33px;
 }
 .catalog-app .maker-banner p {
-  color: #39245a;
+  color: inherit;
 }
 .catalog-app .editorial-note,
 .catalog-app .collection-note,
 .catalog-app .category-tabs > button:not(.selected),
 .catalog-app .site-header nav button:not(.active) {
-  color: #665578;
+  color: var(--muted);
 }
 .catalog-app .maker-banner .eyebrow {
   display: none;
@@ -175,20 +172,21 @@
   width: 100%;
   margin: 0;
   max-width: none;
-  background: #39245a;
-  color: #f9f4a7;
+  background: var(--violet);
+  color: var(--on-violet);
   border: 0;
   padding: 40px 5%;
 }
 .catalog-app .footer p,
 .catalog-app .footer > span,
-.catalog-app .footer button {
+.catalog-app .footer button,
+.catalog-app .footer a {
   color: inherit;
 }
 .catalog-app .modal {
   border-radius: 8px;
-  color: #39245a;
-  background: #fff;
+  color: var(--text);
+  background: var(--surface);
 }
 .catalog-app .modal h2 {
   font-size: 36px;
@@ -210,12 +208,12 @@
 .catalog-app .detail-sidebar > .eyebrow,
 .catalog-app .facts-list li,
 .catalog-app .back-link {
-  color: #665578;
+  color: var(--muted);
 }
 .catalog-app .quiet-empty {
   font-family: var(--font);
   font-size: 14px;
-  color: #665578;
+  color: var(--muted);
 }
 .catalog-app .back-link {
   margin-top: 35px;
@@ -239,7 +237,7 @@
 }
 .catalog-app .detail-sidebar {
   border-radius: 0;
-  background: #f9f4a7;
+  background: var(--surface);
   border: 0;
   padding: 30px;
 }
@@ -248,8 +246,8 @@
   line-height: 1.05;
 }
 .catalog-app .soft-tag {
-  background: #eee7fc;
-  color: #39245a;
+  background: var(--surface);
+  color: var(--text);
 }
 .catalog-app .detail-tags {
   flex-wrap: wrap;
@@ -257,10 +255,10 @@
 .catalog-app .facts-list svg,
 .catalog-app .source-link,
 .catalog-app .text-button {
-  color: #39245a;
+  color: var(--text);
 }
 .catalog-app :is(button, a, input, select, textarea):focus-visible {
-  outline: 3px solid #39245a;
+  outline: 3px solid var(--yellow);
   outline-offset: 4px;
 }
 @media (max-width: 1100px) {
@@ -355,10 +353,10 @@
     gap: 5px;
     min-height: 44px;
     padding: 10px 12px;
-    border: 1px solid #39245a;
+    border: 1px solid var(--muted);
     border-radius: 24px;
-    background: #39245a;
-    color: #fffdf8;
+    background: var(--violet);
+    color: var(--on-violet);
   }
   .catalog-poster {
     display: block;
@@ -517,4 +515,12 @@
 }
 .nav-count {
   display: inline-block;
+}
+
+/* The one primary action: Post your thing. */
+.catalog-app .submit-nav,
+.catalog-app .site-header nav button.mobile-share-work {
+  background: var(--yellow);
+  color: var(--on-yellow);
+  border-color: var(--yellow);
 }

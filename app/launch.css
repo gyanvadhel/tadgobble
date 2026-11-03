@@ -286,6 +286,12 @@
   border-bottom: 2px solid var(--text);
   color: var(--on-yellow);
   font: 800 64px/1 var(--display);
+  overflow: hidden;
+}
+.fresh-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .fresh-card-text {
   display: grid;

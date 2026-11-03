@@ -1,11 +1,11 @@
-// Draws a 9:16 Instagram-story image for a piece of work: the cover on its
-// colour, the title, the creator and the site address. Everything stays inside
+// Draws a 9:16 Instagram-story image for a piece of work: the cover on the
+// dark page colour, the title, the creator and the site address. Everything stays inside
 // the area Instagram leaves clear of its own buttons (top and bottom 250px).
-import { productSceneColor } from './product-showcase';
+import { sitePalette } from '../lib/design-tokens.mjs';
 
 const W = 1080,
   H = 1920,
-  INK = '#39245a',
+  INK = sitePalette.text,
   DISPLAY = "'Bricolage Grotesque', Arial, sans-serif",
   BODY = "'DM Sans', Arial, sans-serif";
 
@@ -52,7 +52,7 @@ export async function storyCard(product, site) {
   ).catch(() => {});
   const canvas = Object.assign(document.createElement('canvas'), { width: W, height: H });
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = productSceneColor(product);
+  ctx.fillStyle = sitePalette.bg;
   ctx.fillRect(0, 0, W, H);
 
   const by = product.sponsored
@@ -81,11 +81,11 @@ export async function storyCard(product, site) {
   if (img) {
     const x = (W - imgW) / 2;
     ctx.save();
-    ctx.shadowColor = 'rgba(57,36,90,.28)';
+    ctx.shadowColor = 'rgba(0,0,0,.45)';
     ctx.shadowBlur = 60;
     ctx.shadowOffsetY = 24;
     roundRect(ctx, x, y, imgW, imgH, 28);
-    ctx.fillStyle = '#fffdf8';
+    ctx.fillStyle = sitePalette.surface;
     ctx.fill();
     ctx.restore();
     ctx.save();
@@ -113,9 +113,9 @@ export async function storyCard(product, site) {
   const label = site.replace(/^https?:\/\//, '').replace(/\/$/, '');
   const pill = ctx.measureText(label).width + 84;
   roundRect(ctx, 90, 1580, pill, 80, 40);
-  ctx.fillStyle = INK;
+  ctx.fillStyle = sitePalette.yellow;
   ctx.fill();
-  ctx.fillStyle = '#f9f4a7';
+  ctx.fillStyle = sitePalette.onYellow;
   ctx.fillText(label, 132, 1632);
 
   const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));

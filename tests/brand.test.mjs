@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { sitePalette, paletteStyle, contrastRatio, productTints } from '../lib/design-tokens.mjs';
 import { isNew, freshProducts } from '../lib/fresh.mjs';
+import { readdirSync } from 'node:fs';
+import { needsOutline } from '../lib/blob-options.mjs';
+import { brand } from '../lib/brand.mjs';
 
 const DAY = 86400000,
   NOW = Date.parse('2026-11-03T12:00:00Z');
@@ -75,7 +78,17 @@ test('findStrayColors flags raw colours outside :root and art lines', async () =
 test('shared stylesheets use palette variables only', async () => {
   const { findStrayColors } = await import('../scripts/check-colors.mjs');
   assert.deepEqual(
-    findStrayColors(['app/globals.css', 'app/motion.css', 'app/dropdown.css', 'app/legal.css', 'app/launch.css']),
+    findStrayColors(readdirSync('app').filter((n) => n.endsWith('.css')).map((n) => `app/${n}`)),
     [],
   );
+});
+
+test('dark blob colours get an outline on the dark page', () => {
+  assert.equal(needsOutline('#39245a'), true);
+  assert.equal(needsOutline('#f2df65'), false);
+});
+
+test('brand description speaks to new makers in India', () => {
+  assert.match(brand.description, /India/);
+  assert.doesNotMatch(brand.description, /zine|font/i);
 });
