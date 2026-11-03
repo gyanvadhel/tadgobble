@@ -251,7 +251,7 @@ export default function Launch({ products }) {
                 Fresh from <br />
                 <span className="intro-mark">first-timers.</span>
               </h2>
-              <p>India's newest makers, posting their first things. Art, design, photos and useful apps.</p>
+              <p>India's newest makers, posting their first things. Art, design, photos and useful apps. Pehli baar? Perfect.</p>
               <div className="intro-actions">
                 {products.length ? (
                   <button
