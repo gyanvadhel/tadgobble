@@ -76,7 +76,7 @@ try {
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(1100);
   assert.equal(await page.locator('.product-drawer').count(), 6);
-  assert.equal(await page.locator('h1').textContent(), 'GOOD FINDS.');
+  assert.equal(await page.locator('h1').textContent(), 'FIRST THINGS.');
   assert.equal(await page.locator('canvas,.scene-canvas,.scene-fallback').count(), 0);
   assert.ok(await page.locator('.gobble-character').isVisible());
   assert.equal(
@@ -244,7 +244,7 @@ try {
   pass('Desktop, tablet, 390px and 320px layouts fit; mobile navigation works');
 
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.getByRole('link', { name: 'Share your work', exact: true }).click();
+  await page.getByRole('link', { name: 'Post your thing', exact: true }).click();
   await page.getByRole('button', { name: 'New here? Create an account' }).click();
   await page.getByLabel('Your name', { exact: true }).fill('Launch Explorer');
   await page.getByLabel('Email', { exact: true }).fill('launch@test.example');

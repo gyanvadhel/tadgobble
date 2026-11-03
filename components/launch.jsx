@@ -217,8 +217,8 @@ export default function Launch({ products }) {
           </a>
         </nav>
         <div className="launch-header-actions">
-          <a className="header-submit" href="/discover?submit=1" aria-label="Share your work">
-            Made something? <Plus size={18} />
+          <a className="header-submit" href="/discover?submit=1" aria-label="Post your thing">
+            Post your thing <Plus size={18} />
           </a>
           <button
             className="launch-menu-toggle"
@@ -233,11 +233,11 @@ export default function Launch({ products }) {
       <main>
         <section className="poster-hero" ref={hero}>
           <div className="poster-topline">
-            <span>A very good corner of the internet.</span>
-            <span>Curiosity looks good on you.</span>
+            <span>India's newest makers live here.</span>
+            <span>Go say something nice.</span>
           </div>
           <h1 className="poster-title">
-            <span>GOOD</span> <span>FINDS.</span>
+            <span>FIRST</span> <span>THINGS.</span>
           </h1>
           <div className="poster-bottom">
             <div className="poster-intro">
@@ -248,10 +248,10 @@ export default function Launch({ products }) {
                   : 'The menu opens soon'}
               </span>
               <h2>
-                Small wonders, <br />
-                made by <span className="intro-mark">real people.</span>
+                Fresh from <br />
+                <span className="intro-mark">first-timers.</span>
               </h2>
-              <p>Art, design and oddly brilliant apps, hand-picked and served one at a time.</p>
+              <p>India's newest makers, posting their first things. Art, design, photos and useful apps.</p>
               <div className="intro-actions">
                 {products.length ? (
                   <button
@@ -289,7 +289,7 @@ export default function Launch({ products }) {
                   ref={snack}
                   className="gobble-snack"
                   href={featured ? `/product/${featured.slug}` : '/discover?submit=1'}
-                  aria-label={featured ? `Preview ${featured.name}` : 'Share your work with Gobble'}
+                  aria-label={featured ? `Preview ${featured.name}` : 'Post your thing'}
                   onClick={(event) => {
                     if (!featured) return;
                     event.preventDefault();
@@ -302,7 +302,7 @@ export default function Launch({ products }) {
               </div>
               <span className="boop-caption" id="gobble-caption" role="status">
                 {boops
-                  ? ['excellent boop.', 'okay, we’re besties.', 'zero thoughts. just snacks.'][
+                  ? ['excellent boop.', 'okay, we’re besties.', 'bas. ek aur snack.'][
                       (boops - 1) % 3
                     ]
                   : 'tiny guy. concerning appetite.'}
@@ -319,9 +319,9 @@ export default function Launch({ products }) {
           </div>
           <div className="poster-foot">
             <a href="#fresh-picks">
-              Good things below <ArrowDown size={16} />
+              Fresh stuff below <ArrowDown size={16} />
             </a>
-            <span>Independent finds. Shared appetites.</span>
+            <span>New makers. Kind comments.</span>
             <button
               className="motion-control"
               aria-pressed={!motion}
@@ -340,9 +340,9 @@ export default function Launch({ products }) {
             </button>
           </div>
         </section>
-        <div className="discovery-ribbon" aria-label="Open another tab. Find something good.">
+        <div className="discovery-ribbon" aria-label="Ekdum fresh. Post your first thing.">
           <div className="ribbon-type" aria-hidden="true">
-            OPEN ANOTHER TAB. <Asterisk /> FIND SOMETHING GOOD. <Asterisk /> OPEN ANOTHER TAB.
+            EKDUM FRESH. <Asterisk /> POST YOUR FIRST THING. <Asterisk /> EKDUM FRESH.
           </div>
         </div>
         <ProductShowcase products={products} onPeek={openPreview} motion={motion} />
@@ -369,7 +369,7 @@ export default function Launch({ products }) {
                 submission so curious people can discover your work and talk about it.
               </p>
               <a className="launch-button plum-button" href="/discover?submit=1">
-                Put your thing on the menu <ArrowUpRight size={20} />
+                Post your thing <ArrowUpRight size={20} />
               </a>
             </div>
             <div className="maker-stamp">
@@ -386,7 +386,7 @@ export default function Launch({ products }) {
       <footer className="launch-footer">
         <div className="footer-intro">
           <p>
-            Good finds.
+            Fresh finds.
             <br />
             Questionable screen time.
           </p>

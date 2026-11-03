@@ -139,7 +139,7 @@
 .poster-title {
   display: flex;
   justify-content: space-between;
-  font-size: clamp(70px, 16.7vw, 320px);
+  font-size: clamp(64px, 15.6vw, 300px);
   line-height: 0.83;
   font-weight: 800;
   letter-spacing: -0.04em;
@@ -1585,7 +1585,7 @@
     font-size: 11px;
   }
   .poster-title {
-    font-size: 16.1vw;
+    font-size: 14.6vw;
   }
   .poster-bottom {
     grid-template-columns: 1fr 1.5fr;
@@ -1770,7 +1770,7 @@
     display: none;
   }
   .poster-title {
-    font-size: 16.1vw;
+    font-size: 14.6vw;
     margin-right: 0;
     padding-bottom: 15px;
     letter-spacing: -0.04em;

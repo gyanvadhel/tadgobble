@@ -15,16 +15,16 @@ const blob = `<path d="${blobPath}" fill="${colors.acid}"/>
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
   <rect width="1200" height="630" fill="${colors.cream}"/>
   <text x="65" y="85" font-family="Arial" font-weight="bold" font-size="38" fill="${colors.ink}">${name}</text>
-  <text x="57" y="270" font-family="Arial" font-size="160" font-weight="bold" letter-spacing="-8" fill="${colors.ink}">GOOD FINDS.</text>
-  <text x="65" y="380" font-family="Arial" font-weight="bold" font-size="40" letter-spacing="-1" fill="${colors.ink}">Your next “wait, this exists?”</text>
-  <text x="65" y="445" font-family="Arial" font-size="23" fill="${colors.ink}">Useful apps. Oddly brilliant tools.</text>
-  <text x="65" y="478" font-family="Arial" font-size="23" fill="${colors.ink}">A new obsession, probably.</text>
+  <text x="57" y="270" font-family="Arial" font-size="160" font-weight="bold" letter-spacing="-8" fill="${colors.ink}">FIRST THINGS.</text>
+  <text x="65" y="380" font-family="Arial" font-weight="bold" font-size="40" letter-spacing="-1" fill="${colors.ink}">Fresh from first-timers.</text>
+  <text x="65" y="445" font-family="Arial" font-size="23" fill="${colors.ink}">India's newest makers, posting their first things.</text>
+  <text x="65" y="478" font-family="Arial" font-size="23" fill="${colors.ink}">Go say something nice.</text>
   <g transform="translate(870 325) rotate(6)">
     <circle cx="95" cy="90" r="112" fill="${colors.purple}"/>
     <g transform="translate(-5 0) scale(2)">${blob}</g>
   </g>
   <rect y="584" width="1200" height="46" fill="${colors.ink}"/>
-  <text x="65" y="613" font-family="Arial" font-size="14" letter-spacing="3" fill="${colors.cream}">OPEN ANOTHER TAB. FIND SOMETHING GOOD.</text>
+  <text x="65" y="613" font-family="Arial" font-size="14" letter-spacing="3" fill="${colors.cream}">EKDUM FRESH. POST YOUR FIRST THING.</text>
 </svg>`;
 await sharp(Buffer.from(svg))
   .png()

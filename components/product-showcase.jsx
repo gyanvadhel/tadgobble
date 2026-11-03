@@ -296,7 +296,7 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
           <p>
             Art, design, and useful little apps.
             <br />
-            Good things. Real people behind them.
+            First things. Real makers behind them.
           </p>
           {products.length > 0 && (
             <div className="menu-intro-actions">
@@ -433,7 +433,7 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
               place on the menu.
             </p>
             <a className="launch-button plum-button" href="/discover?submit=1">
-              Share your work <Plus size={18} />
+              Post your thing <Plus size={18} />
             </a>
           </div>
         </div>
