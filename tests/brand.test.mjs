@@ -75,7 +75,7 @@ test('findStrayColors flags raw colours outside :root and art lines', async () =
 test('shared stylesheets use palette variables only', async () => {
   const { findStrayColors } = await import('../scripts/check-colors.mjs');
   assert.deepEqual(
-    findStrayColors(['app/globals.css', 'app/motion.css', 'app/dropdown.css', 'app/legal.css']),
+    findStrayColors(['app/globals.css', 'app/motion.css', 'app/dropdown.css', 'app/legal.css', 'app/launch.css']),
     [],
   );
 });

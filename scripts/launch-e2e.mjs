@@ -75,28 +75,26 @@ try {
   const originalGobble = await page.locator('.gobble-shape > path').first().getAttribute('d');
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(1100);
-  assert.equal(await page.locator('.product-drawer').count(), 6);
-  assert.equal(await page.locator('h1').textContent(), 'GOOD FINDS.');
-  assert.equal(await page.locator('canvas,.scene-canvas,.scene-fallback').count(), 0);
-  assert.ok(await page.locator('.gobble-character').isVisible());
+  assert.equal(await page.locator('h1').textContent(), 'Fresh from first-timers.');
+  assert.equal(await page.locator('.product-drawer').count(), 0);
+  assert.equal(await page.locator('.discovery-ribbon').count(), 0);
+  assert.equal(await page.locator('h1', { hasText: 'GOOD FINDS' }).count(), 0);
   assert.equal(
-    await page.locator('.gobble-shape > path').first().getAttribute('d'),
-    originalGobble,
+    await page.evaluate(() => getComputedStyle(document.body).backgroundColor),
+    'rgb(22, 11, 38)',
   );
+  assert.equal(await page.locator('canvas,.scene-canvas,.scene-fallback').count(), 0);
+  assert.ok(await page.locator('.fresh-hero .gobble-character').isVisible());
   assert.equal(
     await page.locator('.gobble-shape').evaluate((el) => getComputedStyle(el).color),
-    'rgb(57, 36, 90)',
+    'rgb(197, 181, 245)',
   );
   await page.waitForTimeout(2000);
   assert.equal(
     await page.locator('.gobble-shape > path').first().getAttribute('d'),
     originalGobble,
   );
-  assert.equal(await page.locator('canvas').count(), 0);
-  assert.equal(
-    await page.locator('.discovery-pond,.gobble-story,.color-lab,.palette-shortcut').count(),
-    0,
-  );
+  assert.equal(await page.locator('.gobble-snack,.feed-button').count(), 0);
   report.localDesktopMetrics = await page.evaluate(() => ({
     ...window.__visualMetrics,
     transferredBytes: performance
@@ -105,32 +103,40 @@ try {
     note: 'Local Chromium; not a field measurement.',
   }));
   await page.screenshot({ path: path.join(dir, 'hero-desktop.png') });
-  pass(
-    'Purple Gobble remains visible after hydration and a delayed check; no 3D replacement is mounted',
-  );
+  pass('Yellow hero says "Fresh from first-timers." on the dark page; Gobble stays lilac and still');
 
-  const names = await page.locator('.product-drawer summary h3').allTextContents();
-  for (const name of names.slice(0, 2)) {
-    await page.getByRole('button', { name: 'Feed me a find', exact: true }).click();
-    await page.getByRole('dialog').waitFor();
-    assert.equal(await page.locator('#snack-dialog-title').textContent(), name);
-    assert.match(
-      await page.getByRole('link', { name: 'Take a proper look' }).getAttribute('href'),
-      /^\/product\//,
-    );
-    await page.keyboard.press('Escape');
-    assert.ok(await page.evaluate(() => document.activeElement?.matches('.feed-button')));
-  }
-  pass('Blob feed reveals successive products; preview closes and restores keyboard focus');
+  const catalogCount = await page.evaluate(
+    async () => (await (await fetch('/api/bootstrap')).json()).products.length,
+  );
+  const cards = page.locator('.fresh-grid article');
+  assert.equal(await cards.count(), Math.min(catalogCount, 12));
+  const created = await cards.evaluateAll((els) => els.map((el) => Date.parse(el.dataset.created)));
+  assert.ok(created.every((t) => Number.isFinite(t)), 'every card carries its created_at');
+  assert.ok(
+    created.every((t, i) => i === 0 || created[i - 1] >= t),
+    'cards run newest first',
+  );
+  await page.getByRole('heading', { name: 'Fresh today' }).waitFor();
+  assert.equal(await page.getByRole('link', { name: 'See everything' }).getAttribute('href'), '/discover');
+  const firstName = await cards.first().locator('h3').textContent();
+  await cards.first().locator('.fresh-card').click();
+  await page.getByRole('dialog').waitFor();
+  assert.equal(await page.locator('#snack-dialog-title').textContent(), firstName);
+  assert.match(
+    await page.getByRole('link', { name: 'Take a proper look' }).getAttribute('href'),
+    /^\/product\//,
+  );
+  await page.keyboard.press('Escape');
+  assert.ok(
+    await page.evaluate(() => document.activeElement?.closest('.fresh-grid article') !== null),
+  );
+  pass('Fresh grid shows up to 12 newest cards; a card opens the preview and focus returns to it');
+
   await page.getByRole('button', { name: 'Boop the hungry blob' }).click();
   assert.match(await page.locator('.boop-caption').textContent(), /excellent boop/);
   await page.locator('.gobble-character').focus();
   await page.keyboard.press('Enter');
   assert.match(await page.locator('.boop-caption').textContent(), /besties/);
-  await page.getByRole('link', { name: /^Preview / }).click();
-  await page.getByRole('dialog').waitFor();
-  await page.keyboard.press('Escape');
-  assert.ok(await page.evaluate(() => document.activeElement?.matches('.gobble-snack')));
   await page.getByRole('button', { name: 'Pause animations' }).click();
   assert.equal(
     await page.evaluate(
@@ -139,75 +145,6 @@ try {
     0,
   );
   pass('Boop responds and pause stops page animation');
-
-  await page.getByRole('button', { name: 'I build', exact: true }).click();
-  assert.deepEqual((await page.locator('.product-drawer h3').allTextContents()).sort(), [
-    'Penpot',
-    'n8n',
-  ]);
-  await page.getByRole('button', { name: 'Pick one for me' }).click();
-  await page.getByRole('dialog').waitFor();
-  assert.ok(['Penpot', 'n8n'].includes(await page.locator('#snack-dialog-title').textContent()));
-  await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'For everyone', exact: true }).click();
-  await page.getByRole('textbox', { name: 'Search products' }).fill('automation');
-  assert.deepEqual(await page.locator('.product-drawer h3').allTextContents(), ['n8n']);
-  await page.getByRole('textbox', { name: 'Search products' }).fill('no-such-product-123');
-  await page.getByRole('heading', { name: 'No bites for that one.' }).waitFor();
-  await page.getByRole('button', { name: 'Show all the finds' }).click();
-  assert.equal(await page.locator('.product-drawer').count(), 6);
-  pass('Audience filters, search, random discovery and empty-state reset work together');
-
-  async function openProduct(name) {
-    const summary = page.getByLabel(`Explore ${name}`, { exact: true });
-    if (!(await summary.evaluate((el) => el.parentElement.open))) await summary.click();
-    await page.waitForFunction(
-      (name) =>
-        [...document.querySelectorAll('.product-drawer[open] h3')].some(
-          (el) => el.textContent === name,
-        ),
-      name,
-    );
-    return page.locator('.product-drawer[open]');
-  }
-  let drawer = await openProduct('Tally');
-  await drawer.getByRole('button', { name: 'literally just pasta' }).click();
-  await drawer.getByRole('button', { name: 'That’s me' }).click();
-  await drawer.getByRole('heading', { name: 'Excellent taste.' }).waitFor();
-  await drawer.getByRole('button', { name: 'Go again' }).click();
-  await drawer.getByRole('button', { name: 'Just a quick look' }).click();
-  await page.getByRole('dialog').waitFor();
-  await page.keyboard.press('Escape');
-  assert.ok(await page.evaluate(() => document.activeElement?.matches('.drawer-quick')));
-  await page.locator('.product-menu').screenshot({ path: path.join(dir, 'product-menu.png') });
-  drawer = await openProduct('Excalidraw');
-  await drawer.getByRole('button', { name: 'a very good plan' }).click();
-  assert.match(await drawer.locator('.bubble-end').textContent(), /a tiny side quest/);
-  drawer = await openProduct('Photopea');
-  const range = drawer.getByRole('slider', { name: 'Try the color adjustment' });
-  await range.focus();
-  await page.keyboard.press('Home');
-  assert.match(await drawer.locator('.photo-composition').getAttribute('style'), /saturate\(0\)/);
-  drawer = await openProduct('Penpot');
-  const beforeShape = await drawer.locator('.design-object').getAttribute('style');
-  await drawer.getByRole('slider', { name: 'Try the shape adjustment' }).focus();
-  await page.keyboard.press('End');
-  assert.notEqual(await drawer.locator('.design-object').getAttribute('style'), beforeShape);
-  drawer = await openProduct('n8n');
-  await drawer.getByRole('button', { name: 'Try the chain reaction' }).click();
-  assert.match(await drawer.locator('.flow-node').last().textContent(), /Done!/);
-  drawer = await openProduct('Cal.com');
-  await drawer.getByRole('button', { name: 'Thu 15' }).click();
-  assert.match(await drawer.locator('.calendar-confirm').textContent(), /Thursday/);
-  pass('All six original editorial demos respond to real controls');
-  const summary = page.getByLabel('Explore Cal.com', { exact: true });
-  await summary.focus();
-  await page.keyboard.press('Enter');
-  assert.equal(await page.locator('.product-drawer[open]').count(), 0);
-  await page.keyboard.press('Enter');
-  assert.equal(await page.locator('.product-drawer[open]').count(), 1);
-  assert.equal(await page.locator('.product-drawer[open] h3').textContent(), 'Cal.com');
-  pass('Product drawers open and close with keyboard and keep a single scene expanded');
 
   for (const width of [1440, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
@@ -220,31 +157,21 @@ try {
         'false',
       );
     }
-    await openProduct('Tally');
     assert.ok(
       await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       `${width}px has no horizontal overflow`,
     );
     assert.ok(
-      await page
-        .locator('.poster-title')
-        .evaluate((el) =>
-          [...el.children].every(
-            (child) => child.getBoundingClientRect().right <= el.getBoundingClientRect().right + 1,
-          ),
-        ),
+      await page.locator('h1').evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
       `${width}px headline is not clipped`,
     );
-    await page
-      .locator('.product-drawer[open]')
-      .screenshot({ path: path.join(dir, `product-${width}.png`) });
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
-    await page.screenshot({ path: path.join(dir, `hero-${width}.png`) });
+    await page.screenshot({ path: path.join(dir, `home-${width}.png`), fullPage: true });
   }
   pass('Desktop, tablet, 390px and 320px layouts fit; mobile navigation works');
 
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.getByRole('link', { name: 'Share your work', exact: true }).click();
+  await page.locator('.header-submit').click();
   await page.getByRole('button', { name: 'New here? Create an account' }).click();
   await page.getByLabel('Your name', { exact: true }).fill('Launch Explorer');
   await page.getByLabel('Email', { exact: true }).fill('launch@test.example');
@@ -255,17 +182,17 @@ try {
   await page.getByRole('radio', { name: 'App or tool', exact: true }).check();
   await page.getByLabel('App or tool name', { exact: true }).waitFor();
   await page.getByRole('button', { name: 'Close dialog' }).click();
-  pass('Maker CTA continues from registration into product submission');
+  pass('"Post your thing" continues from registration into product submission');
   await page.goto(origin + '/?from=instagram&utm_source=instagram&utm_campaign=old-link');
   await page.waitForURL('**/discover?**');
   assert.equal(new URL(page.url()).searchParams.get('utm_campaign'), 'old-link');
   await page.goto(origin + '/discover?audience=Developers');
-  await page.locator('.product-card').first().waitFor();
+  await page.locator('.showcase-card').first().waitFor();
   assert.equal(
     await page.getByRole('button', { name: /^Filter by audience/ }).getAttribute('aria-label'),
     'Filter by audience: Developers',
   );
-  assert.equal(await page.locator('.product-card').count(), 2);
+  assert.equal(await page.locator('.showcase-card').count(), 2);
   pass('Existing campaign URLs and catalog audience links remain functional');
 
   const reduced = await browser.newPage({
@@ -274,13 +201,25 @@ try {
   });
   await reduced.goto(origin);
   await reduced.getByRole('button', { name: 'Reduced motion enabled by your device' }).waitFor();
-  assert.equal(await reduced.locator('canvas').count(), 0);
-  await reduced.getByRole('button', { name: 'Feed me a find', exact: true }).click();
+  const stillGobble = await reduced.locator('.gobble-shape > path').first().getAttribute('d');
+  await reduced.waitForTimeout(800);
+  assert.equal(await reduced.locator('.gobble-shape > path').first().getAttribute('d'), stillGobble);
+  assert.equal(
+    await reduced.evaluate(
+      () => document.getAnimations().filter((a) => a.playState === 'running').length,
+    ),
+    0,
+  );
+  assert.equal(
+    await reduced.locator('.fresh-hero').evaluate((el) => getComputedStyle(el).opacity),
+    '1',
+  );
+  await reduced.locator('.fresh-grid .fresh-card').first().click();
   await reduced.getByRole('dialog').waitFor();
   await reduced.keyboard.press('Escape');
   await reduced.screenshot({ path: path.join(dir, 'reduced-motion.png') });
   await reduced.close();
-  pass('Reduced motion uses the tailless SVG blob and keeps discovery functional');
+  pass('Reduced motion keeps Gobble and the snack machine static and the grid working');
 
   const fallback = await browser.newPage();
   await fallback.addInitScript(() => {
@@ -293,20 +232,60 @@ try {
   await fallback.goto(origin);
   await fallback.getByRole('button', { name: 'Pause animations' }).waitFor();
   assert.equal(await fallback.locator('canvas').count(), 0);
-  await fallback.getByRole('button', { name: 'Feed me a find', exact: true }).click();
+  await fallback.locator('.fresh-grid .fresh-card').first().click();
   await fallback.getByRole('dialog').waitFor();
   await fallback.close();
-  pass('Devices without WebGL retain the blob and working discovery');
+  pass('Devices without WebGL keep Gobble and a working grid');
 
   const nojs = await browser.newPage({ javaScriptEnabled: false });
   await nojs.goto(origin);
-  assert.equal(await nojs.locator('.product-drawer').count(), 6);
-  await nojs.getByLabel('Explore Excalidraw', { exact: true }).click();
-  assert.ok(await nojs.getByRole('link', { name: 'Meet Excalidraw', exact: true }).isVisible());
-  await nojs.getByRole('link', { name: 'Meet Excalidraw', exact: true }).click();
-  assert.match(nojs.url(), /\/product\/excalidraw/);
+  assert.equal(await nojs.locator('.fresh-grid article').count(), Math.min(catalogCount, 12));
+  const href = await nojs.locator('.fresh-grid .fresh-card').first().getAttribute('href');
+  assert.match(href, /^\/product\//);
+  await nojs.locator('.fresh-grid .fresh-card').first().click();
+  assert.match(nojs.url(), /\/product\//);
   await nojs.close();
-  pass('Server-rendered product names, native drawers and product links work without JavaScript');
+  pass('Server-rendered fresh cards are real product links without JavaScript');
+
+  const emptyOrigin = 'http://127.0.0.1:3102';
+  const empty = spawn(
+    process.execPath,
+    ['node_modules/next/dist/bin/next', 'start', '--hostname', '127.0.0.1', '--port', '3102'],
+    {
+      env: {
+        ...process.env,
+        DATA_DIR: mkdtempSync(path.resolve('test-results/launch-empty-')),
+        APP_URL: emptyOrigin,
+        SEED_CATALOG: 'false',
+        NEXT_TELEMETRY_DISABLED: '1',
+      },
+      windowsHide: true,
+      stdio: 'ignore',
+    },
+  );
+  try {
+    for (let i = 0; i < 50; i++) {
+      try {
+        if ((await fetch(`${emptyOrigin}/api/health`)).ok) break;
+      } catch {}
+      await new Promise((r) => setTimeout(r, 300));
+    }
+    const emptyPage = await browser.newPage();
+    await emptyPage.goto(emptyOrigin);
+    await emptyPage.getByText('Nothing fresh yet. Be the first.').waitFor();
+    assert.equal(await emptyPage.locator('.fresh-grid article').count(), 0);
+    assert.equal(
+      await emptyPage
+        .locator('.fresh-grid')
+        .getByRole('link', { name: 'Post your thing' })
+        .getAttribute('href'),
+      '/discover?submit=1',
+    );
+    await emptyPage.close();
+  } finally {
+    empty.kill();
+  }
+  pass('An empty catalog invites the first post');
   assert.deepEqual(errors, []);
   assert.deepEqual(failedRequests, []);
   pass('No uncaught browser errors or failed page requests');
