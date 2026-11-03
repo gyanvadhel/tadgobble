@@ -18,10 +18,18 @@ function candyMap(products) {
   const counts = {};
   for (const p of products) counts[p.category] = (counts[p.category] || 0) + 1;
   const order = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
-  return (product) => candy[Math.max(order.indexOf(product?.category), 0) % candy.length];
+  return (product) =>
+    product ? candy[Math.max(order.indexOf(product.category), 0) % candy.length] : YOURS;
 }
 
 const BALLS = 12;
+// Every fourth ball is an empty slot that invites you to post your own thing.
+const YOURS = '#c5b5f5';
+function slot(products, i, round) {
+  if (!products.length || i % 4 === 3) return null;
+  const n = i - Math.floor(i / 4) + round * (BALLS - BALLS / 4);
+  return products[n % products.length];
+}
 const moods = [
   'turn the crank. you know you want to.',
   'ooh. one more?',
@@ -113,9 +121,8 @@ export default function SnackMachine({ products, motion, onPick }) {
     [left, setLeft] = useState(BALLS),
     [prize, setPrize] = useState(null),
     [turns, setTurns] = useState(0);
-  const pool = products.length ? products : [null];
   const candyFor = useMemo(() => candyMap(products), [products]);
-  const picks = Array.from({ length: BALLS }, (_, i) => pool[(i + round * BALLS) % pool.length]);
+  const picks = Array.from({ length: BALLS }, (_, i) => slot(products, i, round));
 
   useEffect(() => {
     const box = dome.current;
@@ -137,9 +144,8 @@ export default function SnackMachine({ products, motion, onPick }) {
           b.r = R * 0.18;
         }
       } else {
-        balls.current = picks.map((p, i) => ({
+        balls.current = picks.map((_, i) => ({
           i,
-          p,
           r: R * 0.18,
           x: R + Math.cos(i * 2.4) * R * 0.45,
           y: R * 0.5 + Math.sin(i * 2.4) * R * 0.35,
@@ -232,7 +238,8 @@ export default function SnackMachine({ products, motion, onPick }) {
     setTurns((n) => n + 1);
     const el = els.current[ball.i];
     const reveal = () => {
-      setPrize({ product: ball.p, key: Date.now() });
+      // Read the product now, not when the balls were made: products can arrive after the first paint.
+      setPrize({ product: picks[ball.i], key: Date.now() });
       shake();
     };
     if (!motion) {
