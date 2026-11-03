@@ -149,7 +149,7 @@ try {
   for (const width of [1440, 390, 320]) {
     await page.setViewportSize({ width, height: 1000 });
     for (const [name, pathname, selector] of [
-      ['landing', '/', '.fresh-cover img'],
+      ['landing', '/', '.drawer-cover'],
       ['catalog', '/discover', '.showcase-media img'],
       ['detail', '/product/' + product.slug, '.product-cover-figure img'],
     ]) {
@@ -166,7 +166,7 @@ try {
       );
       if (name === 'landing')
         await page
-          .locator('.fresh-cards')
+          .locator('.product-menu')
           .screenshot({ path: path.join(dir, `${name}-${width}.png`) });
       else await page.screenshot({ path: path.join(dir, `${name}-${width}.png`), fullPage: true });
     }

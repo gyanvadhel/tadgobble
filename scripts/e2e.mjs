@@ -48,14 +48,14 @@ try {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(origin + '/discover?utm_source=instagram&utm_campaign=pilot');
-  await page.locator('.showcase-card').first().waitFor();
-  assert.equal(await page.locator('.showcase-card').count(), 6);
+  await page.locator('.product-card').first().waitFor();
+  assert.equal(await page.locator('.product-card').count(), 6);
   await page.screenshot({ path: path.join(testDir, 'discover-desktop.png'), fullPage: true });
   await page.getByRole('button', { name: 'Design', exact: true }).click();
-  assert.equal(await page.locator('.showcase-card').count(), 3);
+  assert.equal(await page.locator('.product-card').count(), 3);
   await page.getByRole('button', { name: 'All discoveries', exact: true }).click();
   await page.getByRole('textbox', { name: 'Search products' }).fill('n8n');
-  assert.equal(await page.locator('.showcase-card').count(), 1);
+  assert.equal(await page.locator('.product-card').count(), 1);
   await page.getByRole('button', { name: 'Clear search' }).click();
   await page.getByRole('button', { name: 'Save Tally', exact: true }).click();
   await page.getByRole('button', { name: 'New here? Create an account' }).click();
@@ -69,7 +69,7 @@ try {
   await page.getByRole('button', { name: 'Save Tally', exact: true }).click();
   await page.getByRole('button', { name: 'Unsave Tally', exact: true }).waitFor();
   await page.getByRole('button', { name: /^Saved/ }).click();
-  assert.equal(await page.locator('.showcase-card').count(), 1);
+  assert.equal(await page.locator('.product-card').count(), 1);
   await page.locator('.showcase-title').click();
   await page.getByRole('heading', { name: 'Tally', exact: true }).waitFor();
   await page
@@ -83,7 +83,7 @@ try {
   });
   assert.equal(redirect.status(), 302);
   assert.match(redirect.headers().location, /tally.so/);
-  await page.getByRole('button', { name: 'Post your thing', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Share your work', exact: true }).first().click();
   await page.getByRole('radio', { name: 'App or tool', exact: true }).check();
   await page.getByLabel('App or tool name', { exact: true }).fill('Workflow Fixture');
   await page.getByLabel('Website link', { exact: true }).fill('https://example.com/demo');
@@ -181,7 +181,7 @@ try {
   assert.equal(stats.analytics.saves, 1);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(origin + '/discover');
-  await page.locator('.showcase-card').first().waitFor();
+  await page.locator('.product-card').first().waitFor();
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   await page.screenshot({ path: path.join(testDir, 'discover-mobile.png'), fullPage: true });
   assert.deepEqual(errors, []);

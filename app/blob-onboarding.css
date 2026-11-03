@@ -31,10 +31,10 @@
 .site-header .avatar {
   padding: 0;
   overflow: hidden;
-  background: var(--surface);
+  background: #f9f4a7;
 }
 .blob-picker {
-  color: var(--text);
+  color: #39245a;
   text-align: left;
   width: 100%;
 }
@@ -65,7 +65,7 @@
 }
 .avatar-mode {
   display: flex;
-  border-bottom: 1px solid color-mix(in srgb, var(--muted) 21%, transparent);
+  border-bottom: 1px solid #39245a35;
   gap: 22px;
 }
 .avatar-mode button {
@@ -78,7 +78,7 @@
   border-bottom: 3px solid transparent;
 }
 .avatar-mode button[aria-pressed='true'] {
-  border-bottom-color: var(--muted);
+  border-bottom-color: #39245a;
 }
 .blob-mini-stage {
   display: flex;
@@ -100,7 +100,7 @@
 .blob-shapes button {
   position: relative;
   background: transparent;
-  border: 1px solid color-mix(in srgb, var(--muted) 15%, transparent);
+  border: 1px solid #39245a25;
   border-radius: 14px;
   min-height: 87px;
   padding: 4px;
@@ -114,8 +114,8 @@
   font-size: 11px;
 }
 .blob-shapes button[aria-pressed='true'] {
-  background: var(--surface);
-  border: 2px solid var(--muted);
+  background: #fffef6;
+  border: 2px solid #39245a;
   padding: 3px;
 }
 .blob-shapes button:hover .blob-face {
@@ -150,13 +150,13 @@
   height: 30px;
   background: var(--swatch);
   border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--muted) 15%, transparent);
+  border: 1px solid #39245a25;
 }
 .blob-swatches button > svg {
   position: absolute;
 }
 .blob-swatches button[aria-pressed='true'] {
-  border-color: var(--muted);
+  border-color: #39245a;
 }
 .blob-moods > div,
 .starter-interests > div {
@@ -167,7 +167,7 @@
 .blob-moods button,
 .starter-interests button {
   background: transparent;
-  border: 1px solid color-mix(in srgb, var(--muted) 31%, transparent);
+  border: 1px solid #39245a50;
   border-radius: 24px;
   padding: 9px 13px;
   min-height: 44px;
@@ -178,9 +178,9 @@
 }
 .blob-moods button[aria-pressed='true'],
 .starter-interests button[aria-pressed='true'] {
-  background: var(--violet);
-  color: var(--on-violet);
-  border-color: var(--muted);
+  background: #39245a;
+  color: #fffef6;
+  border-color: #39245a;
 }
 .blob-shuffle {
   display: flex;
@@ -209,12 +209,12 @@
 }
 .blob-picker :focus-visible,
 .starter-preferences :focus-visible,
-.welcome-app :focus-visible:not([tabindex='-1']) {
-  outline: 3px solid var(--yellow);
+.welcome-app :focus-visible {
+  outline: 3px solid #6f46b3;
   outline-offset: 4px;
 }
 .starter-preferences {
-  color: var(--text);
+  color: #39245a;
 }
 .starter-intents {
   display: grid;
@@ -226,16 +226,16 @@
   gap: 12px;
   cursor: pointer;
   padding: 12px 14px;
-  border: 1px solid color-mix(in srgb, var(--muted) 19%, transparent);
+  border: 1px solid #39245a30;
   border-radius: 10px;
   min-height: 64px;
 }
 .starter-intents label:has(input:checked) {
-  border-color: var(--muted);
-  background: var(--surface);
+  border-color: #39245a;
+  background: #f1ecfc;
 }
 .starter-intents input {
-  accent-color: var(--violet);
+  accent-color: #39245a;
   width: 18px;
   height: 18px;
   flex-shrink: 0;
@@ -270,10 +270,10 @@
 }
 .starter-private {
   margin-top: 22px;
-  color: var(--muted);
+  color: #645477;
 }
 .profile-interests {
-  border-top: 1px solid color-mix(in srgb, var(--muted) 19%, transparent);
+  border-top: 1px solid #39245a30;
   padding-top: 22px;
 }
 .profile-interests summary {
@@ -284,8 +284,8 @@
   font-size: 14px;
 }
 .welcome-app {
-  color: var(--text);
-  background: var(--bg);
+  color: #39245a;
+  background: #fffef6;
   min-height: 100svh;
 }
 .welcome-header {
@@ -298,7 +298,7 @@
   gap: 20px;
 }
 .welcome-header .text-button {
-  color: var(--text);
+  color: #39245a;
   min-height: 44px;
   font-size: 13px;
 }
@@ -321,7 +321,7 @@
   position: relative;
   aspect-ratio: 1;
   border-radius: 48% 52% 45% 55%/51% 45% 55% 49%;
-  background: var(--surface);
+  background: #f9f4a7;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -345,8 +345,8 @@
   position: absolute;
   bottom: 11%;
   right: 1%;
-  background: var(--lilac);
-  border: 2px solid var(--muted);
+  background: #c5b5f5;
+  border: 2px solid #39245a;
   font-size: 13px;
   font-weight: 650;
   padding: 13px 18px;
@@ -376,12 +376,12 @@
 .welcome-progress li {
   padding: 8px 0;
   border-bottom: 2px solid transparent;
-  color: var(--muted);
+  color: #766583;
 }
 .welcome-progress li[aria-current] {
-  color: var(--text);
+  color: #39245a;
   font-weight: 700;
-  border-color: var(--muted);
+  border-color: #39245a;
 }
 .welcome-controls h1 {
   font-family: var(--font-display), var(--font), sans-serif;
@@ -435,7 +435,7 @@
 }
 .welcome-edit-note {
   font-size: 11px;
-  color: var(--muted);
+  color: #766583;
   text-align: right;
   margin: 14px 0 0;
 }
@@ -454,13 +454,13 @@
 .welcome-name-fields input {
   min-height: 48px;
   width: 100%;
-  background: var(--surface);
-  border: 1px solid color-mix(in srgb, var(--muted) 31%, transparent);
+  background: white;
+  border: 1px solid #39245a50;
   border-radius: 9px;
   font:
     400 16px var(--font),
     sans-serif;
-  color: var(--text);
+  color: #39245a;
   padding: 12px 14px;
 }
 .welcome-name-fields small {
@@ -476,7 +476,7 @@
   justify-content: space-between;
   gap: 20px;
   font-size: 11px;
-  border-top: 1px solid color-mix(in srgb, var(--muted) 13%, transparent);
+  border-top: 1px solid #39245a20;
 }
 .welcome-guest {
   min-height: 70vh;
@@ -599,9 +599,4 @@
   .blob-shapes button:hover .blob-face {
     transform: none;
   }
-}
-
-/* Dark blobs drawn by Blobatar get the same outline as the original's stroke. */
-.blob-outlined > :first-child {
-  filter: drop-shadow(1px 0 0 var(--text)) drop-shadow(-1px 0 0 var(--text)) drop-shadow(0 1px 0 var(--text)) drop-shadow(0 -1px 0 var(--text));
 }

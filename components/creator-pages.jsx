@@ -333,7 +333,7 @@ export default function CreatorPage({ mode = 'profile', username: providedUserna
               </div>
               <a className="button button-dark" href="/discover?submit=1">
                 <Plus size={17} />
-                Post your thing
+                Share something
               </a>
             </section>
             <div className="work-toolbar">
@@ -435,7 +435,7 @@ export default function CreatorPage({ mode = 'profile', username: providedUserna
                 </p>
                 {!data?.products.length && (
                   <a href="/discover?submit=1" className="button button-dark">
-                    Post your thing
+                    Share your work
                   </a>
                 )}
               </div>

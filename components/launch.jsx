@@ -1,30 +1,47 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowUpRight, ArrowUp, X, Menu, Pause, Play, Plus, Asterisk } from 'lucide-react';
+import {
+  ArrowUpRight,
+  ArrowDown,
+  ArrowUp,
+  X,
+  Menu,
+  Shuffle,
+  Pause,
+  Play,
+  Plus,
+  Asterisk,
+} from 'lucide-react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Brand } from './art';
 import { Gobble } from './gobble';
 import { isArtwork } from '../lib/product-options.mjs';
-import { isNew, freshProducts } from '../lib/fresh.mjs';
 import SnackMachine from './snack-machine';
-import { ProductDemo, productSceneColor } from './product-showcase';
+import ProductShowcase, { ProductDemo, productSceneColor } from './product-showcase';
+import { paletteStyle } from '../lib/design-tokens.mjs';
 import '../app/launch.css';
 import { api } from '../lib/client-api.mjs';
 
 export default function Launch({ products }) {
   const root = useRef(null),
+    hero = useRef(null),
     dialog = useRef(null),
     lastFocus = useRef(null);
   const gobbleShape = useRef(null),
+    snack = useRef(null),
+    feedTween = useRef(null),
     boopTween = useRef(null);
   const [preview, setPreview] = useState(null),
     [motion, setMotion] = useState(false),
     [reduceMotion, setReduceMotion] = useState(true);
   const [menu, setMenu] = useState(false),
+    [feeding, setFeeding] = useState(false),
+    [heroIndex, setHeroIndex] = useState(0),
     [boops, setBoops] = useState(0);
-  const fresh = freshProducts(products).slice(0, 12);
+  const featured = products[heroIndex % Math.max(products.length, 1)];
 
-  const openPreview = useCallback((product, trigger = null) => {
+  const openPreview = useCallback((product, fromFeed = false, trigger = null) => {
     if (!product) return;
     lastFocus.current = trigger || document.activeElement;
     setPreview(product);
@@ -48,6 +65,7 @@ export default function Launch({ products }) {
     );
     return () => {
       media.removeEventListener('change', update);
+      feedTween.current?.kill();
       boopTween.current?.kill();
     };
   }, []);
@@ -67,22 +85,55 @@ export default function Launch({ products }) {
 
   useEffect(() => {
     if (!motion) {
+      feedTween.current?.progress(1);
       boopTween.current?.progress(1);
       return;
     }
+    gsap.registerPlugin(ScrollTrigger);
     const context = gsap.context(() => {
-      gsap.from('.fresh-hero-copy', {
-        y: 24,
-        opacity: 0,
-        duration: 0.5,
-        ease: 'power2.out',
+      gsap.from('.poster-title span', {
+        yPercent: 110,
+        rotate: 3,
+        duration: 0.9,
+        stagger: 0.09,
+        ease: 'power3.out',
         clearProps: 'all',
+      });
+      gsap.to('.poster-title', {
+        xPercent: -3,
+        ease: 'none',
+        scrollTrigger: { trigger: hero.current, start: 'top top', end: 'bottom top', scrub: 0.7 },
+      });
+      gsap.fromTo(
+        '.ribbon-type',
+        { xPercent: -8 },
+        {
+          xPercent: 4,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.discovery-ribbon',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1,
+          },
+        },
+      );
+      gsap.to('.maker-asterisk', {
+        rotation: 120,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.maker-poster',
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 0.8,
+        },
       });
     }, root);
     return () => context.revert();
   }, [motion]);
 
   function boop() {
+    if (feeding) return;
     setBoops((b) => b + 1);
     if (!motion) return;
     boopTween.current?.kill();
@@ -99,16 +150,62 @@ export default function Launch({ products }) {
         scaleX: 1,
         scaleY: 1,
         rotation: -10,
-        duration: 0.35,
+        duration: 0.65,
         ease: 'elastic.out(1, .35)',
         clearProps: 'transform',
       });
   }
 
+  function feed(event) {
+    if (!featured || feeding) return;
+    const trigger = event.currentTarget;
+    setFeeding(true);
+    boopTween.current?.kill();
+    gsap.set(gobbleShape.current, { clearProps: 'transform' });
+    const done = () => {
+      gsap.set([snack.current, gobbleShape.current], { clearProps: 'transform,opacity' });
+      openPreview(featured, true, trigger);
+      setHeroIndex((i) => i + 1);
+      setFeeding(false);
+    };
+    if (motion) {
+      const target = gobbleShape.current.getBoundingClientRect();
+      const tile = snack.current.getBoundingClientRect();
+      feedTween.current = gsap
+        .timeline({ onComplete: done })
+        .to(snack.current, {
+          x: target.left + target.width * 0.52 - (tile.left + tile.width / 2),
+          y: target.top + target.height * 0.71 - (tile.top + tile.height / 2),
+          scale: 0.08,
+          rotation: -18,
+          opacity: 0,
+          duration: 0.5,
+          ease: 'power2.in',
+        })
+        .to(
+          gobbleShape.current,
+          {
+            scaleX: 1.1,
+            scaleY: 0.9,
+            rotation: -6,
+            duration: 0.12,
+            repeat: 3,
+            yoyo: true,
+            ease: 'power1.inOut',
+          },
+          0.38,
+        );
+    } else done();
+  }
+
   return (
-    <div className={`launch ${motion ? 'motion-on' : 'motion-off'}`} ref={root}>
+    <div
+      className={`launch ${motion ? 'motion-on' : 'motion-off'}`}
+      ref={root}
+      style={paletteStyle}
+    >
       <a className="launch-skip" href="#fresh-picks">
-        Skip to the fresh work
+        Skip to the good stuff
       </a>
       <header className="launch-header">
         <Brand />
@@ -120,8 +217,8 @@ export default function Launch({ products }) {
           </a>
         </nav>
         <div className="launch-header-actions">
-          <a className="header-submit" href="/discover?submit=1" aria-label="Post your thing">
-            Post your thing <Plus size={18} />
+          <a className="header-submit" href="/discover?submit=1" aria-label="Share your work">
+            Made something? <Plus size={18} />
           </a>
           <button
             className="launch-menu-toggle"
@@ -134,104 +231,121 @@ export default function Launch({ products }) {
         </div>
       </header>
       <main>
-        <section className="fresh-hero">
-          <div className="fresh-hero-copy">
-            <h1>
-              Fresh from <mark>first-timers.</mark>
-            </h1>
-            <p>India's newest makers, posting their first things. Go say something nice.</p>
+        <section className="poster-hero" ref={hero}>
+          <div className="poster-topline">
+            <span>A very good corner of the internet.</span>
+            <span>Curiosity looks good on you.</span>
           </div>
-          <div className="hero-playground">
-            <button
-              className="gobble-character"
-              onClick={boop}
-              aria-label="Boop the hungry blob"
-              aria-describedby="gobble-caption"
-            >
-              <Gobble ref={gobbleShape} className="gobble-shape" />
-            </button>
-            <span className="boop-caption" id="gobble-caption" role="status">
-              {boops
-                ? ['excellent boop.', 'okay, we’re besties.', 'zero thoughts. just snacks.'][
-                    (boops - 1) % 3
-                  ]
-                : 'tiny guy. concerning appetite.'}
-            </span>
-          </div>
-          <button
-            className="motion-control"
-            aria-pressed={!motion}
-            onClick={() => setMotion((v) => !v)}
-            disabled={reduceMotion}
-            aria-label={
-              reduceMotion
-                ? 'Reduced motion enabled by your device'
-                : motion
-                  ? 'Pause animations'
-                  : 'Play animations'
-            }
-          >
-            {motion ? <Pause size={13} /> : <Play size={13} />}
-            {reduceMotion ? 'Reduced motion' : motion ? 'Pause motion' : 'Play motion'}
-          </button>
-        </section>
-        <section className="fresh-grid" id="fresh-picks" aria-labelledby="fresh-today">
-          <div className="fresh-grid-head">
-            <h2 id="fresh-today" className="fresh-pill">
-              Fresh today
-            </h2>
-            <a className="fresh-all" href="/discover">
-              See everything <ArrowUpRight size={16} />
-            </a>
-          </div>
-          {fresh.length ? (
-            <div className="fresh-cards">
-              {fresh.map((product) => (
-                <article key={product.id} data-created={product.created_at}>
-                  <a
-                    className="fresh-card"
-                    href={`/product/${product.slug}`}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      openPreview(product, event.currentTarget);
-                    }}
+          <h1 className="poster-title">
+            <span>GOOD</span> <span>FINDS.</span>
+          </h1>
+          <div className="poster-bottom">
+            <div className="poster-intro">
+              <span className="intro-eyebrow">
+                <i aria-hidden="true" />
+                {products.length
+                  ? `${products.length} ${products.length === 1 ? 'find' : 'finds'} on the menu`
+                  : 'The menu opens soon'}
+              </span>
+              <h2>
+                Small wonders, <br />
+                made by <span className="intro-mark">real people.</span>
+              </h2>
+              <p>Art, design and oddly brilliant apps, hand-picked and served one at a time.</p>
+              <div className="intro-actions">
+                {products.length ? (
+                  <button
+                    className="feed-button launch-button plum-button"
+                    onClick={feed}
+                    disabled={feeding || !products.length}
                   >
-                    <span
-                      className="fresh-cover"
-                      style={{ background: productSceneColor(product) }}
-                      aria-hidden="true"
-                    >
-                      {product.cover ? (
-                        <img src={product.cover.url} alt="" width="1600" height="1200" />
-                      ) : (
-                        product.name.slice(0, 1)
-                      )}
-                    </span>
-                    <span className="fresh-card-text">
-                      <h3>{product.name}</h3>
-                      {product.owner_name && <span>{product.owner_name}</span>}
-                    </span>
-                    {isNew(product.created_at) && <span className="new-badge">new</span>}
+                    <Shuffle size={18} />
+                    {feeding ? 'nom nom nom…' : 'Feed me a find'}
+                  </button>
+                ) : (
+                  <a className="launch-button plum-button" href="/discover?submit=1">
+                    <Plus size={18} />
+                    Be the first find
                   </a>
-                </article>
-              ))}
+                )}
+                <a className="launch-button outline-button" href="/discover">
+                  Browse all <ArrowUpRight size={18} />
+                </a>
+              </div>
             </div>
-          ) : (
-            <div className="fresh-empty">
-              <p>Nothing fresh yet. Be the first.</p>
-              <a className="launch-button yellow-button" href="/discover?submit=1">
-                Post your thing <Plus size={18} />
-              </a>
+            <div className="hero-playground">
+              <div className="gobble-stage">
+                <div className="gobble-disc" aria-hidden="true" />
+                <button
+                  className="gobble-character"
+                  onClick={boop}
+                  aria-label="Boop the hungry blob"
+                  aria-describedby="gobble-caption"
+                  disabled={feeding}
+                >
+                  <Gobble ref={gobbleShape} className="gobble-shape" hungry={feeding} />
+                </button>
+                <a
+                  ref={snack}
+                  className="gobble-snack"
+                  href={featured ? `/product/${featured.slug}` : '/discover?submit=1'}
+                  aria-label={featured ? `Preview ${featured.name}` : 'Share your work with Gobble'}
+                  onClick={(event) => {
+                    if (!featured) return;
+                    event.preventDefault();
+                    if (!feeding) openPreview(featured, false, event.currentTarget);
+                  }}
+                >
+                  {featured?.name || 'your thing?'}
+                  <ArrowUpRight />
+                </a>
+              </div>
+              <span className="boop-caption" id="gobble-caption" role="status">
+                {boops
+                  ? ['excellent boop.', 'okay, we’re besties.', 'zero thoughts. just snacks.'][
+                      (boops - 1) % 3
+                    ]
+                  : 'tiny guy. concerning appetite.'}
+                <span aria-hidden="true">↖</span>
+              </span>
             </div>
-          )}
+            <div className="poster-note">
+              <SnackMachine
+                products={products}
+                motion={motion}
+                onPick={(p, el) => openPreview(p, false, el)}
+              />
+            </div>
+          </div>
+          <div className="poster-foot">
+            <a href="#fresh-picks">
+              Good things below <ArrowDown size={16} />
+            </a>
+            <span>Independent finds. Shared appetites.</span>
+            <button
+              className="motion-control"
+              aria-pressed={!motion}
+              onClick={() => setMotion((v) => !v)}
+              disabled={reduceMotion}
+              aria-label={
+                reduceMotion
+                  ? 'Reduced motion enabled by your device'
+                  : motion
+                    ? 'Pause animations'
+                    : 'Play animations'
+              }
+            >
+              {motion ? <Pause size={13} /> : <Play size={13} />}
+              {reduceMotion ? 'Reduced motion' : motion ? 'Pause motion' : 'Play motion'}
+            </button>
+          </div>
         </section>
-        <section className="snack-section" aria-label="Snack machine">
-          <SnackMachine
-            products={products}
-            motion={motion}
-            onPick={(p, el) => openPreview(p, el)}
-          />
-        </section>
+        <div className="discovery-ribbon" aria-label="Open another tab. Find something good.">
+          <div className="ribbon-type" aria-hidden="true">
+            OPEN ANOTHER TAB. <Asterisk /> FIND SOMETHING GOOD. <Asterisk /> OPEN ANOTHER TAB.
+          </div>
+        </div>
+        <ProductShowcase products={products} onPeek={openPreview} motion={motion} />
         <section className="maker-poster" id="for-makers">
           <div className="maker-poster-top">
             <span>For the people making things</span>
@@ -254,8 +368,8 @@ export default function Launch({ products }) {
                 Share a painting, a design, or an app. No portfolio needed. We review every
                 submission so curious people can discover your work and talk about it.
               </p>
-              <a className="launch-button yellow-button" href="/discover?submit=1">
-                Post your thing <ArrowUpRight size={20} />
+              <a className="launch-button plum-button" href="/discover?submit=1">
+                Put your thing on the menu <ArrowUpRight size={20} />
               </a>
             </div>
             <div className="maker-stamp">
@@ -349,6 +463,9 @@ export default function Launch({ products }) {
           </div>
         )}
       </dialog>
+      <span className="sr-only" role="status">
+        {feeding ? 'Finding you something good.' : ''}
+      </span>
     </div>
   );
 }

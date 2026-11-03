@@ -28,6 +28,7 @@ import {
 import { Dropdown } from './dropdown';
 import { Brand } from './art';
 import { ProductDemo, productSceneColor } from './product-showcase';
+import { paletteStyle } from '../lib/design-tokens.mjs';
 import { categories, audiences, isArtwork, workImageAlt } from '../lib/product-options.mjs';
 import { ShowcaseGrid, FeaturedWork, MakersStrip } from './showcase';
 import {
@@ -225,7 +226,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
       </>
     );
   return (
-    <div className="catalog-app">
+    <div className="catalog-app" style={paletteStyle}>
       <header className="site-header">
         <div className="header-inner">
           <Brand />
@@ -255,7 +256,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               )}
             </button>
             <button className="mobile-share-work" onClick={() => actionModal('submit')}>
-              <Plus size={15} /> Post your thing
+              <Plus size={15} /> Share your work
             </button>
           </nav>
           <div className="header-actions">
@@ -264,7 +265,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               className="button button-dark submit-nav"
               onClick={() => actionModal('submit')}
             >
-              <Plus size={16} /> Post your thing
+              <Plus size={16} /> Share your work
             </button>
             {user ? (
               <button
@@ -485,7 +486,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                 className="button button-dark"
                 onClick={() => actionModal('submit')}
               >
-                Post your thing <ArrowUpRight size={17} />
+                Share your work <ArrowUpRight size={17} />
               </button>
             </section>
             <div className="editorial-note">

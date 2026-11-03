@@ -15,14 +15,14 @@
   position: relative;
   height: 150px;
   width: 170px;
-  background: var(--surface);
+  background: #efebf6;
   display: grid;
   place-items: center;
   border: 0;
   border-radius: 9px;
   overflow: hidden;
   cursor: pointer;
-  color: var(--text);
+  color: #39245a;
   font-size: 35px;
 }
 .review-queue-image img {
@@ -80,7 +80,7 @@
 }
 .studio-shell .button:focus-visible,
 .studio-shell button:focus-visible {
-  outline: 3px solid var(--yellow);
+  outline: 3px solid #7560aa;
   outline-offset: 3px;
 }
 @media (max-width: 800px) {

@@ -3,18 +3,14 @@ import { useState } from 'react';
 import { Blobatar } from '@blobatar/react';
 import { happy, wink, sleepy, surprised } from 'blobatar/expression';
 import { blobPath } from '../lib/mascot.mjs';
-import { blobShapes, blobColors, defaultBlob, needsOutline } from '../lib/blob-options.mjs';
+import { blobShapes, blobColors, defaultBlob } from '../lib/blob-options.mjs';
 import '../app/blob-onboarding.css';
 
 const expressions = { happy, wink, sleepy, wow: surprised };
 function Original({ color, mood }) {
   return (
     <svg viewBox="0 0 100 90" aria-hidden="true">
-      <path
-        d={blobPath}
-        fill={color.hex}
-        {...(needsOutline(color.hex) && { stroke: 'var(--text)', strokeWidth: 2 })}
-      />
+      <path d={blobPath} fill={color.hex} />
       {[34, 61].map((x, i) => (
         <g key={x}>
           {mood === 'happy' || (mood === 'wink' && i === 1) ? (
@@ -52,7 +48,7 @@ export function BlobFace({ value = defaultBlob, size = 96, label, className = ''
   const color = blobColors.find((x) => x.id === value?.color) || blobColors[0];
   return (
     <span
-      className={`blob-face ${shape.id !== 'gobble' && needsOutline(color.hex) ? 'blob-outlined' : ''} ${className}`}
+      className={`blob-face ${className}`}
       style={{ width: size, height: size }}
       role={label ? 'img' : undefined}
       aria-label={label}

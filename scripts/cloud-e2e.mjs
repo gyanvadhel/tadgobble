@@ -97,7 +97,7 @@ try {
   await page.getByRole('button', { name: 'Open account' }).waitFor();
   await page.getByRole('button', { name: 'Save Argus', exact: true }).click();
   await page.getByRole('button', { name: 'Unsave Argus', exact: true }).waitFor();
-  await page.getByRole('button', { name: 'Post your thing', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Share your work', exact: true }).first().click();
   await page.getByRole('radio', { name: 'App or tool', exact: true }).check();
   await page.getByLabel('App or tool name', { exact: true }).fill(name);
   await page.getByLabel('Website link', { exact: true }).fill('https://example.com');
