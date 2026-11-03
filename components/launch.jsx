@@ -19,7 +19,6 @@ import { Gobble } from './gobble';
 import { isArtwork } from '../lib/product-options.mjs';
 import SnackMachine from './snack-machine';
 import ProductShowcase, { ProductDemo, productSceneColor } from './product-showcase';
-import { paletteStyle } from '../lib/design-tokens.mjs';
 import '../app/launch.css';
 import { api } from '../lib/client-api.mjs';
 
@@ -202,7 +201,6 @@ export default function Launch({ products }) {
     <div
       className={`launch ${motion ? 'motion-on' : 'motion-off'}`}
       ref={root}
-      style={paletteStyle}
     >
       <a className="launch-skip" href="#fresh-picks">
         Skip to the good stuff

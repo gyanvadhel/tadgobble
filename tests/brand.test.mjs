@@ -12,6 +12,7 @@ test('palette is the Highlighter set', () => {
   assert.equal(sitePalette.violet, '#7b4dff');
   assert.equal(paletteStyle['--on-yellow'], '#160b26');
   assert.equal(paletteStyle['--violet-text'], '#a98bff');
+  assert.equal(paletteStyle['--on-violet'], '#ffffff');
 });
 
 test('text pairs meet WCAG AA', () => {
@@ -24,7 +25,7 @@ test('text pairs meet WCAG AA', () => {
     [p.onYellow, p.yellow],
     [p.violetText, p.bg],
     [p.violetText, p.surface],
-    ['#ffffff', p.violet],
+    [p.onViolet, p.violet],
     [p.orange, p.bg],
   ])
     assert.ok(contrastRatio(fg, bg) >= 4.5, `${fg} on ${bg}`);
@@ -54,4 +55,27 @@ test('freshProducts sorts newest first and ignores featured', () => {
     ['b', 'a'],
   );
   assert.equal(list[0].slug, 'a');
+});
+
+test('findStrayColors flags raw colours outside :root and art lines', async () => {
+  const { findStrayColors } = await import('../scripts/check-colors.mjs');
+  const { mkdtempSync, writeFileSync } = await import('node:fs');
+  const path = await import('node:path');
+  const dir = mkdtempSync(path.resolve('test-results/colors-'));
+  const file = path.join(dir, 'a.css');
+  writeFileSync(
+    file,
+    'a{color:#fff}\nb{color:var(--text)}\nc{background:#abc /* art */}\nd{white-space:nowrap}\n/* no more\nblinking white */\n',
+  );
+  const found = findStrayColors([file]);
+  assert.equal(found.length, 1);
+  assert.equal(found[0].line, 1);
+});
+
+test('shared stylesheets use palette variables only', async () => {
+  const { findStrayColors } = await import('../scripts/check-colors.mjs');
+  assert.deepEqual(
+    findStrayColors(['app/globals.css', 'app/motion.css', 'app/dropdown.css', 'app/legal.css']),
+    [],
+  );
 });

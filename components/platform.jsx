@@ -28,7 +28,6 @@ import {
 import { Dropdown } from './dropdown';
 import { Brand } from './art';
 import { ProductDemo, productSceneColor } from './product-showcase';
-import { paletteStyle } from '../lib/design-tokens.mjs';
 import { categories, audiences, isArtwork, workImageAlt } from '../lib/product-options.mjs';
 import { ShowcaseGrid, FeaturedWork, MakersStrip } from './showcase';
 import {
@@ -226,7 +225,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
       </>
     );
   return (
-    <div className="catalog-app" style={paletteStyle}>
+    <div className="catalog-app">
       <header className="site-header">
         <div className="header-inner">
           <Brand />

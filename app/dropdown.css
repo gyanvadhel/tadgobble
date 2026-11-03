@@ -8,10 +8,10 @@
   gap: 9px;
   max-width: 240px;
   padding: 10px 14px 10px 16px;
-  border: 1px solid #39245a30;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: #fff;
-  color: #39245a;
+  background: var(--surface);
+  color: var(--text);
   font-family: inherit;
   font-size: 14px;
   font-weight: 500;
@@ -28,10 +28,10 @@
 }
 .dropdown-button:hover,
 .dropdown.is-open .dropdown-button {
-  border-color: #39245a;
+  border-color: var(--muted);
 }
 .dropdown.is-open .dropdown-button {
-  background: #f6f2ff;
+  background: color-mix(in srgb, var(--violet) 22%, var(--surface));
 }
 .dropdown-chevron {
   margin-left: 2px;
@@ -52,12 +52,12 @@
   padding: 6px;
   overflow-y: auto;
   list-style: none;
-  border: 1px solid #39245a1f;
+  border: 1px solid var(--line);
   border-radius: 16px;
-  background: #fffdf8;
+  background: var(--surface);
   box-shadow:
-    0 2px 6px #39245a14,
-    0 20px 44px -14px #39245a55;
+    0 2px 6px color-mix(in srgb, var(--bg) 50%, transparent),
+    0 20px 44px -14px color-mix(in srgb, var(--bg) 90%, transparent);
   outline: none;
   transform-origin: top left;
   animation: dropdown-pop 0.16s cubic-bezier(0.2, 0.8, 0.3, 1);
@@ -80,7 +80,7 @@
   gap: 10px;
   padding: 10px 12px;
   border-radius: 10px;
-  color: #39245a;
+  color: var(--text);
   font-size: 14px;
   white-space: nowrap;
   cursor: pointer;
@@ -90,7 +90,7 @@
   opacity: 0.75;
 }
 .dropdown-menu li.is-active {
-  background: #efe9ff;
+  background: color-mix(in srgb, var(--violet) 30%, var(--surface));
 }
 .dropdown-menu li[aria-selected='true'] {
   font-weight: 600;

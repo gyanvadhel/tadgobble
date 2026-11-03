@@ -1,7 +1,7 @@
 .launch {
   --display: 'Bricolage Grotesque', Arial, sans-serif;
   background: var(--cream);
-  color: var(--ink);
+  color: var(--text);
   overflow: clip;
   font-size: 15px;
 }
@@ -118,7 +118,7 @@
     color 0.2s;
 }
 .header-submit:hover {
-  background: var(--ink);
+  background: var(--text);
   color: var(--cream);
 }
 .launch-menu-toggle {
@@ -220,7 +220,7 @@
   line-height: 1.35;
 }
 .plum-button {
-  background: var(--ink);
+  background: var(--text);
   color: var(--cream);
   transition:
     transform 0.22s,
@@ -232,8 +232,8 @@
 }
 .outline-button {
   background: transparent;
-  color: var(--ink);
-  box-shadow: inset 0 0 0 1.5px var(--ink);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1.5px var(--text);
   transition:
     background 0.22s,
     transform 0.22s;
@@ -263,7 +263,7 @@
   background: transparent;
   border: 0;
   padding: 0;
-  color: var(--ink);
+  color: var(--text);
   border-radius: 45%;
 }
 .launch .gobble-character:disabled {
@@ -336,7 +336,7 @@
   width: 100%;
   aspect-ratio: 1;
   padding: 0;
-  border: 3px solid var(--ink);
+  border: 3px solid var(--text);
   border-radius: 50%;
   background: radial-gradient(circle at 32% 28%, #ffffffd0 0 9%, #ffffff55 10% 45%, #ffffff30 46%);
   overflow: hidden;
@@ -365,7 +365,7 @@
   width: 36%;
   aspect-ratio: 1;
   border-radius: 50%;
-  border: 2.5px solid var(--ink);
+  border: 2.5px solid var(--text);
   background-image: radial-gradient(circle at 32% 28%, #ffffffb0 0 12%, transparent 13%);
   box-shadow: inset -5px -6px 0 #39245a30;
   will-change: transform;
@@ -381,8 +381,8 @@
   padding: 24px 12px 14px;
   border-radius: 14px 14px 22px 22px;
   background: var(--accent);
-  color: var(--ink);
-  box-shadow: inset 0 0 0 3px var(--ink);
+  color: var(--text);
+  box-shadow: inset 0 0 0 3px var(--text);
 }
 .machine-label {
   font-family: var(--display);
@@ -403,9 +403,9 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 3px solid var(--ink);
+  border: 3px solid var(--text);
   background: var(--cream);
-  color: var(--ink);
+  color: var(--text);
   padding: 0;
   transition: transform 0.2s;
 }
@@ -443,7 +443,7 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--text);
   background-image: radial-gradient(circle at 32% 28%, #ffffffb0 0 12%, transparent 13%);
 }
 .capsule-name {
@@ -497,7 +497,7 @@
 }
 .discovery-ribbon {
   overflow: hidden;
-  background: var(--ink);
+  background: var(--text);
   color: var(--cream);
   padding: 26px 0 24px;
 }
@@ -574,9 +574,9 @@
   background: transparent;
 }
 .audience-tabs button[aria-pressed='true'] {
-  background: var(--ink);
+  background: var(--text);
   color: #fff;
-  border-color: var(--ink);
+  border-color: var(--text);
 }
 .audience-tabs button:hover:not([aria-pressed='true']) {
   background: #f0eafa;
@@ -596,7 +596,7 @@
   background: transparent;
   min-width: 0;
   width: 100%;
-  color: var(--ink);
+  color: var(--text);
   font-size: 13px;
 }
 .menu-search input::placeholder {
@@ -663,15 +663,15 @@
   transition: transform 0.35s;
 }
 .product-drawer[open] .drawer-toggle {
-  background: var(--ink);
+  background: var(--text);
   color: var(--product-color);
-  border-color: var(--ink);
+  border-color: var(--text);
 }
 .product-drawer[open] .drawer-toggle svg {
   transform: rotate(180deg);
 }
 .product-drawer summary:hover .drawer-toggle {
-  background: var(--ink);
+  background: var(--text);
   color: var(--product-color);
 }
 .product-drawer[open] .drawer-purpose {
@@ -1345,7 +1345,7 @@
 }
 .launch-footer {
   padding: 65px 4.5% 25px;
-  background: var(--ink);
+  background: var(--text);
   color: var(--cream);
 }
 .footer-intro {
@@ -1400,7 +1400,7 @@
   width: calc(100% - 40px);
   max-height: 90dvh;
   background: #fff;
-  color: var(--ink);
+  color: var(--text);
   overflow: auto;
 }
 .snack-dialog::backdrop {
@@ -1564,7 +1564,7 @@
     left: 0;
     right: 0;
     padding: 28px 6%;
-    background: var(--ink);
+    background: var(--text);
     color: var(--cream);
     flex-direction: column;
     align-items: flex-start;
