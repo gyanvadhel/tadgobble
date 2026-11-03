@@ -70,6 +70,10 @@ a {
 button {
   color: inherit;
 }
+/* Headings focused by script for screen readers need no ring. */
+[tabindex='-1']:focus {
+  outline: none;
+}
 button:focus-visible,
 a:focus-visible {
   outline: 3px solid var(--yellow);

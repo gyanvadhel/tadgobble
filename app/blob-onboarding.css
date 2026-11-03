@@ -209,7 +209,7 @@
 }
 .blob-picker :focus-visible,
 .starter-preferences :focus-visible,
-.welcome-app :focus-visible {
+.welcome-app :focus-visible:not([tabindex='-1']) {
   outline: 3px solid var(--yellow);
   outline-offset: 4px;
 }

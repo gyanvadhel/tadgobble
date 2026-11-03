@@ -148,6 +148,7 @@
 }
 .creator-intro-actions .button {
   background: var(--surface);
+  color: var(--text);
   border-color: transparent;
 }
 .creator-section-title {
@@ -452,7 +453,11 @@
   gap: 60px;
   align-items: start;
 }
+/* The picker is built for the dark page, so the panel stays dark whatever profile colour is chosen. */
 .profile-photo-panel {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--line);
   border-radius: 18px;
   padding: 30px 22px;
   text-align: center;
