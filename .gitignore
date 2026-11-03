@@ -21,3 +21,4 @@ deliverables/*.wav
 deliverables/*.mp3
 deliverables/*.png
 brag-output/
+.superpowers/
