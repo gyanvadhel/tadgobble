@@ -2,17 +2,17 @@
 
 **Good finds. Questionable screen time.**
 
-A home for art, design, useful apps, and the people who make them. Share something you made, no portfolio required, or wander the rabbit hole and save what you love.
+India's home for new makers: art, design, photos, useful apps, and the people who make them. Share something you made, no portfolio required, or wander the rabbit hole and save what you love.
 
 Meet Gobble: the purple blob with excellent taste and absolutely no tab discipline.
 
 **See it live at [tadgobble.web.app](https://tadgobble.web.app).**
 
-![tadgobble's butter-yellow landing page, purple Gobble, and oversized Good Finds headline](docs/images/tadgobble.png)
+![tadgobble's dark home page with the yellow "Fresh from first-timers." hero and a grid of new work](docs/images/tadgobble.png)
 
 ## What's inside
 
-- **Discover.** A showcase of paintings, zines, fonts, tiny apps, and clever tools, with a featured piece, a strip of makers, search, categories, and sorting.
+- **Discover.** A showcase of paintings, illustration, photos, design and useful apps, with a featured piece, a strip of makers, search, categories, and sorting.
 - **Share your work.** Post art or design with just an image and a title, a short video, or an app with its website link. Everything is reviewed before it goes public.
 - **Creator profiles.** Each maker gets a gallery wall of their work, a short bio, links, and a blob avatar of their own, built during a playful onboarding.
 - **My work.** See how each submission is doing, edit it, or delete it (with a few seconds to undo).

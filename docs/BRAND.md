@@ -6,15 +6,24 @@ The user selected **tadgobble** on 20 October 2026, with a humorous, internet-na
 
 ## The world
 
-- **The menu:** the real product catalog.
-- **The product drawers:** full-width colored bands open into generous product scenes and interactive editorial illustrations. This replaces the rejected pond and card grid. The standalone catalog uses colorful rows with search, save, and account tools.
-- **Feed me a find:** a product ticket travels into the purple Gobble's mouth, then a preview opens with that product's actual information.
-- **Your stash:** existing persistent saved products.
-- **The kitchen:** the operator's existing content studio.
-- **You cooked:** maker submissions, with the existing source review and moderation workflow.
-- **Good finds:** the oversized opening poster. Scroll motion follows the headline, typographic ribbon, and maker asterisk without a pinned loading gate.
+tadgobble is India's home for new makers: art, design, photos and useful apps. A first-timer posting their first thing should not get buried under more experienced people, so new work comes first and everyone is nudged to say something nice.
 
-“Gobbling” is a discovery animation. It does not silently save, endorse, buy, or visit a product. The preview lets the visitor choose what to do next.
+- **The home page, top to bottom:**
+
+  1. **Header**, with a yellow "Post your thing" button.
+  2. **Hero:** a yellow block reading "Fresh from first-timers.", with Gobble beside it.
+  3. **Fresh today:** a grid of the newest work, up to 12 cards, with a "new" badge on anything posted in the last few days and a link to see everything.
+  4. **The snack machine**, restyled for the dark page.
+  5. **The "Made a thing?" poster**, with a "Post your thing" button.
+  6. **Footer.**
+- **Discover:** the full catalog, with search, categories, sorting, saves and the makers strip.
+- **Your stash:** saved work.
+- **The kitchen:** the operator's content studio.
+- **You cooked:** maker submissions, with the existing source review and moderation workflow.
+
+The previous look (butter-yellow "Good finds" poster, "Feed me a find" stage, typographic ribbon and colour-band product drawers) was removed from the home page in November 2026.
+
+Booping Gobble is play. It never saves, endorses, buys, or visits anything on the visitor's behalf.
 
 ## Voice
 
@@ -30,9 +39,29 @@ Examples used in this build:
 
 Avoid fabricated proof, promised traffic, invented partnerships, or making every sentence a meme. Submitted product descriptions remain their factual descriptions.
 
-## Visual system
+## Visual system: the Highlighter look
 
-Butter `#f9f4a7`, plum `#39245a`, tangerine `#ff7547`, lavender `#c5b5f5`, sky `#bfdcf5`, and Gobble lime `#d5f568`. Bricolage Grotesque poster headlines and DM Sans interface text. Large color fields organize the page. Materials are tactile and softly lit; interactive illustrations are explicitly editorial demonstrations, not embedded third-party apps.
+A dark violet page with one loud highlighter yellow. Bricolage Grotesque for display headlines and DM Sans for interface text. Gobble stays lilac `#c5b5f5`.
+
+| Token | Value | Use |
+|---|---|---|
+| `bg` | `#160b26` | page background |
+| `surface` | `#22133a` | cards, panels, inputs |
+| `text` | `#f6f1ff` | main text (17.1:1 on bg) |
+| `muted` | `#b8a9d6` | secondary text (8.7:1 on bg) |
+| `line` | `#3a2a55` | borders |
+| `yellow` | `#ffe600` | the highlight |
+| `onYellow` | `#160b26` | text on yellow (14.9:1) |
+| `violet` | `#7b4dff` | fills only: active tab, `mark` (white on it 4.8:1) |
+| `violetText` | `#a98bff` | violet links and text (7.1:1) |
+| `lilac` | `#c5b5f5` | Gobble |
+| `orange` | `#ff7547` | sparingly |
+
+The values live in `lib/design-tokens.mjs` and reach every page as CSS variables on `:root`. `npm test` fails if a stylesheet uses a raw colour outside `:root`, unless the line is marked `/* art */` (cover tints, illustrations).
+
+- **Yellow appears in four places only:** the home hero block, the primary "Post your thing" button, "new" badges, and focus rings.
+- **Dark only.** There is no light theme and no toggle.
+- **India-first, kept subtle.** Copy mentions India's makers where it is natural (meta description, hero sub-line, welcome screen). No tricolour, rangoli or truck-art patterns, no heavy slang.
 
 The public palette picker and saved colorway preference were removed at the user's request. One site palette now feeds the landing page, favicon, and social preview from `lib/design-tokens.mjs`. Product-scene tints change with selection; they do not change the site's identity. See [the research and design rationale](DESIGN_DIRECTION.md) for the Awwwards references and interaction principles.
 
