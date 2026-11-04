@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /my-work
+Disallow: /settings
+Disallow: /studio
+Disallow: /welcome
+Disallow: /auth
+
+Sitemap: https://tadgobble.in/sitemap.xml
