@@ -2,10 +2,10 @@ import './globals.css';
 import { brand } from '../lib/brand.mjs';
 export const metadata = {
   metadataBase: new URL(process.env.APP_URL || 'http://127.0.0.1:3000'),
-  title: `${brand.name} — ${brand.tagline}`,
+  title: brand.searchTitle,
   description: brand.description,
   openGraph: {
-    title: `${brand.name} — ${brand.tagline}`,
+    title: brand.searchTitle,
     description: brand.description,
     type: 'website',
     siteName: brand.name,
@@ -14,7 +14,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     site: '@tadgobble',
-    title: `${brand.name} — ${brand.tagline}`,
+    title: brand.searchTitle,
     description: brand.description,
     images: ['/social-card.png'],
   },
