@@ -171,10 +171,10 @@ export default function CreatorPage({ mode = 'profile', username: providedUserna
         if (!username) throw new Error('This profile is unavailable.');
         const result = await api('profiles/' + encodeURIComponent(username));
         setData(result);
-        document.title = `${result.profile.name} (@${result.profile.username}) — tadgobble`;
+        document.title = `${result.profile.name} (@${result.profile.username}) | tadgobble`;
       } else if (boot.user) {
         setData(mode === 'work' ? await api('my-work') : { profile: boot.user.profile });
-        document.title = `${mode === 'work' ? 'My work' : 'Account settings'} — tadgobble`;
+        document.title = `${mode === 'work' ? 'My work' : 'Account settings'} | tadgobble`;
       } else setData(null);
     } catch (e) {
       setError(e.message);
