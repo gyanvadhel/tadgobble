@@ -198,6 +198,67 @@ check('no console errors across a full scroll', async ({ seeded }, getBrowser) =
 
 // -- later tasks add their browser checks below this line --
 
+// Past the story, at the products, with the page settled.
+const settle = (page, ms = 900) => page.waitForTimeout(ms);
+const openPreview = (page) => page.evaluate(() => document.querySelector('.drawer-quick').click());
+
+check('opening a preview stops smooth scroll and locks the body', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  await page.evaluate(() => document.querySelector('#fresh-picks').scrollIntoView({ behavior: 'instant' }));
+  await settle(page);
+  await openPreview(page);
+  await page.waitForSelector('dialog[open]');
+  assert.equal(await page.evaluate(() => getComputedStyle(document.body).overflow), 'hidden');
+  assert.equal(await page.evaluate(() => document.documentElement.classList.contains('lenis-stopped')), true);
+  const before = await page.evaluate(() => scrollY);
+  await page.mouse.move(300, 300);
+  await page.mouse.wheel(0, 600);
+  await settle(page);
+  assert.equal(await page.evaluate(() => scrollY), before, 'the page does not scroll under the dialog');
+  await page.context().close();
+});
+
+check('closing the preview restores scrolling at the same position', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  await page.evaluate(() => document.querySelector('#fresh-picks').scrollIntoView({ behavior: 'instant' }));
+  await settle(page);
+  const before = await page.evaluate(() => scrollY);
+  await openPreview(page);
+  await page.waitForSelector('dialog[open]');
+  await page.click('.snack-dialog-close');
+  await page.waitForFunction(() => !document.querySelector('dialog[open]'));
+  assert.equal(await page.evaluate(() => scrollY), before);
+  await page.mouse.move(300, 300);
+  await page.mouse.wheel(0, 500);
+  await page.waitForFunction((b) => scrollY > b + 100, before, { timeout: 4000 });
+  await page.context().close();
+});
+
+check('Page Down, Space and Tab still move the page', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  const y0 = await page.evaluate(() => scrollY);
+  await page.keyboard.press('PageDown');
+  await page.waitForFunction((y) => scrollY > y + 100, y0, { timeout: 4000 });
+  const y1 = await page.evaluate(() => scrollY);
+  await page.keyboard.press('Space');
+  await page.waitForFunction((y) => scrollY > y + 100, y1, { timeout: 4000 });
+  await page.evaluate(() => document.querySelector('#fresh-picks').scrollIntoView({ behavior: 'instant' }));
+  await settle(page);
+  for (let i = 0; i < 6; i++) await page.keyboard.press('Tab');
+  const focused = await page.evaluate(() => document.activeElement?.tagName);
+  assert.ok(focused && focused !== 'BODY', 'Tab moves focus');
+  await page.context().close();
+});
+
+check('loading /#for-makers lands on the makers section', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded + '/#for-makers');
+  await page.waitForTimeout(1500);
+  const top = await page.evaluate(() => document.querySelector('#for-makers').getBoundingClientRect().top);
+  assert.ok(Math.abs(top) < 200, `makers section top was ${top}`);
+  await page.context().close();
+});
+
+
 try {
   const ctx = { seeded: await start(3102, true), empty: await start(3103, false) };
   ctx.dir = dir;

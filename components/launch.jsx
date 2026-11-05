@@ -19,6 +19,7 @@ import { Gobble } from './gobble';
 import { isArtwork } from '../lib/product-options.mjs';
 import SnackMachine from './snack-machine';
 import IntroStory from './intro-story';
+import { useSmoothScroll } from './use-smooth-scroll';
 import ProductShowcase, { ProductDemo, productSceneColor } from './product-showcase';
 import { paletteStyle } from '../lib/design-tokens.mjs';
 import '../app/launch.css';
@@ -40,6 +41,7 @@ export default function Launch({ products }) {
     [feeding, setFeeding] = useState(false),
     [heroIndex, setHeroIndex] = useState(0),
     [boops, setBoops] = useState(0);
+  useSmoothScroll({ enabled: motion, paused: Boolean(preview) });
   const featured = products[heroIndex % Math.max(products.length, 1)];
 
   const openPreview = useCallback((product, fromFeed = false, trigger = null) => {
@@ -424,6 +426,7 @@ export default function Launch({ products }) {
       <dialog
         ref={dialog}
         className="snack-dialog"
+        data-lenis-prevent
         onCancel={(e) => {
           e.preventDefault();
           setPreview(null);

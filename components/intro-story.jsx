@@ -152,6 +152,7 @@ export default function IntroStory({ products = [], motion = false, reduceMotion
   const first = products[0];
   const section = useRef(null);
   const stage = useRef(null);
+  const landed = useRef(false);
   const [mode, setMode] = useState('static');
 
   // Decide on the client whether this device gets the pinned story or the plain list.
@@ -219,7 +220,16 @@ export default function IntroStory({ products = [], motion = false, reduceMotion
   useEffect(() => {
     if (mode !== 'pinned') return;
     const refresh = () => ScrollTrigger.refresh();
-    const frame = requestAnimationFrame(refresh);
+    const frame = requestAnimationFrame(() => {
+      refresh();
+      // The pin adds thousands of pixels above everything after the story, so a deep link
+      // the browser already jumped to (/#for-makers) has to be re-found once, on first pin.
+      if (!landed.current) {
+        landed.current = true;
+        const target = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+        if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
+    });
     addEventListener('orientationchange', refresh);
     return () => {
       cancelAnimationFrame(frame);

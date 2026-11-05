@@ -2182,3 +2182,8 @@
     transition: none !important;
   }
 }
+
+/* Lenis eases the scroll itself, so the browser's own smoothing must stay out of its way. */
+html.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
