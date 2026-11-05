@@ -5,8 +5,6 @@ import { inspectVideo, readVideoForm } from '../_shared/video.mjs';
 const origins = new Set([
   'https://tadgobble.in',
   'https://www.tadgobble.in',
-  'https://tadgobble.web.app',
-  'https://tadgobble.firebaseapp.com',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:4173',
   'http://127.0.0.1:4186',

@@ -1,7 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { scrypt } from 'npm:@noble/hashes@1.8.0/scrypt';
 
-const origins = new Set(['https://tadgobble.in', 'https://www.tadgobble.in', 'https://tadgobble.web.app', 'https://tadgobble.firebaseapp.com', 'http://127.0.0.1:3000', 'http://127.0.0.1:4173']);
+const origins = new Set(['https://tadgobble.in', 'https://www.tadgobble.in', 'http://127.0.0.1:3000', 'http://127.0.0.1:4173']);
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin') || '';
   const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': origins.has(origin) ? origin : 'https://tadgobble.in', 'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info', 'Access-Control-Allow-Methods': 'POST, OPTIONS', Vary: 'Origin' };
