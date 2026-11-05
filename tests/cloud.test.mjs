@@ -10,7 +10,7 @@ before(async () => {
   db = new PGlite();
   await db.exec(`create role anon; create role authenticated; create role service_role bypassrls;
     create schema auth; create schema storage;
-    create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}');
+    create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}',email_confirmed_at timestamptz);
     create function auth.uid() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
     create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text);
@@ -40,7 +40,7 @@ before(async () => {
     }
   }
   await db.query(
-    'insert into auth.users(id,email,raw_user_meta_data) values($1,$2,$3),($4,$5,$6),($7,$8,$9)',
+    'insert into auth.users(id,email,raw_user_meta_data,email_confirmed_at) values($1,$2,$3,now()),($4,$5,$6,now()),($7,$8,$9,now())',
     [
       owner,
       'owner@example.test',
@@ -596,4 +596,96 @@ test('creators can delete their own work, and edits cannot change its kind', asy
     [work.id],
   );
   assert.equal(Number(left.rows[0].n), 0);
+});
+
+// ---- Notifications: the bell ----
+const noteUsers = {
+  owner: 'b0000001-0000-4000-8000-000000000001',
+  fan: 'b0000002-0000-4000-8000-000000000002',
+  fan2: 'b0000003-0000-4000-8000-000000000003',
+};
+let noteProduct;
+async function addNoteUser(id, name) {
+  await db.query(
+    "insert into auth.users(id,email,raw_user_meta_data,email_confirmed_at) values($1,$2,$3,now())",
+    [id, name.toLowerCase() + '@notes.example.test', { name }],
+  );
+}
+test('notification setup: a published work owned by someone else', async () => {
+  await addNoteUser(noteUsers.owner, 'Noteowner');
+  await addNoteUser(noteUsers.fan, 'Notefan');
+  await addNoteUser(noteUsers.fan2, 'Notefan2');
+  const made = await api(noteUsers.owner, 'submit', { ...product, name: 'Bell check' });
+  const row = (await api(owner, 'studio')).products.find((p) => p.slug === made.slug);
+  await api(owner, 'studio/product', { id: row.id, action: 'verify', confirmed: true });
+  noteProduct = { id: row.id, slug: made.slug };
+});
+test('saves notify the owner anonymously, merge while unread, and never repeat', async () => {
+  const id = noteProduct.id;
+  await api(noteUsers.fan, 'save', { productId: id }); // first save
+  await api(noteUsers.fan, 'save', { productId: id }); // unsave
+  await api(noteUsers.fan, 'save', { productId: id }); // re-save: no new notification
+  await api(noteUsers.fan2, 'save', { productId: id }); // second person
+  await api(noteUsers.owner, 'save', { productId: id }); // own work: nothing
+  const { items, unread } = await api(noteUsers.owner, 'notifications');
+  const saves = items.filter((n) => n.kind === 'save');
+  assert.equal(saves.length, 1);
+  assert.equal(saves[0].count, 2);
+  assert.equal(saves[0].actor, null);
+  assert.equal(saves[0].product.slug, noteProduct.slug);
+  assert.equal(unread, 1);
+  await api(noteUsers.owner, 'notifications/read');
+  assert.equal((await api(noteUsers.owner, 'notifications')).unread, 0);
+  // once read, the same person saving again later stays quiet
+  await api(noteUsers.fan, 'save', { productId: id });
+  await api(noteUsers.fan, 'save', { productId: id });
+  assert.equal((await api(noteUsers.owner, 'notifications')).unread, 0);
+});
+test('comments notify the owner; replies notify the thread starter and owner once each', async () => {
+  const id = noteProduct.id;
+  const thread = async () => (await api(null, 'products/' + noteProduct.slug)).comments;
+  await api(noteUsers.fan, 'comment', { productId: id, body: 'Lovely colours' });
+  const mine = (await api(noteUsers.owner, 'notifications')).items.filter((n) => n.kind === 'comment');
+  assert.equal(mine.length, 1);
+  assert.match(mine[0].preview, /Lovely colours/);
+  assert.equal(mine[0].actor.name, 'Notefan');
+  const top = (await thread())[0].id;
+  await api(noteUsers.fan2, 'comment', { productId: id, parentId: top, body: 'Agreed!' });
+  const replies = async (u) => (await api(u, 'notifications')).items.filter((n) => n.kind === 'reply');
+  assert.equal((await replies(noteUsers.fan)).length, 1);
+  assert.equal((await replies(noteUsers.owner)).length, 1);
+  assert.equal((await replies(noteUsers.fan2)).length, 0);
+  await api(noteUsers.fan, 'comment', { productId: id, parentId: top, body: 'Thanks' }); // thread starter replying in own thread
+  assert.equal((await replies(noteUsers.fan)).length, 1);
+  assert.equal((await replies(noteUsers.fan2)).length, 0);
+  // the top comment has replies, so deleting keeps a placeholder; its bell item must still go
+  await api(noteUsers.fan, 'comment/delete', { id: top });
+  assert.equal(
+    (await api(noteUsers.owner, 'notifications')).items.filter((n) => n.kind === 'comment').length,
+    0,
+  );
+});
+test('a lone comment that is deleted takes its bell item with it', async () => {
+  await api(noteUsers.fan2, 'comment', { productId: noteProduct.id, body: 'Short-lived thought' });
+  const before = (await api(noteUsers.owner, 'notifications')).items.filter((n) => n.kind === 'comment');
+  assert.equal(before.length, 1);
+  const c = (await api(null, 'products/' + noteProduct.slug)).comments.find((x) => !x.removed && x.user_id === noteUsers.fan2 && !x.parent_id);
+  await api(noteUsers.fan2, 'comment/delete', { id: c.id });
+  assert.equal(
+    (await api(noteUsers.owner, 'notifications')).items.filter((n) => n.kind === 'comment').length,
+    0,
+  );
+});
+test('notifications are private', async () => {
+  await assert.rejects(() => api(null, 'notifications'), /Sign in/);
+  await assert.rejects(() => api(null, 'notifications/read'), /Sign in/);
+  // other people never see the owner's items
+  assert.equal((await api(noteUsers.fan, 'notifications')).items.filter((n) => n.kind === 'comment').length, 0);
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)", [noteUsers.fan]);
+  await db.exec('set role authenticated');
+  try {
+    await assert.rejects(() => db.query('select * from public.tg_notifications'), /permission denied/);
+  } finally {
+    await db.exec('reset role');
+  }
 });
