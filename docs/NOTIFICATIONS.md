@@ -4,7 +4,15 @@ The code for the bell and the emails is in the repo. Nothing is live until you d
 
 1. Confirm `tadgobble.in` is **Verified** in Resend.
 2. Create an API key in Resend with "Sending access" for tadgobble.in.
-3. Run `supabase secrets set RESEND_API_KEY=… CRON_SECRET=<long random> UNSUBSCRIBE_SECRET=<long random> ADMIN_EMAIL=hello@tadgobble.in`.
+3. Set the secrets. In PowerShell, from the project folder (this makes the two random values for you; put your real Resend key in place of `re_YOUR_KEY_HERE`, with no spaces or quotes):
+   ```powershell
+   $cron  = node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   $unsub = node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   supabase secrets set RESEND_API_KEY=re_YOUR_KEY_HERE CRON_SECRET=$cron UNSUBSCRIBE_SECRET=$unsub ADMIN_EMAIL=hello@tadgobble.in
+   $cron
+   ```
+   - The last line prints `CRON_SECRET`. Keep it for step 6.
+   - "Invalid secret pair" means a value is missing or has a space in it.
 4. Run `supabase db push`.
 5. Run `supabase functions deploy notify-send unsubscribe`.
    - These two functions were written without being run (no Deno on the build machine). If you have Deno, run `deno check supabase/functions/notify-send/index.ts supabase/functions/unsubscribe/index.ts` first and tell me about any error.
