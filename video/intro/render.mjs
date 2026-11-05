@@ -42,8 +42,12 @@ const encoder = spawn(
     'libx264',
     '-preset',
     isDraft ? 'ultrafast' : 'fast',
-    '-crf',
-    isDraft ? '24' : '18',
+    '-b:v',
+    isDraft ? '1800k' : '1150k',
+    '-maxrate',
+    '1500k',
+    '-bufsize',
+    '3000k',
     '-pix_fmt',
     'yuv420p',
     '-profile:v',
@@ -59,11 +63,11 @@ const encoder = spawn(
     '-c:a',
     'aac',
     '-b:a',
-    '256k',
+    '96k',
     '-ar',
     '48000',
     '-t',
-    '40',
+    '29',
     '-movflags',
     '+faststart',
     target,
@@ -75,7 +79,7 @@ encoder.stderr.on('data', (b) => (errorLog += b));
 const finished = once(encoder, 'exit');
 const start = Date.now();
 try {
-  for (let n = 0; n < 40 * fps; n++) {
+  for (let n = 0; n < 29 * fps; n++) {
     const data = await page.evaluate(
       async (frame) => {
         await window.renderFrame(frame);
@@ -86,13 +90,13 @@ try {
     if (!encoder.stdin.write(Buffer.from(data, 'base64'))) await once(encoder.stdin, 'drain');
     if (n % (fps * 2) === 0)
       console.log(
-        `Rendering ${String(n / fps).padStart(2, '0')}/40s · ${((Date.now() - start) / 1000).toFixed(1)}s elapsed`,
+        `Rendering ${String(n / fps).padStart(2, '0')}/29s · ${((Date.now() - start) / 1000).toFixed(1)}s elapsed`,
       );
   }
   encoder.stdin.end();
   const [code] = await finished;
   if (code) throw new Error(errorLog.slice(-5000));
-  await page.evaluate(() => window.renderFrame(37.7 * 60));
+  await page.evaluate(() => window.renderFrame(27.5 * 60));
   writeFileSync(
     path.join(output, 'tadgobble-intro-cover.png'),
     Buffer.from(

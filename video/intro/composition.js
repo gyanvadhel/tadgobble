@@ -97,48 +97,8 @@ const scenes = [
     label: 'THE GOOD STUFF, SAVED',
     lines: ['THAT ONE?', 'KEEP IT.'],
   },
-  {
-    a: 21,
-    b: 26,
-    id: 'maker',
-    bg: C.plum,
-    fg: C.butter,
-    clip: 'basics',
-    label: '03 / MADE SOMETHING?',
-    lines: ['BECOME A', 'GOBBLER.'],
-  },
-  {
-    a: 26,
-    b: 28.2,
-    id: 'people',
-    bg: C.butter,
-    fg: C.plum,
-    clip: 'people',
-    label: 'GIVE YOUR PRODUCT A PLACE',
-    lines: ['YOUR KIND', 'OF PEOPLE.'],
-  },
-  {
-    a: 28.2,
-    b: 30,
-    id: 'details',
-    bg: C.sky,
-    fg: C.plum,
-    clip: 'details',
-    label: 'A LITTLE MORE YOU',
-    lines: ['MAKE IT', 'YOURS.'],
-  },
-  {
-    a: 30,
-    b: 32,
-    id: 'review',
-    bg: C.lilac,
-    fg: C.plum,
-    clip: 'review',
-    label: 'READY FOR ITS FIRST BITE',
-    lines: ['YOU COOKED.', 'WE’LL LOOK.'],
-  },
-  { a: 32, b: 35, id: 'payoff', bg: C.plum, fg: C.butter },
-  { a: 35, b: 40, id: 'end', bg: C.butter, fg: C.plum },
+  { a: 21, b: 24, id: 'payoff', bg: C.plum, fg: C.butter },
+  { a: 24, b: 29, id: 'end', bg: C.butter, fg: C.plum },
 ];
 function interpolate(keys, t) {
   if (t <= keys[0][0]) return keys[0][1];
@@ -172,39 +132,6 @@ function sourceTime(s, t) {
       [19.85, event('discover', 'stash-click')],
       [21, end('discover')],
     ],
-    basics: [
-      [21, 0],
-      [21.4, event('basics', 'share-click')],
-      [21.7, event('basics', 'form-open')],
-      [22.3, event('basics', 'type-Product name-click')],
-      [22.8, event('basics', 'typed-Product name')],
-      [23.25, event('basics', 'type-Product website-click')],
-      [23.9, event('basics', 'typed-Product website')],
-      [24.7, event('basics', 'typed-One sentence that says it all')],
-      [25.35, event('basics', 'basics-next-click')],
-      [25.6, event('basics', 'cover-ready')],
-      [26, end('basics')],
-    ],
-    people: [
-      [26, 0],
-      [26.65, event('people', 'maker-category-click')],
-      [27.25, event('people', 'audience-click')],
-      [27.95, event('people', 'people-next-click')],
-      [28.2, end('people')],
-    ],
-    details: [
-      [28.2, 0],
-      [28.7, event('details', 'color-click')],
-      [29.65, event('details', 'details-next-click')],
-      [30, end('details')],
-    ],
-    review: [
-      [30, 0],
-      [30.25, event('review', 'ownership-click')],
-      [30.75, event('review', 'submit-click')],
-      [31.0, event('review', 'receipt')],
-      [32, end('review')],
-    ],
   };
   return interpolate(raw[s.clip], t);
 }
@@ -227,11 +154,7 @@ function camera(s, t) {
   };
   const cp = target('discover', 'category-click'),
     sv = target('discover', 'save-click'),
-    st = target('discover', 'stash-click'),
-    cat = target('people', 'maker-category-click'),
-    aud = target('people', 'audience-click'),
-    color = target('details', 'color-click'),
-    sub = target('review', 'submit-click');
+    st = target('discover', 'stash-click');
   switch (s.id) {
     case 'hello':
       return key([
@@ -277,40 +200,6 @@ function camera(s, t) {
         [19.6, ...st, 2.05],
         [20, 720, 490, 1.1],
         [21, 720, 540, 1.12],
-      ]);
-    case 'maker':
-      return key([
-        [21, 1020, 200, 1.65],
-        [21.5, 720, 550, 1.17],
-        [22.25, 930, 545, 1.85],
-        [23.6, 930, 610, 1.8],
-        [24, 420, 590, 1.65],
-        [25.0, 660, 580, 1.18],
-        [26, 720, 550, 1.1],
-      ]);
-    case 'people':
-      return key([
-        [26, 850, 540, 1.12],
-        [26.5, ...cat, 1.75],
-        [27.1, ...aud, 1.7],
-        [27.6, 720, 550, 1.12],
-        [28.2, 720, 550, 1.12],
-      ]);
-    case 'details':
-      return key([
-        [28.2, 720, 600, 1.1],
-        [28.55, ...color, 1.85],
-        [29.1, 420, 530, 1.65],
-        [29.5, 720, 550, 1.14],
-        [30, 720, 550, 1.12],
-      ]);
-    case 'review':
-      return key([
-        [30, 720, 550, 1.12],
-        [30.5, ...sub, 1.85],
-        [30.8, ...sub, 1.85],
-        [31.15, 720, 520, 1.23],
-        [32, 720, 520, 1.25],
       ]);
     default:
       return { x: 720, y: 550, z: 1 };
@@ -628,15 +517,15 @@ function kinetic(t, s) {
   }
 }
 function payoff(t) {
-  const u = t - 32;
+  const u = t - 21;
   star(910, 520, 120, t, C.orange);
   if (u < 1.25) {
     let p = spring(u);
     ctx.save();
     ctx.translate(540, 780);
     ctx.scale(p, p);
-    text('LESS', 0, 0, 230, C.butter, 'center');
-    text('DOOMSCROLL.', 0, 155, 106, C.paper, 'center');
+    text('PHOTOS.', 0, 0, 190, C.butter, 'center');
+    text('VIDEOS.', 0, 155, 106, C.paper, 'center');
     ctx.strokeStyle = C.orange;
     ctx.lineWidth = 12;
     ctx.beginPath();
@@ -650,15 +539,15 @@ function payoff(t) {
     ctx.translate(540, 710);
     ctx.rotate(-0.035);
     ctx.scale(p, p);
-    text('YO,', 0, 0, 270, C.orange, 'center');
-    text('LOOK AT', 0, 190, 155, C.butter, 'center');
-    text('THIS.', 0, 375, 240, C.butter, 'center');
+    text('AND TINY', 0, 0, 170, C.orange, 'center');
+    text('SELF-MADE', 0, 190, 155, C.butter, 'center');
+    text('SITES.', 0, 375, 240, C.butter, 'center');
     ctx.restore();
   }
   mascot(130, 1225, 130, t, C.lilac);
 }
 function ending(t) {
-  const u = t - 35;
+  const u = t - 24;
   let p = spring(u * 0.8);
   ctx.save();
   ctx.translate(540, 700 + (1 - p) * 180);
@@ -677,7 +566,7 @@ function ending(t) {
   ctx.translate(540, 1360 + (1 - q) * 50);
   ctx.scale(q, q);
   rect(-462, -65, 924, 122, 61, C.plum);
-  text('tadgobble.web.app', 0, 15, 72, C.butter, 'center', 700);
+  text('tadgobble.in', 0, 15, 72, C.butter, 'center', 700);
   ctx.restore();
   label('DISCOVER SOMETHING GOOD. SHARE YOUR THING.', 540, 1480, C.plum, 25, 'center');
   label('AI-generated voiceover · Demo catalog', 540, 1680, C.plum, 25, 'center');
@@ -696,7 +585,7 @@ for (let i = 0; i < noise.data.length; i += 4) {
 gc.putImageData(noise, 0, 0);
 window.showCaptions = true;
 window.renderFrame = async function (frame) {
-  const t = Math.min(39.999, frame / 60),
+  const t = Math.min(28.999, frame / 60),
     s = scenes.find((s) => t >= s.a && t < s.b) || scenes.at(-1);
   ctx.fillStyle = s.bg;
   ctx.fillRect(0, 0, 1080, 1920);
@@ -726,7 +615,7 @@ window.renderFrame = async function (frame) {
     label('Demo catalog', 166, 1408, C.paper, 22, 'center');
   }
   kinetic(t, s);
-  ctx.globalAlpha = 0.45;
+  ctx.globalAlpha = 0.12;
   ctx.drawImage(grain, 0, 0, 1080, 1920);
   ctx.globalAlpha = 1;
   // A fast diagonal brand wipe hides cuts while leaving held frames crisp.
@@ -744,10 +633,10 @@ window.renderFrame = async function (frame) {
   ctx.fillStyle = s.fg + '22';
   ctx.fillRect(66, barY, 948, 4);
   ctx.fillStyle = s.fg;
-  ctx.fillRect(66, barY, (948 * t) / 40, 4);
+  ctx.fillRect(66, barY, (948 * t) / 29, 4);
   label('GOOD FINDS. QUESTIONABLE SCREEN TIME.', 66, 1810, s.fg, 21);
   label(
-    String(Math.min(12, scenes.indexOf(s) + 1)).padStart(2, '0') + ' / 12',
+    String(Math.min(8, scenes.indexOf(s) + 1)).padStart(2, '0') + ' / 8',
     1014,
     1810,
     s.fg,

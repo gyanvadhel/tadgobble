@@ -168,7 +168,7 @@ try {
   await page.getByRole('heading', { name: 'What did you make?' }).waitFor();
   mark('form-open');
   await type('Product name', 'tadgobble', 24);
-  await type('Product website', 'https://tadgobble.web.app/', 22);
+  await type('Product website', 'https://tadgobble.in/', 22);
   await type('One sentence that says it all', 'A new rabbit hole for your next good find.', 13);
   await page.waitForTimeout(350);
   await glide(page.getByRole('button', { name: 'Continue', exact: true }), 'basics-next', 350);

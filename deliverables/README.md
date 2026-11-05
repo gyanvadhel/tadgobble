@@ -1,6 +1,6 @@
 # tadgobble intro
 
-- tadgobble-intro.mp4 — 40-second vertical intro, 1080 × 1920, 60 fps, AI narration and kinetic subtitles.
+- tadgobble-intro.mp4 — 29-second vertical intro, 1080 × 1920, 60 fps, AI narration and kinetic subtitles.
 - tadgobble-intro-cover.png — matching cover.
 - tadgobble-intro.srt — editable subtitle timing.
 

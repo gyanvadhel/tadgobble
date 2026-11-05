@@ -59,45 +59,9 @@ save the good stuff
 to your stash.
 
 16
-00:00:21,196 --> 00:00:22,314
-made something?
+00:00:24,370 --> 00:00:27,260
+find your next obsession. tadgobble.
 
 17
-00:00:22,314 --> 00:00:23,589
-become a Gobbler.
-
-18
-00:00:23,784 --> 00:00:24,725
-drop your link.
-
-19
-00:00:24,725 --> 00:00:26,177
-let people find it.
-
-20
-00:00:26,270 --> 00:00:27,500
-pick your people.
-
-21
-00:00:28,380 --> 00:00:29,510
-make it yours.
-
-22
-00:00:30,160 --> 00:00:31,350
-send it for review.
-
-23
-00:00:32,132 --> 00:00:33,321
-less doomscroll.
-
-24
-00:00:33,321 --> 00:00:35,286
-More, yo, look at this.
-
-25
-00:00:35,390 --> 00:00:37,120
-find your next obsession.
-
-26
-00:00:37,200 --> 00:00:40,000
-tadgobble.web.app
+00:00:27,000 --> 00:00:29,000
+tadgobble.in

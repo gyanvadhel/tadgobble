@@ -91,7 +91,7 @@ try {
     viewport: { width: 1600, height: 1200 },
     reducedMotion: 'reduce',
   });
-  const url = 'https://tadgobble.web.app/';
+  const url = 'https://tadgobble.in/';
   if (!get('SELECT id FROM product_covers WHERE owner_id=? AND source_url=?', user.id, url)) {
     await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 });
     await page.waitForTimeout(1000);

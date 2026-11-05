@@ -13,12 +13,7 @@ export const cuts = [
   { a: 12.94, b: 14.94, at: 13.05, rate: 1, first: 27, last: 31 },
   { a: 14.96, b: 15.96, at: 16.0, rate: 1, first: 32, last: 34 },
   { a: 16.2, b: 17.94, at: 18.0, rate: 1, first: 35, last: 41 },
-  { a: 18.1, b: 23.0, at: 21.0, rate: 1.02, first: 42, last: 53 },
-  { a: 23.0, b: 24.04, at: 26.15, rate: 1, first: 54, last: 56 },
-  { a: 24.1, b: 25.1, at: 28.2, rate: 1, first: 57, last: 59 },
-  { a: 25.3, b: 26.3, at: 30.0, rate: 1, first: 60, last: 63 },
-  { a: 26.44, b: 29.5, at: 32.0, rate: 1.06, first: 64, last: 70 },
-  { a: 29.68, b: 33.35, at: 35.25, rate: 1, first: 71, last: 77 },
+  { a: 29.75, b: 32.2, at: 24.3, rate: 1, first: 71, last: 75 },
 ];
 const original = JSON.parse(readFileSync(path.join(dir, 'voice-words.json'))).words;
 const corrections = {
@@ -84,26 +79,17 @@ const groups = [
   [32, 34],
   [35, 38],
   [39, 41],
-  [42, 43],
-  [44, 46],
-  [47, 49],
-  [50, 53],
-  [54, 56],
-  [57, 59],
-  [60, 63],
-  [64, 65],
-  [66, 70],
-  [71, 74],
+  [42, 46],
 ];
 const captions = groups.map(([a, b]) => ({
   start: words[a].start,
-  end: Math.min(words[b + 1]?.start ?? 40, words[b].end + 0.55),
+  end: Math.min(words[b + 1]?.start ?? 29, words[b].end + 0.55),
   words: words.slice(a, b + 1),
 }));
 writeFileSync(path.join(dir, 'captions.json'), JSON.stringify(captions, null, 2));
 writeFileSync(
   path.join(dir, 'audio-timeline.json'),
-  JSON.stringify({ duration: 40, cuts, words }, null, 2),
+  JSON.stringify({ duration: 29, cuts, words }, null, 2),
 );
 const run = (args) =>
   new Promise((resolve, reject) => {
@@ -121,7 +107,7 @@ const filter =
     .join(';') +
   ';' +
   cuts.map((_, i) => `[a${i}]`).join('') +
-  `amix=inputs=${cuts.length}:normalize=0,apad,atrim=0:40,loudnorm=I=-17:TP=-2:LRA=9[a]`;
+  `amix=inputs=${cuts.length}:normalize=0,apad,atrim=0:29,loudnorm=I=-17:TP=-2:LRA=9[a]`;
 await run([
   '-i',
   path.join(dir, 'voice-original.wav'),
@@ -135,7 +121,7 @@ await run([
 ]);
 // Original procedural score and sound design: no licensed music samples.
 const sr = 48000,
-  duration = 40,
+  duration = 29,
   samples = new Float64Array(sr * duration),
   rand = (() => {
     let x = 721;
@@ -157,7 +143,7 @@ const chords = [
   [48, 55, 60, 64, 67],
   [43, 55, 59, 62, 67],
 ];
-for (let beat = 0; beat < 80; beat++) {
+for (let beat = 0; beat < 58; beat++) {
   const t = beat * 0.5,
     chord = chords[Math.floor(beat / 8) % 4],
     low = hz(chord[0]);
@@ -195,11 +181,11 @@ for (let beat = 0; beat < 80; beat++) {
     );
   }
 }
-const transitions = [4, 8, 10.1, 13, 16, 18, 21, 26, 28.2, 30, 32, 35];
+const transitions = [4, 8, 10.1, 13, 16, 18, 21, 24];
 for (const at of transitions)
   add(at - 0.16, 0.25, (x) => rand() * Math.sin((Math.PI * x) / 0.25) ** 2, 0.13);
 for (const at of [
-  8.85, 14.0, 16.75, 18.65, 19.85, 21.4, 22.3, 23.25, 25.35, 26.65, 27.25, 28.7, 30.25, 30.75,
+  8.85, 14.0, 16.75, 18.65, 19.85, 21.05, 22.3, 24.75,
 ]) {
   add(
     at,
@@ -210,7 +196,7 @@ for (const at of [
 }
 add(9.2, 0.2, (x) => Math.sin(2 * Math.PI * (110 * x + 8 * x * x)) * Math.exp(-x * 20), 0.24);
 for (const [i, f] of [523.25, 659.25, 783.99].entries())
-  add(31 + i * 0.1, 0.45, (x) => Math.sin(2 * Math.PI * f * x) * Math.exp(-x * 10), 0.1);
+  add(24.65 + i * 0.1, 0.45, (x) => Math.sin(2 * Math.PI * f * x) * Math.exp(-x * 10), 0.1);
 const wave = Buffer.alloc(44 + samples.length * 2);
 wave.write('RIFF');
 wave.writeUInt32LE(wave.length - 8, 4);
@@ -227,7 +213,7 @@ wave.write('data', 36);
 wave.writeUInt32LE(samples.length * 2, 40);
 for (let i = 0; i < samples.length; i++) {
   const t = i / sr,
-    fade = Math.min(1, t / 0.08, (40 - t) / 0.8);
+    fade = Math.min(1, t / 0.08, (29 - t) / 0.8);
   wave.writeInt16LE(Math.round(Math.tanh(samples[i]) * fade * 32760), 44 + i * 2);
 }
 writeFileSync(path.join(dir, 'score.wav'), wave);
@@ -253,11 +239,11 @@ const time = (t) => {
 mkdirSync('deliverables', { recursive: true });
 writeFileSync(
   'deliverables/tadgobble-intro.srt',
-  [...captions, { start: 37.2, end: 40, words: [{ word: 'tadgobble.web.app' }] }]
+  [...captions, { start: 27, end: 29, words: [{ word: 'tadgobble.in' }] }]
     .map(
       (c, i) =>
         `${i + 1}\n${time(c.start)} --> ${time(c.end)}\n${c.words.map((w) => w.word).join(' ')}\n`,
     )
     .join('\n'),
 );
-console.log('40-second voice, original score, sound design, and aligned captions ready.');
+console.log('29-second voice, original score, sound design, and aligned captions ready.');
