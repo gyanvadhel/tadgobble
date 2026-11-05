@@ -64,3 +64,25 @@ test('sceneIndexAt splits evenly', () => {
   assert.equal(sceneIndexAt(0.6), 3);
   assert.equal(sceneIndexAt(0.8), 4);
 });
+
+import { blobPath, expressions } from '../lib/mascot.mjs';
+
+test('blobPath is unchanged', () => {
+  assert.equal(
+    blobPath,
+    'M48 12C65 0 88 13 86 34C103 49 93 76 72 77C61 94 36 90 27 75C7 77-1 59 11 45C0 26 15 8 34 13C38 11 44 10 48 12Z',
+  );
+});
+test('expressions has the five moods', () => {
+  assert.deepEqual(Object.keys(expressions).sort(), ['calm', 'happy', 'hungry', 'surprised', 'wink']);
+});
+test("calm matches today's smile path", () => {
+  assert.equal(expressions.calm.mouth.d, 'M37 63Q50 75 65 61');
+});
+test("hungry matches today's open mouth", () => {
+  assert.deepEqual(expressions.hungry.mouth.ellipse, { cx: 50, cy: 65, rx: 12, ry: 10 });
+});
+test('every mood has exactly one kind of mouth', () => {
+  for (const [name, e] of Object.entries(expressions))
+    assert.equal(Boolean(e.mouth.d) !== Boolean(e.mouth.ellipse), true, name);
+});
