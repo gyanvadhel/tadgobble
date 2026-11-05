@@ -1,0 +1,27 @@
+tadgobble intro video — post copy (fits the app's field limits)
+
+Video:   deliverables/tadgobble-intro.mp4   (29.0s, 3.8 MB, 1080x1920; limit is 30s / 5 MB)
+Cover:   deliverables/tadgobble-intro-cover.png
+
+Title (max 60):
+  Welcome to tadgobble. Post it, get seen.
+
+Tagline (max 100):
+  Photos. Videos. Tiny self-made websites. Make a profile, upload, and land on top.
+
+Description (max 2000):
+  Made something? Show it off.
+
+  tadgobble is a better rabbit hole for finds worth your screen time, and a home for
+  the things you made. Photos. Videos. Tiny self-made websites.
+
+  Make a profile, upload your thing, and get seen. Your work can land right on top of
+  the Discover feed, in front of people who came here to find something good.
+
+  Find your next obsession at tadgobble.in
+  (AI-generated voiceover. Demo catalog.)
+
+Featured flag (you run this once, in the Supabase SQL editor, after the post is live):
+  update public.tg_products set featured = true where id = '<PRODUCT_ID>';
+  -- feed order is featured desc, created_at desc, so this pins it to the top.
+  -- undo: set featured = false
