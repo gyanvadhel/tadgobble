@@ -593,6 +593,32 @@
   line-height: 1.7;
   overflow-wrap: anywhere;
 }
+.email-switch {
+  margin: 20px 0;
+  max-width: 650px;
+}
+.email-switch label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.email-switch input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: #39245a;
+  flex-shrink: 0;
+}
+.email-switch small {
+  display: block;
+  margin-top: 5px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+}
 .account-danger {
   margin-top: 35px;
   max-width: 650px;

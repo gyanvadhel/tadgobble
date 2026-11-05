@@ -483,6 +483,59 @@ export default function CreatorPage({ mode = 'profile', username: providedUserna
   );
 }
 
+// One switch for every email about your work. Saves the moment you flip it.
+function EmailSwitch() {
+  const [on, setOn] = useState(null),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState('');
+  useEffect(() => {
+    let alive = true;
+    api('email-prefs')
+      .then((result) => alive && setOn(!!result.emailUpdates))
+      .catch((e) => alive && setError(e.message));
+    return () => {
+      alive = false;
+    };
+  }, []);
+  async function flip(next) {
+    const before = on;
+    setOn(next);
+    setBusy(true);
+    setError('');
+    try {
+      const result = await api('email-prefs/save', { emailUpdates: next });
+      setOn(!!result.emailUpdates);
+    } catch (e) {
+      setOn(before);
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="email-switch">
+      <label>
+        <input
+          type="checkbox"
+          role="switch"
+          checked={!!on}
+          disabled={on === null || busy}
+          onChange={(e) => flip(e.target.checked)}
+        />
+        <span>
+          Email me about my work
+          <small>First saves, comments, review results and a weekly roundup.</small>
+        </span>
+      </label>
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function ProfileSettings({ user, onSaved }) {
   const [data, setData] = useState(user.profile),
     [busy, setBusy] = useState(false),
@@ -681,6 +734,7 @@ function ProfileSettings({ user, onSaved }) {
             New accounts use Google sign-in. Manage your Google password in your Google account.
           </p>
         )}
+        {cloudMode && <EmailSwitch />}
         <div className="my-work-actions">
           <a className="button" href="/welcome?next=%2Fsettings">
             Redo my introduction
