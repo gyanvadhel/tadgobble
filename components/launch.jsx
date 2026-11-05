@@ -18,6 +18,7 @@ import { Brand } from './art';
 import { Gobble } from './gobble';
 import { isArtwork } from '../lib/product-options.mjs';
 import SnackMachine from './snack-machine';
+import IntroStory from './intro-story';
 import ProductShowcase, { ProductDemo, productSceneColor } from './product-showcase';
 import { paletteStyle } from '../lib/design-tokens.mjs';
 import '../app/launch.css';
@@ -340,6 +341,7 @@ export default function Launch({ products }) {
             </button>
           </div>
         </section>
+        <IntroStory products={products} motion={motion} reduceMotion={reduceMotion} />
         <div className="discovery-ribbon" aria-label="Ekdum fresh. Post your first thing.">
           <div className="ribbon-type" aria-hidden="true">
             EKDUM FRESH. <Asterisk /> POST YOUR FIRST THING. <Asterisk /> EKDUM FRESH.

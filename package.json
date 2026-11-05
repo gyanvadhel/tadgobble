@@ -24,6 +24,7 @@
     "setup": "node scripts/setup.mjs",
     "test:e2e": "node scripts/e2e.mjs",
     "test:launch": "node scripts/launch-e2e.mjs",
+    "test:intro": "node scripts/intro-e2e.mjs",
     "test:submission": "node scripts/submission-e2e.mjs",
     "test:covers": "node scripts/covers-e2e.mjs",
     "build:hosting": "node scripts/build-hosting.mjs",

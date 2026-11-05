@@ -1,0 +1,219 @@
+/* The home-page intro story. Static list first; the pinned layout is layered on top by data-mode. */
+.intro-story {
+  position: relative;
+  padding: clamp(56px, 8vw, 120px) 4.5%;
+  color: var(--ink);
+}
+.story-scenes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(18px, 3vw, 36px);
+}
+.story-scene {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(18px, 4vw, 56px);
+  min-height: clamp(320px, 42vw, 520px);
+  padding: clamp(24px, 4vw, 56px);
+  border-radius: 32px;
+  background: var(--scene, var(--purple));
+}
+.story-step {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 6px 12px;
+  border: 2px solid currentColor;
+  border-radius: 40px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.story-scene h3 {
+  margin: 0 0 16px;
+  font-size: clamp(38px, 6.4vw, 92px);
+  font-weight: 800;
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.story-scene p {
+  max-width: 34ch;
+  margin: 0;
+  font-size: clamp(16px, 1.6vw, 21px);
+  line-height: 1.4;
+}
+.story-art {
+  position: relative;
+  min-height: 260px;
+  height: 100%;
+}
+.art-gobble {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: block;
+  width: clamp(150px, 20vw, 270px);
+  color: var(--purple);
+  transform: translate(-50%, -50%) rotate(-8deg);
+}
+.art-gobble::before {
+  content: '';
+  position: absolute;
+  inset: -14% -10%;
+  border-radius: 50%;
+  background: var(--cream);
+}
+.art-gobble svg {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.art-gobble-small {
+  left: 16%;
+  top: 76%;
+  width: clamp(90px, 11vw, 150px);
+}
+.art-chip,
+.art-ticket,
+.art-card,
+.art-bubble,
+.art-receipt {
+  position: absolute;
+  display: inline-flex;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 6px 0 #39245a20;
+  font-family: var(--display);
+}
+.art-chip {
+  left: var(--x);
+  top: var(--y);
+  padding: 12px 18px;
+  border-radius: 40px;
+  font-size: clamp(14px, 1.6vw, 20px);
+  font-weight: 600;
+  transform: rotate(var(--r));
+}
+.art-ticket {
+  left: 4%;
+  top: 14%;
+  max-width: 62%;
+  padding: 18px 22px;
+  border-radius: 9px;
+  font-size: clamp(18px, 2.4vw, 28px);
+  transform: rotate(-7deg);
+}
+.art-card {
+  right: 4%;
+  bottom: 8%;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 58%;
+  padding: 16px 20px;
+  border-radius: 18px;
+  transform: rotate(5deg);
+}
+.art-card b {
+  font-size: clamp(16px, 2vw, 22px);
+}
+.art-card i {
+  font-size: 13px;
+  font-style: normal;
+  opacity: 0.7;
+}
+.art-card-big {
+  left: 8%;
+  top: 8%;
+  right: auto;
+  bottom: auto;
+  min-width: 56%;
+  padding: 26px 26px 52px;
+  transform: rotate(-3deg);
+}
+.art-bookmark {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--cream);
+}
+.art-bubble {
+  right: 6%;
+  top: 62%;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 22px 22px 22px 4px;
+  font-size: clamp(14px, 1.6vw, 18px);
+  transform: rotate(3deg);
+}
+.art-form {
+  flex-direction: column;
+  gap: 10px;
+  left: 6%;
+  top: 8%;
+  max-width: 70%;
+  transform: rotate(-4deg);
+}
+.art-form b {
+  padding: 10px 14px;
+  border: 2px dashed #39245a50;
+  border-radius: 8px;
+  font-size: clamp(14px, 1.7vw, 19px);
+  font-weight: 500;
+}
+.art-receipt {
+  right: 4%;
+  bottom: 10%;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border-radius: 9px;
+  background: var(--ink);
+  color: var(--cream);
+  font-size: clamp(14px, 1.7vw, 19px);
+  transform: rotate(4deg);
+}
+.art-arrow {
+  position: absolute;
+  left: 50%;
+  bottom: 2%;
+  margin-left: -22px;
+}
+.story-skip {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+.story-skip:focus-visible {
+  position: fixed;
+  left: 16px;
+  top: 14px;
+  z-index: 100;
+  width: auto;
+  height: auto;
+  clip: auto;
+  padding: 14px 18px;
+  background: #fff;
+}
+@media (max-width: 800px) {
+  .story-scene {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .story-art {
+    min-height: 240px;
+  }
+}
