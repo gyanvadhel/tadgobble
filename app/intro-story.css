@@ -208,6 +208,86 @@
   padding: 14px 18px;
   background: #fff;
 }
+/* The goo filter lives in a zero-size svg; the layer of blobs is only used when pinned. */
+.story-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+.story-goo,
+.story-pause {
+  display: none;
+}
+
+/* Pinned: one scene at a time on a stage that melts through the scene colours. */
+.intro-story[data-mode='pinned'] {
+  padding: 0;
+}
+.intro-story[data-mode='pinned'] .story-stage {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--cream);
+}
+.intro-story[data-mode='pinned'] .story-goo {
+  display: block;
+  position: absolute;
+  inset: 0;
+  filter: url(#story-goo);
+}
+.goo-blob {
+  position: absolute;
+  width: 36vmax;
+  height: 36vmax;
+  margin: -18vmax 0 0 -18vmax;
+  border-radius: 50%;
+  will-change: transform;
+}
+.intro-story[data-mode='pinned'] .story-scenes,
+.intro-story[data-mode='pinned'] .story-scenes > li {
+  position: absolute;
+  inset: 0;
+}
+.intro-story[data-mode='pinned'] .story-scene {
+  height: 100%;
+  min-height: 0;
+  padding: clamp(24px, 6vw, 96px) 5.5%;
+  border-radius: 0;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+.intro-story[data-mode='pinned'] .story-scene[data-active='true'] {
+  opacity: 1;
+}
+.intro-story[data-mode='pinned'] .story-skip,
+.intro-story[data-mode='pinned'] .story-pause {
+  position: absolute;
+  bottom: 20px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  height: auto;
+  clip: auto;
+  padding: 10px 16px;
+  border: 2px solid var(--ink);
+  border-radius: 40px;
+  background: var(--cream);
+  color: var(--ink);
+  font: 600 13px/1 var(--display);
+  text-decoration: none;
+  cursor: pointer;
+}
+.intro-story[data-mode='pinned'] .story-skip {
+  left: 5.5%;
+}
+.intro-story[data-mode='pinned'] .story-pause {
+  right: 5.5%;
+}
 @media (max-width: 800px) {
   .story-scene {
     grid-template-columns: 1fr;
@@ -216,4 +296,7 @@
   .story-art {
     min-height: 240px;
   }
+}
+.intro-story[data-mode='pinned'] .art-arrow {
+  bottom: 16%;
 }

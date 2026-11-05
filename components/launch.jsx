@@ -341,7 +341,7 @@ export default function Launch({ products }) {
             </button>
           </div>
         </section>
-        <IntroStory products={products} motion={motion} reduceMotion={reduceMotion} />
+        <IntroStory products={products} motion={motion} reduceMotion={reduceMotion} onMotion={setMotion} />
         <div className="discovery-ribbon" aria-label="Ekdum fresh. Post your first thing.">
           <div className="ribbon-type" aria-hidden="true">
             EKDUM FRESH. <Asterisk /> POST YOUR FIRST THING. <Asterisk /> EKDUM FRESH.

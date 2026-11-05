@@ -84,6 +84,73 @@ check('seeded catalogue puts a real product on the scene 2 ticket', async ({ see
   assert.doesNotMatch(html.match(/data-part="ticket"[^>]*>[^<]*/)?.[0] || '', /your thing\?/);
 });
 
+// A page at the given size, with console errors collected on page.errors.
+async function open(getBrowser, url, { width = 1440, height = 900, reducedMotion = 'no-preference', wait = 'pinned' } = {}) {
+  const browser = await getBrowser();
+  const context = await browser.newContext({ viewport: { width, height }, reducedMotion });
+  const page = await context.newPage();
+  page.errors = [];
+  page.on('pageerror', (e) => page.errors.push(e.message));
+  page.on('console', (m) => m.type() === 'error' && page.errors.push(m.text()));
+  await page.goto(url, { waitUntil: 'load' });
+  if (wait === 'pinned') await page.waitForSelector('.intro-story[data-mode="pinned"] .pin-spacer', { state: 'attached', timeout: 10000 });
+  else await page.waitForTimeout(1200);
+  return page;
+}
+// Scroll so the story is `k` viewport heights in, then say which scene is active.
+const storyAt = (page, k) =>
+  page.evaluate(async (k) => {
+    const top = document.querySelector('.pin-spacer').getBoundingClientRect().top + scrollY;
+    scrollTo({ top: top + innerHeight * k, behavior: 'instant' });
+    await new Promise((r) => setTimeout(r, 250));
+    return [...document.querySelectorAll('.story-scene')].findIndex((s) => s.dataset.active === 'true');
+  }, k);
+
+check('story pins while scrolling', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  assert.equal(await storyAt(page, 0.1), 0);
+  assert.equal(await storyAt(page, 4.3), 4);
+  await page.screenshot({ path: path.join(dir, 'pinned-scene-5.png') });
+  assert.deepEqual(page.errors, []);
+  await page.context().close();
+});
+
+check('scrolling back rewinds', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  await storyAt(page, 4.3);
+  assert.equal(await storyAt(page, 0.1), 0);
+  await page.context().close();
+});
+
+check('skip lands on fresh picks', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  await storyAt(page, 1.5);
+  await page.click('.story-skip');
+  await page.waitForFunction(() => {
+    const r = document.querySelector('#fresh-picks').getBoundingClientRect();
+    return r.top < innerHeight * 0.6 && r.bottom > 0;
+  }, null, { timeout: 4000 });
+  await page.context().close();
+});
+
+check('reduced motion has no pin and shows every title', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded, { reducedMotion: 'reduce', wait: 'still' });
+  assert.equal(await page.locator('.pin-spacer').count(), 0);
+  for (const title of titles) assert.ok(await page.locator('.story-scene h3', { hasText: title }).isVisible(), title);
+  await page.context().close();
+});
+
+check('Pause motion mid-story reverts cleanly', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  await storyAt(page, 2.2);
+  await page.click('.motion-control');
+  await page.waitForFunction(() => !document.querySelector('.pin-spacer'), null, { timeout: 4000 });
+  const leftovers = await page.evaluate(() => [...document.querySelectorAll('.story-scene, .story-scene h3')].filter((e) => e.style.transform || e.style.opacity).length);
+  assert.equal(leftovers, 0);
+  assert.deepEqual(page.errors, []);
+  await page.context().close();
+});
+
 // -- later tasks add their browser checks below this line --
 
 try {
