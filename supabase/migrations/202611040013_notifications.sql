@@ -247,7 +247,7 @@ begin
     update public.tg_email_outbox set attempts = attempts + 1 where id = r.id;
     select * into prod from public.tg_products where id = r.product_id;
     out := out || jsonb_build_array(jsonb_build_object(
-      'id', r.id, 'kind', r.kind, 'to', addr, 'name', pname,
+      'id', r.id, 'kind', r.kind, 'user', r.recipient_id, 'to', addr, 'name', pname,
       'product', case when prod.id is null then null else jsonb_build_object('slug', prod.slug, 'name', prod.name) end,
       'data', r.data));
   end loop;

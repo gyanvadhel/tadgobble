@@ -839,6 +839,7 @@ test('outbox claim skips opted-out, unconfirmed and removed-comment rows', async
   const mine = sent.find((r) => r.id === idOk);
   assert.equal(mine.to, 'sendok@sender.example.test');
   assert.equal(mine.name, 'Sendok');
+  assert.equal(mine.user, ok);
   assert.deepEqual(mine.product, { slug: w.slug, name: 'Claim work' });
   assert.equal(mine.data.outcome, 'approved');
   assert.equal(sent.find((r) => r.id === idAdmin).to, null);
