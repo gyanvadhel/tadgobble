@@ -3,7 +3,9 @@ import test from 'node:test';
 import {
   drainOutbox,
   renderEmail,
+  runCycle,
   signUnsubscribe,
+  unsubscribePage,
   verifyUnsubscribe,
 } from '../supabase/functions/_shared/notify.mjs';
 
@@ -173,4 +175,39 @@ test('maker mail carries List-Unsubscribe headers, admin mail does not', async (
   assert.equal(admin.to, 'hello@tadgobble.in');
   assert.equal(admin.headers?.['List-Unsubscribe'], undefined);
   assert.equal(admin.headers?.['List-Unsubscribe-Post'], undefined);
+});
+
+test('drainOutbox waits between sends, never before the first, so Resend is not flooded', async () => {
+  const waits = [];
+  const d = drainWith({ pauseMs: 600, sleep: async (ms) => void waits.push(ms) });
+  const result = await d.run(drainRows());
+  assert.equal(result.sent, 3);
+  assert.deepEqual(waits, [600, 600]);
+});
+
+test('runCycle still sends mail when the weekly roundup fails', async () => {
+  let drained = false;
+  const result = await runCycle({
+    roundup: async () => {
+      throw new Error('roundup broke');
+    },
+    drain: async () => {
+      drained = true;
+      return { sent: 2, failed: 0 };
+    },
+  });
+  assert.equal(drained, true);
+  assert.deepEqual(result, { queued: 0, sent: 2, failed: 0, roundupError: 'roundup broke' });
+  const ok = await runCycle({ roundup: async () => 4, drain: async () => ({ sent: 1, failed: 1 }) });
+  assert.deepEqual(ok, { queued: 4, sent: 1, failed: 1 });
+});
+
+test('the unsubscribe page asks first and only the button posts', () => {
+  const ask = unsubscribePage('ask');
+  assert.match(ask, /<form method="post">/);
+  assert.doesNotMatch(ask, /action=/);
+  assert.match(ask, /Yes, stop emailing me/);
+  const done = unsubscribePage('done');
+  assert.match(done, /Gobble will stop emailing you/);
+  assert.doesNotMatch(done, /<form/);
 });

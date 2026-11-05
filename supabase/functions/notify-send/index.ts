@@ -1,5 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { drainOutbox, renderEmail, signUnsubscribe } from '../_shared/notify.mjs';
+import { drainOutbox, renderEmail, runCycle, signUnsubscribe } from '../_shared/notify.mjs';
 
 // Called every five minutes by Supabase Cron with the x-cron-secret header.
 // Queues the weekly roundup when it is due, then sends whatever is waiting.
@@ -35,8 +35,11 @@ Deno.serve(async (req) => {
   };
 
   try {
-    const queued = Number(check(await admin.rpc('tg_roundup_queue'))) || 0;
-    const { sent, failed } = await drainOutbox({
+    const result = await runCycle({
+      roundup: async () => check(await admin.rpc('tg_roundup_queue')),
+      drain: () =>
+        drainOutbox({
+      pauseMs: 600,
       claim: async () => (check(await admin.rpc('tg_outbox_claim', { max_rows: 20 })) as unknown[]) || [],
       done: async (row_id: string, error: string | null) => {
         check(await admin.rpc('tg_outbox_done', { row_id, error }));
@@ -53,8 +56,9 @@ Deno.serve(async (req) => {
       unsubscribeUrlFor: async (id: string) =>
         `${supabaseUrl}/functions/v1/unsubscribe?t=${await signUnsubscribe(id, unsubscribeSecret)}`,
       adminEmail: Deno.env.get('ADMIN_EMAIL') || REPLY_TO,
+        }),
     });
-    return reply(200, { queued, sent, failed });
+    return reply(200, result);
   } catch (error) {
     return reply(500, { error: String((error as Error)?.message || error).slice(0, 300) });
   }

@@ -175,7 +175,7 @@ export async function verifyUnsubscribe(token, secret) {
 // ---- Sending the queue ----
 
 // Sends one batch. A failure on one row is recorded against that row only; the rest still go out.
-export async function drainOutbox({ claim, done, send, render, unsubscribeUrlFor, adminEmail }) {
+export async function drainOutbox({ claim, done, send, render, unsubscribeUrlFor, adminEmail, pauseMs = 0, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) }) {
   const rows = await claim();
   let sent = 0;
   let failed = 0;
@@ -186,7 +186,11 @@ export async function drainOutbox({ claim, done, send, render, unsubscribeUrlFor
       // The row stays queued and is tried again; the rest of the batch carries on.
     }
   };
+  let first = true;
   for (const row of rows) {
+    // Resend allows about two requests a second; a short gap keeps a big batch from being rejected.
+    if (!first && pauseMs > 0) await sleep(pauseMs);
+    first = false;
     try {
       const maker = !!row.to;
       const unsubscribeUrl = maker ? await unsubscribeUrlFor(row.user) : null;
@@ -204,4 +208,33 @@ export async function drainOutbox({ claim, done, send, render, unsubscribeUrlFor
     await finish(row.id, null);
   }
   return { sent, failed };
+}
+
+// One tick of the cron job: queue the weekly roundup if due, then send. A broken roundup must never stop other mail.
+export async function runCycle({ roundup, drain }) {
+  let queued = 0;
+  let roundupError;
+  try {
+    queued = Number(await roundup()) || 0;
+  } catch (error) {
+    roundupError = String(error?.message || error).slice(0, 300);
+  }
+  const { sent, failed } = await drain();
+  return roundupError ? { queued, sent, failed, roundupError } : { queued, sent, failed };
+}
+
+// The page behind the unsubscribe link. Opening the link only asks; the button does it,
+// so mail scanners that prefetch links cannot unsubscribe anyone.
+export function unsubscribePage(kind) {
+  const body =
+    kind === 'ask'
+      ? `Stop emailing you about your work?</p><form method="post"><button type="submit" style="font:inherit;font-size:16px;padding:10px 18px;border:1px solid #2a2118;border-radius:999px;background:#6b3fa0;color:#fff;cursor:pointer">Yes, stop emailing me</button></form><p>`
+      : 'Done. Gobble will stop emailing you. You can turn emails back on in Settings.';
+  return (
+    '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>tadgobble</title></head>' +
+    "<body style=\"margin:0;background:#fdf6e9;color:#2a2118;font-family:Georgia,'Times New Roman',serif\">" +
+    '<main style="max-width:480px;margin:0 auto;padding:64px 20px"><p style="color:#6b3fa0;letter-spacing:.04em">tadgobble</p>' +
+    `<p style="font-size:20px;line-height:1.5">${body}</p>` +
+    '<p><a href="https://tadgobble.in/settings" style="color:#6b3fa0">Open Settings</a></p></main></body></html>'
+  );
 }
