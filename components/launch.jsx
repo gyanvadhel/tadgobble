@@ -18,6 +18,7 @@ import { Brand } from './art';
 import { Gobble } from './gobble';
 import { isArtwork } from '../lib/product-options.mjs';
 import SnackMachine from './snack-machine';
+import NotificationBell from './notification-bell';
 import IntroStory from './intro-story';
 import { useSmoothScroll } from './use-smooth-scroll';
 import { useCursorFx } from './use-cursor-fx';
@@ -222,6 +223,7 @@ export default function Launch({ products }) {
           </a>
         </nav>
         <div className="launch-header-actions">
+          <NotificationBell />
           <a className="header-submit" href="/discover?submit=1" aria-label="Post your thing">
             Post your thing <Plus size={18} />
           </a>

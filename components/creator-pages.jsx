@@ -11,6 +11,7 @@ import { Modal, AuthModal } from './platform';
 import SubmitWizard from './submit-wizard';
 import { useProductCover } from './cover-editor';
 import { ShareButton } from './creator-credit';
+import NotificationBell from './notification-bell';
 import { VideoBadge } from './work-media';
 import { api, cloudMode } from '../lib/client-api.mjs';
 import { workImageAlt } from '../lib/product-options.mjs';
@@ -225,6 +226,7 @@ export default function CreatorPage({ mode = 'profile', username: providedUserna
           <a href="/my-work" aria-current={mode === 'work' ? 'page' : undefined}>
             My work
           </a>
+          {user && <NotificationBell />}
           {user ? (
             <a href="/settings" aria-label="Account settings">
               <Settings size={20} />

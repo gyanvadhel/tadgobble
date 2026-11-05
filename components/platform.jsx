@@ -49,6 +49,7 @@ import '../app/creators.css';
 import '../app/launch.css';
 import '../app/catalog.css';
 import Studio from './studio';
+import NotificationBell from './notification-bell';
 import { brand } from '../lib/brand.mjs';
 import { api, cloudMode } from '../lib/client-api.mjs';
 export { api } from '../lib/client-api.mjs';
@@ -267,6 +268,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
             >
               <Plus size={16} /> Post your thing
             </button>
+            {user && <NotificationBell />}
             {user ? (
               <button
                 className="avatar"
