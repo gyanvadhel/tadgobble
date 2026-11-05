@@ -168,6 +168,22 @@ check('Pause motion mid-story reverts cleanly', async ({ seeded }, getBrowser) =
   await page.context().close();
 });
 
+check('Pause the tour keeps your scene on screen and focus on it', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  assert.equal(await storyAt(page, 2.2), 2);
+  await page.click('.story-pause');
+  await page.waitForFunction(() => document.querySelector('.intro-story').dataset.mode === 'static', null, { timeout: 4000 });
+  await page.waitForTimeout(300);
+  const after = await page.evaluate(() => {
+    const h = document.querySelectorAll('.story-scene')[2].querySelector('h3');
+    const r = h.getBoundingClientRect();
+    return { visible: r.bottom > 0 && r.top < innerHeight, focused: document.activeElement === h };
+  });
+  assert.ok(after.visible, 'the scene you were reading scrolled out of view');
+  assert.ok(after.focused, 'focus fell back to the page (keyboard users lose their place)');
+  await page.context().close();
+});
+
 // Scroll to `k` viewport heights into the story, let the scrub catch up, read how a part looks.
 const partLook = (page, k, selector) =>
   page.evaluate(
@@ -295,6 +311,21 @@ check('cursor blob appears and follows on a desktop context', async ({ seeded },
   await page.context().close();
 });
 
+check('cursor blob stays light so text under it is readable', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  await page.mouse.move(200, 200);
+  await page.mouse.move(700, 450, { steps: 8 });
+  await page.waitForSelector('.cursor-blob');
+  const look = await page.locator('.cursor-blob').evaluate((el) => {
+    const cs = getComputedStyle(el);
+    return { blend: cs.mixBlendMode, bg: cs.backgroundColor };
+  });
+  assert.notEqual(look.blend, 'multiply', 'multiply darkens text under the blob');
+  const alpha = /^(rgba|color)\(/.test(look.bg) ? Number(look.bg.split(/[\s,/]+/).pop().replace(')', '')) : 1;
+  assert.ok(alpha <= 0.3, `blob fill alpha was ${alpha} (${look.bg})`);
+  await page.context().close();
+});
+
 check('cursor blob is gone after Pause motion', async ({ seeded }, getBrowser) => {
   const page = await open(getBrowser, seeded);
   await page.mouse.move(600, 400, { steps: 4 });
@@ -339,8 +370,19 @@ check('phone-width scroll has no horizontal overflow', async ({ seeded }, getBro
   await page.context().close();
 });
 
+check('phones get the lighter goo filter, desktops the full one', async ({ seeded }, getBrowser) => {
+  const filterOf = (page) => page.locator('.story-goo').evaluate((el) => getComputedStyle(el).filter);
+  const phone = await open(getBrowser, seeded, { width: 390, height: 844 });
+  assert.match(await filterOf(phone), /story-goo-lite/);
+  await phone.context().close();
+  const desk = await open(getBrowser, seeded);
+  const f = await filterOf(desk);
+  assert.ok(f.includes('story-goo') && !f.includes('story-goo-lite'), f);
+  await desk.context().close();
+});
+
 check('a low-powered touch device gets the plain list', async ({ seeded }, getBrowser) => {
-  const page = await open(getBrowser, seeded, { width: 390, height: 844, wait: 'still', touch: true, cores: 4 });
+  const page = await open(getBrowser, seeded, { width: 390, height: 844, wait: 'still', touch: true, cores: 2 });
   assert.equal(await page.getAttribute('.intro-story', 'data-mode'), 'static');
   assert.equal(await page.locator('.pin-spacer').count(), 0);
   assert.equal(await page.locator('.cursor-blob').count(), 0);

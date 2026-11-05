@@ -153,6 +153,8 @@ export default function IntroStory({ products = [], motion = false, reduceMotion
   const section = useRef(null);
   const stage = useRef(null);
   const landed = useRef(false);
+  const activeScene = useRef(0);
+  const resume = useRef(null); // the scene to keep on screen when "Pause the tour" swaps in the plain list
   const [mode, setMode] = useState('static');
 
   // Decide on the client whether this device gets the pinned story or the plain list.
@@ -179,10 +181,12 @@ export default function IntroStory({ products = [], motion = false, reduceMotion
     const mm = gsap.matchMedia();
     mm.add({ phone: '(max-width: 800px)', desk: '(min-width: 801px)' }, () => {
       const blobs = gsap.utils.toArray('.goo-blob', root);
-      const paint = (index) =>
+      const paint = (index) => {
+        activeScene.current = index;
         sceneEls.forEach((el, n) => {
           el.dataset.active = n === index ? 'true' : 'false';
         });
+      };
       paint(0);
       gsap.set(blobs[0], { scale: 7 });
       gsap.set(blobs.slice(1), { scale: 0 });
@@ -213,6 +217,18 @@ export default function IntroStory({ products = [], motion = false, reduceMotion
       mm.revert();
       sceneEls.forEach((el) => delete el.dataset.active);
     };
+  }, [mode]);
+
+  // Pausing from inside the tour swaps the tall pinned section for a short list. Keep the scene
+  // the visitor was reading on screen, and put keyboard focus on it (the button they pressed is gone).
+  useEffect(() => {
+    if (mode !== 'static' || resume.current === null) return;
+    const heading = section.current.querySelectorAll('.story-scene')[resume.current]?.querySelector('h3');
+    resume.current = null;
+    if (!heading) return;
+    heading.tabIndex = -1;
+    heading.scrollIntoView({ behavior: 'instant', block: 'center' });
+    heading.focus({ preventScroll: true });
   }, [mode]);
 
   // Products can arrive late (the static export loads them after the page), which moves things.
@@ -257,6 +273,15 @@ export default function IntroStory({ products = [], motion = false, reduceMotion
               values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -10"
             />
           </filter>
+          {/* Phones blur a smaller radius: the same melt for a fraction of the paint cost. */}
+          <filter id="story-goo-lite" x="-10%" y="-10%" width="120%" height="120%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+            <feColorMatrix
+              in="blur"
+              mode="matrix"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -10"
+            />
+          </filter>
         </defs>
       </svg>
       <div className="story-stage" ref={stage}>
@@ -289,7 +314,14 @@ export default function IntroStory({ products = [], motion = false, reduceMotion
           Skip the tour <ArrowDown size={16} />
         </a>
         {mode === 'pinned' && onMotion && (
-          <button type="button" className="story-pause" onClick={() => onMotion(false)}>
+          <button
+            type="button"
+            className="story-pause"
+            onClick={() => {
+              resume.current = activeScene.current;
+              onMotion(false);
+            }}
+          >
             <Pause size={13} /> Pause the tour
           </button>
         )}

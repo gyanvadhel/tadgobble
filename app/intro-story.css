@@ -248,6 +248,11 @@
   inset: 0;
   filter: url(#story-goo);
 }
+@media (max-width: 800px) {
+  .intro-story[data-mode='pinned'] .story-goo {
+    filter: url(#story-goo-lite);
+  }
+}
 .goo-blob {
   position: absolute;
   width: 36vmax;
@@ -327,7 +332,7 @@
   display: inline-block;
 }
 
-/* The cursor blob: soft, behind clicks, and screened so text under it stays readable. */
+/* The cursor blob: soft and see-through, so text under it stays readable. */
 .cursor-blob {
   position: fixed;
   left: 0;
@@ -336,8 +341,7 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: var(--ink);
-  mix-blend-mode: multiply;
+  background: color-mix(in srgb, var(--ink) 16%, transparent);
   opacity: 0;
   pointer-events: none;
   will-change: transform;

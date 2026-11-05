@@ -38,8 +38,11 @@ test('pinMode is static for reduced motion', () => {
 test('pinMode is static when motion is paused', () => {
   assert.equal(pinMode({ ...fine, motion: false }), 'static');
 });
-test('pinMode is static for a coarse pointer with 4 cores', () => {
-  assert.equal(pinMode({ ...fine, coarsePointer: true, cores: 4 }), 'static');
+test('pinMode is static for a coarse pointer with fewer than 4 cores', () => {
+  assert.equal(pinMode({ ...fine, coarsePointer: true, cores: 2 }), 'static');
+});
+test('pinMode is pinned for a coarse pointer reporting 4 cores (WebKit reports 4 on every iPhone)', () => {
+  assert.equal(pinMode({ ...fine, coarsePointer: true, cores: 4 }), 'pinned');
 });
 test('pinMode is static when device memory is 2', () => {
   assert.equal(pinMode({ ...fine, memory: 2 }), 'static');
