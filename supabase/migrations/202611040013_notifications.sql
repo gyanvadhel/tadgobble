@@ -214,3 +214,98 @@ begin
 end $$;
 revoke all on function public.tg_api(text, jsonb) from public;
 grant execute on function public.tg_api(text, jsonb) to anon, authenticated;
+
+-- Calls only the email sender (service role) may make. Browser roles get nothing.
+
+-- Hands the sender its next batch. Rows nobody should be emailed about are skipped here, not sent:
+-- makers who turned emails off, addresses never confirmed, and comments removed since.
+create function public.tg_outbox_claim(max_rows integer default 20) returns jsonb
+language plpgsql security definer set search_path = '' as $$
+declare
+  r public.tg_email_outbox; out jsonb := '[]'::jsonb;
+  addr text; confirmed boolean; pname text; wants boolean; gone boolean; prod public.tg_products;
+begin
+  update public.tg_email_outbox set status = 'failed', last_error = coalesce(last_error, 'Gave up after 5 tries.')
+    where status = 'queued' and attempts >= 5;
+  for r in
+    select * from public.tg_email_outbox where status = 'queued' and attempts < 5
+      order by created_at, id limit greatest(coalesce(max_rows, 0), 0) for update skip locked
+  loop
+    addr := null; pname := null; gone := false;
+    if r.recipient_id is not null then
+      select u.email_confirmed_at is not null, u.email into confirmed, addr from auth.users u where u.id = r.recipient_id;
+      select p.name, p.email_updates into pname, wants from public.tg_profiles p where p.id = r.recipient_id;
+      if r.comment_id is not null then
+        select c.removed into gone from public.tg_comments c where c.id = r.comment_id;
+        gone := coalesce(gone, true);
+      end if;
+      if gone or wants is not true or confirmed is not true or addr is null then
+        update public.tg_email_outbox set status = 'skipped' where id = r.id;
+        continue;
+      end if;
+    end if;
+    update public.tg_email_outbox set attempts = attempts + 1 where id = r.id;
+    select * into prod from public.tg_products where id = r.product_id;
+    out := out || jsonb_build_array(jsonb_build_object(
+      'id', r.id, 'kind', r.kind, 'to', addr, 'name', pname,
+      'product', case when prod.id is null then null else jsonb_build_object('slug', prod.slug, 'name', prod.name) end,
+      'data', r.data));
+  end loop;
+  return out;
+end $$;
+
+-- Records how a send went. A failure goes back in the queue until it has been tried five times.
+create function public.tg_outbox_done(row_id uuid, error text default null) returns void
+language sql security definer set search_path = '' as $$
+  update public.tg_email_outbox set
+    status = case when error is null then 'sent' when attempts >= 5 then 'failed' else 'queued' end,
+    sent_at = case when error is null then now() else sent_at end,
+    last_error = case when error is null then last_error else left(error, 500) end
+  where id = row_id and status = 'queued';
+$$;
+
+-- Queues each maker's weekly roundup. Runs on every cron tick but only acts once per Indian week,
+-- from Sunday 09:00 IST.
+create function public.tg_roundup_queue(at timestamptz default now()) returns integer
+language plpgsql security definer set search_path = '' as $$
+declare ist timestamp := at at time zone 'Asia/Kolkata'; wk text; n integer := 0;
+begin
+  wk := to_char(ist, 'IYYY-IW');
+  if extract(dow from ist) <> 0 or ist::time < time '09:00' then return 0; end if;
+  perform pg_advisory_xact_lock(hashtext('tg-roundup'));
+  if exists (select 1 from public.tg_settings where key = 'roundup_week' and value = wk) then return 0; end if;
+  insert into public.tg_settings(key, value) values ('roundup_week', wk)
+    on conflict (key) do update set value = excluded.value;
+  with per as (
+    select n.recipient_id, n.product_id,
+      coalesce(sum(n.count) filter (where n.kind = 'save'), 0)::int as saves,
+      (count(*) filter (where n.kind = 'comment'))::int as comments,
+      (count(*) filter (where n.kind = 'reply'))::int as replies
+    from public.tg_notifications n
+    where n.kind in ('save', 'comment', 'reply') and n.created_at >= at - interval '7 days' and n.created_at < at
+    group by n.recipient_id, n.product_id
+  )
+  insert into public.tg_email_outbox(kind, recipient_id, data)
+  select 'roundup', per.recipient_id, jsonb_build_object(
+    'saves', sum(per.saves), 'comments', sum(per.comments), 'replies', sum(per.replies),
+    'works', jsonb_agg(jsonb_build_object('slug', p.slug, 'name', p.name,
+      'saves', per.saves, 'comments', per.comments, 'replies', per.replies)
+      order by per.saves + per.comments + per.replies desc, p.name))
+  from per
+  join public.tg_products p on p.id = per.product_id
+  join public.tg_profiles u on u.id = per.recipient_id and u.email_updates
+  group by per.recipient_id;
+  get diagnostics n = row_count;
+  return n;
+end $$;
+
+-- The one-click unsubscribe link ends here (the sender checks the signed token first).
+create function public.tg_unsubscribe(user_id uuid) returns void
+language sql security definer set search_path = '' as $$
+  update public.tg_profiles set email_updates = false where id = user_id;
+$$;
+
+revoke all on function public.tg_outbox_claim(integer), public.tg_outbox_done(uuid, text),
+  public.tg_roundup_queue(timestamptz), public.tg_unsubscribe(uuid) from public, anon, authenticated;
+grant execute on function public.tg_outbox_claim(integer), public.tg_outbox_done(uuid, text),
+  public.tg_roundup_queue(timestamptz), public.tg_unsubscribe(uuid) to service_role;

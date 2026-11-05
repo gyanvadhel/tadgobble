@@ -793,3 +793,116 @@ test('a broken email hook never fails the action, and the bell item still lands'
   assert.ok((await bell(who)).some((n) => n.kind === 'comment'));
   assert.equal((await outbox("recipient_id=$1 and kind in ('comment','first_save')", [who])).length, 0);
 });
+
+// ---- Notifications: calls only the email sender may make ----
+async function service(sql, params = []) {
+  await db.exec('set role service_role');
+  try {
+    return (await db.query(sql, params)).rows;
+  } finally {
+    await db.exec('reset role');
+  }
+}
+const claim = async (n = 50) => (await service('select public.tg_outbox_claim($1) as r', [n]))[0].r;
+async function addUser(id, name, { confirmed = true } = {}) {
+  await db.query(
+    'insert into auth.users(id,email,raw_user_meta_data,email_confirmed_at) values($1,$2,$3,$4)',
+    [id, name.toLowerCase() + '@sender.example.test', { name }, confirmed ? new Date() : null],
+  );
+}
+test('outbox claim skips opted-out, unconfirmed and removed-comment rows', async () => {
+  await db.exec("update tg_email_outbox set status='sent' where status='queued'");
+  const ok = '0c000001-0000-4000-8000-000000000001';
+  const off = '0c000002-0000-4000-8000-000000000002';
+  const unconfirmed = '0c000003-0000-4000-8000-000000000003';
+  await addUser(ok, 'Sendok');
+  await addUser(off, 'Sendoff');
+  await addUser(unconfirmed, 'Sendnew', { confirmed: false });
+  await api(off, 'email-prefs/save', { emailUpdates: false });
+  const w = await publishWork(ok, 'Claim work');
+  await api(noteUsers.fan, 'comment', { productId: w.id, body: 'Claim me please' });
+  await db.exec("update tg_email_outbox set status='sent' where status='queued'"); // only hand-made rows from here
+  const seed = async (recipient, kind = 'review', product = w.id, comment = null) =>
+    (await db.query(
+      "insert into tg_email_outbox(kind,recipient_id,product_id,comment_id,data) values($1,$2,$3,$4,'{\"outcome\":\"approved\"}') returning id",
+      [kind, recipient, product, comment],
+    )).rows[0].id;
+  const idOk = await seed(ok);
+  const idOff = await seed(off);
+  const idNew = await seed(unconfirmed);
+  const idAdmin = await seed(null, 'admin_queue');
+  const commentRow = (await db.query('select id from tg_comments where product_id=$1', [w.id])).rows[0];
+  const idRemoved = await seed(ok, 'comment', w.id, commentRow.id);
+  await db.query('update tg_comments set removed=true,body=$2 where id=$1', [commentRow.id, '[removed]']);
+  const sent = await claim();
+  assert.deepEqual(sent.map((r) => r.id).sort(), [idAdmin, idOk].sort());
+  const mine = sent.find((r) => r.id === idOk);
+  assert.equal(mine.to, 'sendok@sender.example.test');
+  assert.equal(mine.name, 'Sendok');
+  assert.deepEqual(mine.product, { slug: w.slug, name: 'Claim work' });
+  assert.equal(mine.data.outcome, 'approved');
+  assert.equal(sent.find((r) => r.id === idAdmin).to, null);
+  const status = async (id) => (await db.query('select status,attempts from tg_email_outbox where id=$1', [id])).rows[0];
+  for (const id of [idOff, idNew, idRemoved]) assert.equal((await status(id)).status, 'skipped');
+  assert.equal((await status(idOk)).attempts, 1);
+  await service('select public.tg_outbox_done($1)', [idOk]);
+  assert.equal((await status(idOk)).status, 'sent');
+  await service('select public.tg_outbox_done($1)', [idAdmin]);
+  assert.deepEqual(await claim(), []);
+});
+test('outbox claim and done retry up to five times then fail', async () => {
+  await db.exec("update tg_email_outbox set status='sent' where status='queued'");
+  const [{ id }] = (await db.query("insert into tg_email_outbox(kind,data) values('admin_queue','{\"what\":\"new\",\"name\":\"Retry\",\"maker\":\"M\"}') returning id")).rows;
+  const row = async () => (await db.query('select status,attempts,last_error,sent_at from tg_email_outbox where id=$1', [id])).rows[0];
+  for (let i = 1; i <= 5; i++) {
+    const got = await claim();
+    assert.deepEqual(got.map((r) => r.id), [id], 'attempt ' + i);
+    await service('select public.tg_outbox_done($1,$2)', [id, 'Resend is down']);
+    const r = await row();
+    assert.equal(r.attempts, i);
+    assert.equal(r.last_error, 'Resend is down');
+    assert.equal(r.status, i < 5 ? 'queued' : 'failed');
+  }
+  assert.deepEqual(await claim(), []);
+  assert.equal((await row()).sent_at, null);
+});
+test('roundup queues once per IST week on Sunday morning only', async () => {
+  await db.exec("update tg_email_outbox set status='sent' where status='queued'");
+  const sunday = '2026-11-08 03:30:00+00'; // Sunday 09:00 in India
+  await db.exec("update tg_notifications set created_at = '2026-11-06 00:00:00+00' where kind in ('save','comment','reply')");
+  await db.exec("delete from tg_settings where key = 'roundup_week'");
+  assert.equal((await service('select public.tg_roundup_queue($1) as n', ['2026-11-07 10:00:00+00']))[0].n, 0); // Saturday
+  assert.equal((await service('select public.tg_roundup_queue($1) as n', ['2026-11-08 02:00:00+00']))[0].n, 0); // Sunday 07:30 IST
+  const n = (await service('select public.tg_roundup_queue($1) as n', [sunday]))[0].n;
+  assert.ok(n > 0);
+  const rows = await outbox("kind='roundup' and status='queued'");
+  assert.equal(rows.length, n);
+  const mine = rows.find((r) => r.recipient_id === noteUsers.owner);
+  assert.ok(mine, 'the owner of the saved and commented work gets one');
+  assert.ok(mine.data.saves >= 1);
+  assert.ok(mine.data.works.some((w) => w.slug === noteProduct.slug));
+  assert.equal((await service('select public.tg_roundup_queue($1) as n', [sunday]))[0].n, 0);
+  assert.equal((await service("select public.tg_roundup_queue($1) as n", ['2026-11-08 12:00:00+00']))[0].n, 0);
+});
+test('unsubscribe turns the email switch off', async () => {
+  await api(noteUsers.fan, 'email-prefs/save', { emailUpdates: true });
+  await service('select public.tg_unsubscribe($1)', [noteUsers.fan]);
+  assert.equal((await api(noteUsers.fan, 'email-prefs')).emailUpdates, false);
+});
+test('the service-only calls are closed to browser roles', async () => {
+  for (const role of ['anon', 'authenticated']) {
+    await db.exec('set role ' + role);
+    try {
+      for (const sql of [
+        'select public.tg_outbox_claim(5)',
+        "select public.tg_outbox_done('00000000-0000-4000-8000-000000000000')",
+        'select public.tg_roundup_queue(now())',
+        "select public.tg_unsubscribe('00000000-0000-4000-8000-000000000000')",
+        'select * from public.tg_email_outbox',
+      ])
+        await assert.rejects(() => db.query(sql), /permission denied/, role + ': ' + sql);
+    } finally {
+      await db.exec('reset role');
+    }
+  }
+});
