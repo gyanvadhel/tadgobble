@@ -223,8 +223,20 @@
 .intro-story[data-mode='pinned'] {
   padding: 0;
 }
+/* The tour is 4.5 screens of scrolling on a desktop and 3.5 on a phone, plus the one it sits on. */
+.intro-story[data-mode='pinned'] {
+  height: 550vh;
+  height: 550svh;
+}
+@media (max-width: 800px) {
+  .intro-story[data-mode='pinned'] {
+    height: 450vh;
+    height: 450svh;
+  }
+}
 .intro-story[data-mode='pinned'] .story-stage {
-  position: relative;
+  position: sticky;
+  top: 0;
   height: 100vh;
   height: 100svh;
   overflow: hidden;

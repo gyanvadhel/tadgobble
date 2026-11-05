@@ -85,22 +85,30 @@ check('seeded catalogue puts a real product on the scene 2 ticket', async ({ see
 });
 
 // A page at the given size, with console errors collected on page.errors.
-async function open(getBrowser, url, { width = 1440, height = 900, reducedMotion = 'no-preference', wait = 'pinned', touch = false } = {}) {
+async function open(getBrowser, url, { width = 1440, height = 900, reducedMotion = 'no-preference', wait = 'pinned', touch = false, cores, shifts = false } = {}) {
   const browser = await getBrowser();
   const context = await browser.newContext({ viewport: { width, height }, reducedMotion, ...(touch ? { hasTouch: true, isMobile: true } : {}) });
   const page = await context.newPage();
+  if (cores) await page.addInitScript((n) => Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => n }), cores);
+  if (shifts)
+    await page.addInitScript(() => {
+      window.__cls = 0;
+      new PerformanceObserver((list) => {
+        for (const e of list.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
+      }).observe({ type: 'layout-shift', buffered: true });
+    });
   page.errors = [];
   page.on('pageerror', (e) => page.errors.push(e.message));
   page.on('console', (m) => m.type() === 'error' && page.errors.push(m.text()));
   await page.goto(url, { waitUntil: 'load' });
-  if (wait === 'pinned') await page.waitForSelector('.intro-story[data-mode="pinned"] .pin-spacer', { state: 'attached', timeout: 10000 });
+  if (wait === 'pinned') await page.waitForSelector('.intro-story[data-mode="pinned"] .story-scene[data-active="true"]', { state: 'attached', timeout: 10000 });
   else await page.waitForTimeout(1200);
   return page;
 }
 // Scroll so the story is `k` viewport heights in, then say which scene is active.
 const storyAt = (page, k) =>
   page.evaluate(async (k) => {
-    const top = document.querySelector('.pin-spacer').getBoundingClientRect().top + scrollY;
+    const top = document.querySelector('.intro-story').getBoundingClientRect().top + scrollY;
     scrollTo({ top: top + innerHeight * k, behavior: 'instant' });
     await new Promise((r) => setTimeout(r, 250));
     return [...document.querySelectorAll('.story-scene')].findIndex((s) => s.dataset.active === 'true');
@@ -112,6 +120,15 @@ check('story pins while scrolling', async ({ seeded }, getBrowser) => {
   assert.equal(await storyAt(page, 4.3), 4);
   await page.screenshot({ path: path.join(dir, 'pinned-scene-5.png') });
   assert.deepEqual(page.errors, []);
+  await page.context().close();
+});
+
+check('the story sticks in place with CSS, not a scripted fixed pin', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  assert.equal(await page.locator('.pin-spacer').count(), 0);
+  assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('.story-stage')).position), 'sticky');
+  const ratio = await page.evaluate(() => document.querySelector('.intro-story').offsetHeight / innerHeight);
+  assert.ok(ratio > 5.4 && ratio < 5.6, `story is ${ratio} screens tall`);
   await page.context().close();
 });
 
@@ -144,7 +161,7 @@ check('Pause motion mid-story reverts cleanly', async ({ seeded }, getBrowser) =
   const page = await open(getBrowser, seeded);
   await storyAt(page, 2.2);
   await page.click('.motion-control');
-  await page.waitForFunction(() => !document.querySelector('.pin-spacer'), null, { timeout: 4000 });
+  await page.waitForFunction(() => document.querySelector('.intro-story').dataset.mode !== 'pinned', null, { timeout: 4000 });
   const leftovers = await page.evaluate(() => [...document.querySelectorAll('.story-scene, .story-scene h3')].filter((e) => e.style.transform || e.style.opacity).length);
   assert.equal(leftovers, 0);
   assert.deepEqual(page.errors, []);
@@ -155,7 +172,7 @@ check('Pause motion mid-story reverts cleanly', async ({ seeded }, getBrowser) =
 const partLook = (page, k, selector) =>
   page.evaluate(
     async ([k, selector]) => {
-      const top = document.querySelector('.pin-spacer').getBoundingClientRect().top + scrollY;
+      const top = document.querySelector('.intro-story').getBoundingClientRect().top + scrollY;
       scrollTo({ top: top + innerHeight * k, behavior: 'instant' });
       await new Promise((r) => setTimeout(r, 1500));
       const cs = getComputedStyle(document.querySelector(selector));
@@ -298,6 +315,62 @@ check('buttons stay clickable under the blob', async ({ seeded }, getBrowser) =>
   await page.waitForTimeout(500);
   const top = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest('a')?.getAttribute('href'), [box.x + box.width / 2, box.y + box.height / 2]);
   assert.equal(top, '/discover');
+  await page.context().close();
+});
+
+// Walk the whole page top to bottom in steps, calling `look` at each stop.
+const walk = (page, look, step = 0.7, pause = 120) =>
+  page.evaluate(async ([look, step, pause]) => {
+    const check = new Function('return ' + look)();
+    const bad = [];
+    for (let y = 0; y <= document.documentElement.scrollHeight; y += step > 5 ? step : innerHeight * step) {
+      scrollTo({ top: y, behavior: 'instant' });
+      await new Promise((r) => setTimeout(r, pause));
+      const wrong = check();
+      if (wrong) bad.push(`${Math.round(y)}: ${wrong}`);
+    }
+    return bad;
+  }, [look, step, pause]);
+
+check('phone-width scroll has no horizontal overflow', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded, { width: 390, height: 844 });
+  const bad = await walk(page, '() => document.documentElement.scrollWidth > innerWidth + 1 && "scrollWidth " + document.documentElement.scrollWidth');
+  assert.deepEqual(bad, []);
+  await page.context().close();
+});
+
+check('a low-powered touch device gets the plain list', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded, { width: 390, height: 844, wait: 'still', touch: true, cores: 4 });
+  assert.equal(await page.getAttribute('.intro-story', 'data-mode'), 'static');
+  assert.equal(await page.locator('.pin-spacer').count(), 0);
+  assert.equal(await page.locator('.cursor-blob').count(), 0);
+  for (const title of titles) assert.ok(await page.locator('.story-scene h3', { hasText: title }).count(), title);
+  await page.context().close();
+});
+
+check('layout shift stays under 0.1 through the whole story', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded, { shifts: true });
+  await walk(page, '() => false', 80, 50); // small wheel-sized steps, like a real scroll
+  const cls = await page.evaluate(() => window.__cls);
+  assert.ok(cls < 0.1, `CLS was ${cls}`);
+  await page.context().close();
+});
+
+check('resizing from desktop to phone while pinned leaves no gap or errors', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  await storyAt(page, 2.2);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForTimeout(1200);
+  assert.equal(await storyAt(page, 0.1), 0);
+  assert.equal(await storyAt(page, 3.2), 4);
+  const stage = await page.evaluate(() => {
+    const r = document.querySelector('.story-stage').getBoundingClientRect();
+    return { top: Math.round(r.top), height: Math.round(r.height), vh: innerHeight };
+  });
+  assert.equal(stage.top, 0);
+  assert.equal(stage.height, stage.vh);
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
+  assert.deepEqual(page.errors, []);
   await page.context().close();
 });
 

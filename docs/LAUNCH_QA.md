@@ -1,5 +1,14 @@
 # Launch verification
 
+## Scroll-driven intro story — 5 November 2026
+
+Added the five-scene intro at the top of the home page (`components/intro-story.jsx`, `app/intro-story.css`, `lib/intro-story.mjs`, `components/use-smooth-scroll.js`, `components/use-cursor-fx.js`). `npm run test:intro` (24 browser checks, run after `npm run build`) covers: scene titles and the skip link in the no-JS HTML; the generic ticket on an empty catalogue and a real product name on a seeded one; the story sticking and rewinding; skip landing on fresh picks; reduced motion and a mid-story Pause reverting cleanly; each scene's picture actually moving; smooth scroll stopping under the preview dialog and resuming at the same position; Page Down, Space and Tab; the `/#for-makers` deep link; the cursor blob (none on touch, gone after Pause, never blocking clicks); no horizontal overflow at 390px; the plain list on a low-powered touch device; layout shift under 0.1; and a 1440→390 resize while pinned.
+
+- **Sticky, not scripted pin.** The first version pinned with ScrollTrigger and measured a layout shift of about 1.5 as the stage switched to `position: fixed` a frame late. The stage now uses CSS `position: sticky` inside a section sized in `svh` (550 on desktop, 450 on phones), and ScrollTrigger only scrubs the timeline. Shift is under 0.1.
+- **Static export.** `npm run build:hosting` produced the export. Served with `npm run preview:hosting` and the live catalogue delayed by 2.5 seconds: the scene 2 ticket changed to a real product when it arrived, the page grew about 950px, every scene still activated in order, the skip link landed on fresh picks, and there were no console errors.
+- **Size.** Everything the intro adds (its components, SplitText and Lenis) lands in one chunk of about 50 KB raw, 15.9 KB gzipped, under the 60 KB target.
+- **Known, not from this work.** `npm run test:launch` already failed before the intro: after its first three checks it looks for an "I build" audience button that the first-timers rewrite removed. Those three checks still pass. The script needs updating for the current home page.
+
 ## Google connection and public policy pages — 21 October 2026
 
 Confirmed the Google provider is enabled and email confirmation remains required. The live sign-in button reaches Google's sign-in screen with the expected Supabase callback and no `invalid_client`, `redirect_uri_mismatch`, or access-blocked message. An actual person's Google consent and return session still need an interactive login; no personal Google account was used for these checks.

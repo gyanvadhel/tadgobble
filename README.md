@@ -20,6 +20,7 @@ Meet Gobble: the purple blob with excellent taste and absolutely no tab discipli
 - **Share it on.** Phones can post any work straight to an Instagram story as a ready-made card.
 - **Accounts.** Sign in with Google or email, including password reset.
 - **Review studio.** An admin space for approving submissions, managing covers, and keeping pending work private.
+- **A scroll-driven intro.** A five-scene tour at the top of the home page: Gobble swallows the tab pile, a ticket becomes a find, a bookmark bursts into confetti, and the colour melts from scene to scene as you scroll. It sticks in place with CSS, eases the wheel with Lenis, adds a cursor blob and magnetic buttons for mouse users, and falls back to a plain readable list for reduced motion, paused motion, low-power phones and no JavaScript.
 - **Motion with manners.** GSAP touches throughout: a letter-drop headline, cards that glide when you filter, galleries that rise in as you scroll, pictures that fly onto their page, confetti when you save, and a Gobble whose eyes follow your cursor. All of it switches off for reduced-motion settings.
 
 ## Built with

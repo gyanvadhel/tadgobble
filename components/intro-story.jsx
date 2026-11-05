@@ -177,8 +177,7 @@ export default function IntroStory({ products = [], motion = false, reduceMotion
     const root = section.current;
     const sceneEls = [...root.querySelectorAll('.story-scene')];
     const mm = gsap.matchMedia();
-    mm.add({ phone: '(max-width: 800px)', desk: '(min-width: 801px)' }, (ctx) => {
-      const { phone } = ctx.conditions;
+    mm.add({ phone: '(max-width: 800px)', desk: '(min-width: 801px)' }, () => {
       const blobs = gsap.utils.toArray('.goo-blob', root);
       const paint = (index) =>
         sceneEls.forEach((el, n) => {
@@ -190,12 +189,12 @@ export default function IntroStory({ products = [], motion = false, reduceMotion
       const tl = gsap.timeline({
         defaults: { ease: 'none' },
         scrollTrigger: {
+          // The stage sticks with CSS (so it never lags a frame); the section is as tall as the
+          // tour is long and this only scrubs the timeline across it.
           trigger: root,
           start: 'top top',
-          end: phone ? '+=350%' : '+=450%',
-          pin: stage.current,
+          end: 'bottom bottom',
           scrub: 0.6,
-          anticipatePin: 1,
           invalidateOnRefresh: true,
           onUpdate: (self) => paint(sceneIndexAt(self.progress)),
         },
