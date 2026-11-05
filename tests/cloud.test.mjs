@@ -622,6 +622,7 @@ test('notification setup: a published work owned by someone else', async () => {
 });
 test('saves notify the owner anonymously, merge while unread, and never repeat', async () => {
   const id = noteProduct.id;
+  await api(noteUsers.owner, 'notifications/read'); // the approval notice is not under test here
   await api(noteUsers.fan, 'save', { productId: id }); // first save
   await api(noteUsers.fan, 'save', { productId: id }); // unsave
   await api(noteUsers.fan, 'save', { productId: id }); // re-save: no new notification
@@ -688,4 +689,107 @@ test('notifications are private', async () => {
   } finally {
     await db.exec('reset role');
   }
+});
+
+// ---- Notifications: the email outbox ----
+async function publishWork(user, name) {
+  const made = await api(user, 'submit', { ...product, name });
+  const row = (await api(owner, 'studio')).products.find((p) => p.slug === made.slug);
+  await api(owner, 'studio/product', { id: row.id, action: 'verify', confirmed: true });
+  return { id: row.id, slug: made.slug };
+}
+const outbox = async (where, params = []) =>
+  (await db.query('select * from tg_email_outbox where ' + where + ' order by created_at, id', params)).rows;
+const bell = async (user) => (await api(user, 'notifications')).items;
+test('first save emails the owner exactly once across all their work', async () => {
+  const first = '0b000001-0000-4000-8000-000000000001';
+  await addNoteUser(first, 'Firstowner');
+  const a = await publishWork(first, 'First work');
+  const b = await publishWork(first, 'Second work');
+  await api(noteUsers.fan, 'save', { productId: a.id });
+  await api(noteUsers.fan, 'save', { productId: b.id });
+  await api(noteUsers.fan2, 'save', { productId: a.id });
+  await api(first, 'save', { productId: a.id }); // their own work never counts
+  const rows = await outbox("kind='first_save' and recipient_id=$1", [first]);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].product_id, a.id);
+  assert.equal(rows[0].status, 'queued');
+});
+test('top-level comments queue an email, replies and own comments do not', async () => {
+  const who = '0b000002-0000-4000-8000-000000000002';
+  await addNoteUser(who, 'Commentowner');
+  const w = await publishWork(who, 'Comment work');
+  await api(noteUsers.fan, 'comment', { productId: w.id, body: 'Beautifully made' });
+  const top = (await api(null, 'products/' + w.slug)).comments[0].id;
+  await api(noteUsers.fan2, 'comment', { productId: w.id, parentId: top, body: 'Agreed' });
+  await api(who, 'comment', { productId: w.id, body: 'Thanks all, I wrote this myself' });
+  const rows = await outbox("kind='comment' and recipient_id=$1", [who]);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].comment_id, top);
+  assert.equal(rows[0].data.actor, 'Notefan');
+  assert.match(rows[0].data.preview, /Beautifully made/);
+});
+test('review outcomes reach the maker for submissions and edits, and the admin queue fills', async () => {
+  const maker2 = '0b000003-0000-4000-8000-000000000003';
+  await addNoteUser(maker2, 'Reviewmaker');
+  const made = await api(maker2, 'submit', { ...product, name: 'Reviewed work' });
+  const id = (await api(owner, 'studio')).products.find((p) => p.slug === made.slug).id;
+  let queue = await outbox("kind='admin_queue' and product_id=$1", [id]);
+  assert.equal(queue.length, 1);
+  assert.equal(queue[0].recipient_id, null);
+  assert.equal(queue[0].data.what, 'new');
+  assert.equal(queue[0].data.name, 'Reviewed work');
+  assert.equal(queue[0].data.maker, 'Reviewmaker');
+  await api(owner, 'studio/product', { id, action: 'changes', feedback: 'Please add a clearer photo' });
+  let review = await outbox("kind='review' and product_id=$1", [id]);
+  assert.equal(review.length, 1);
+  assert.deepEqual(review[0].data, { outcome: 'changes', note: 'Please add a clearer photo', edit: false });
+  assert.equal((await bell(maker2)).find((n) => n.kind === 'review').outcome, 'changes');
+  await api(maker2, 'works/update', { ...product, id, name: 'Reviewed work v2' });
+  queue = await outbox("kind='admin_queue' and product_id=$1", [id]);
+  assert.deepEqual(queue.map((q) => q.data.what), ['new', 'resubmission']);
+  await api(owner, 'studio/product', { id, action: 'verify', confirmed: true });
+  review = await outbox("kind='review' and product_id=$1", [id]);
+  assert.equal(review[1].data.outcome, 'approved');
+  assert.equal(review[1].data.edit, false);
+  // a repeat approval of live work is not news
+  await api(owner, 'studio/product', { id, action: 'verify', confirmed: true });
+  assert.equal((await outbox("kind='review' and product_id=$1", [id])).length, 2);
+  // an edit to live work queues for review, and a rejected edit reports edit:true
+  const edit = await api(maker2, 'works/update', { ...product, id, name: 'Reviewed work v3' });
+  assert.equal(edit.live, true);
+  queue = await outbox("kind='admin_queue' and product_id=$1", [id]);
+  assert.deepEqual(queue.map((q) => q.data.what), ['new', 'resubmission', 'edit']);
+  await api(owner, 'studio/product', { id, action: 'reject', feedback: 'Not this edit' });
+  review = await outbox("kind='review' and product_id=$1", [id]);
+  assert.equal(review.length, 3);
+  assert.deepEqual(review[2].data, { outcome: 'rejected', note: 'Not this edit', edit: true });
+  assert.deepEqual(
+    (await bell(maker2)).filter((n) => n.kind === 'review').map((n) => n.outcome).sort(),
+    ['approved', 'changes', 'rejected'],
+  );
+});
+test('email preference is private and defaults on', async () => {
+  assert.deepEqual(await api(noteUsers.fan, 'email-prefs'), { emailUpdates: true });
+  assert.deepEqual(await api(noteUsers.fan, 'email-prefs/save', { emailUpdates: false }), { emailUpdates: false });
+  assert.deepEqual(await api(noteUsers.fan, 'email-prefs'), { emailUpdates: false });
+  assert.deepEqual(await api(noteUsers.fan2, 'email-prefs'), { emailUpdates: true });
+  await assert.rejects(() => api(noteUsers.fan, 'email-prefs/save', { emailUpdates: 'maybe' }), /on or off/);
+  await assert.rejects(() => api(null, 'email-prefs'), /Sign in/);
+  await assert.rejects(() => api(null, 'email-prefs/save', { emailUpdates: true }), /Sign in/);
+  await api(noteUsers.fan, 'email-prefs/save', { emailUpdates: true });
+});
+test('a broken email hook never fails the action, and the bell item still lands', async () => {
+  const who = '0b000004-0000-4000-8000-000000000004';
+  await addNoteUser(who, 'Brokenowner');
+  const w = await publishWork(who, 'Broken hook work');
+  await db.exec('alter table tg_email_outbox add constraint t_break check (false) not valid');
+  try {
+    assert.deepEqual(await api(noteUsers.fan, 'comment', { productId: w.id, body: 'Still goes through' }), { ok: true });
+    assert.equal((await api(noteUsers.fan, 'save', { productId: w.id })).saved, true);
+  } finally {
+    await db.exec('alter table tg_email_outbox drop constraint t_break');
+  }
+  assert.ok((await bell(who)).some((n) => n.kind === 'comment'));
+  assert.equal((await outbox("recipient_id=$1 and kind in ('comment','first_save')", [who])).length, 0);
 });
