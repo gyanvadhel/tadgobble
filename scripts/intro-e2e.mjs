@@ -85,9 +85,9 @@ check('seeded catalogue puts a real product on the scene 2 ticket', async ({ see
 });
 
 // A page at the given size, with console errors collected on page.errors.
-async function open(getBrowser, url, { width = 1440, height = 900, reducedMotion = 'no-preference', wait = 'pinned' } = {}) {
+async function open(getBrowser, url, { width = 1440, height = 900, reducedMotion = 'no-preference', wait = 'pinned', touch = false } = {}) {
   const browser = await getBrowser();
-  const context = await browser.newContext({ viewport: { width, height }, reducedMotion });
+  const context = await browser.newContext({ viewport: { width, height }, reducedMotion, ...(touch ? { hasTouch: true, isMobile: true } : {}) });
   const page = await context.newPage();
   page.errors = [];
   page.on('pageerror', (e) => page.errors.push(e.message));
@@ -258,6 +258,48 @@ check('loading /#for-makers lands on the makers section', async ({ seeded }, get
   await page.context().close();
 });
 
+
+check('no cursor blob on a touch context', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded, { width: 390, height: 844, wait: 'still', touch: true });
+  assert.equal(await page.locator('.cursor-blob').count(), 0);
+  await page.context().close();
+});
+
+check('cursor blob appears and follows on a desktop context', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  await page.mouse.move(200, 200);
+  await page.mouse.move(700, 450, { steps: 8 });
+  await page.waitForSelector('.cursor-blob');
+  await page.waitForTimeout(900);
+  const box = await page.locator('.cursor-blob').boundingBox();
+  const centre = [box.x + box.width / 2, box.y + box.height / 2];
+  assert.ok(Math.abs(centre[0] - 700) < 40 && Math.abs(centre[1] - 450) < 40, `blob centre was ${centre}`);
+  assert.equal(await page.locator('.cursor-blob').getAttribute('aria-hidden'), 'true');
+  await page.context().close();
+});
+
+check('cursor blob is gone after Pause motion', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  await page.mouse.move(600, 400, { steps: 4 });
+  await page.waitForSelector('.cursor-blob');
+  await page.click('.motion-control');
+  await page.waitForFunction(() => !document.querySelector('.cursor-blob'), null, { timeout: 4000 });
+  assert.deepEqual(page.errors, []);
+  await page.context().close();
+});
+
+check('buttons stay clickable under the blob', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
+  await page.waitForTimeout(400);
+  const link = page.locator('.intro-actions .outline-button');
+  const box = await link.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 6 });
+  await page.waitForTimeout(500);
+  const top = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest('a')?.getAttribute('href'), [box.x + box.width / 2, box.y + box.height / 2]);
+  assert.equal(top, '/discover');
+  await page.context().close();
+});
 
 try {
   const ctx = { seeded: await start(3102, true), empty: await start(3103, false) };

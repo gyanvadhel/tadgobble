@@ -20,6 +20,7 @@ import { isArtwork } from '../lib/product-options.mjs';
 import SnackMachine from './snack-machine';
 import IntroStory from './intro-story';
 import { useSmoothScroll } from './use-smooth-scroll';
+import { useCursorFx } from './use-cursor-fx';
 import ProductShowcase, { ProductDemo, productSceneColor } from './product-showcase';
 import { paletteStyle } from '../lib/design-tokens.mjs';
 import '../app/launch.css';
@@ -42,6 +43,7 @@ export default function Launch({ products }) {
     [heroIndex, setHeroIndex] = useState(0),
     [boops, setBoops] = useState(0);
   useSmoothScroll({ enabled: motion, paused: Boolean(preview) });
+  useCursorFx({ enabled: motion });
   const featured = products[heroIndex % Math.max(products.length, 1)];
 
   const openPreview = useCallback((product, fromFeed = false, trigger = null) => {
@@ -259,6 +261,7 @@ export default function Launch({ products }) {
                 {products.length ? (
                   <button
                     className="feed-button launch-button plum-button"
+                    data-magnetic
                     onClick={feed}
                     disabled={feeding || !products.length}
                   >
@@ -266,12 +269,12 @@ export default function Launch({ products }) {
                     {feeding ? 'nom nom nom…' : 'Feed me a find'}
                   </button>
                 ) : (
-                  <a className="launch-button plum-button" href="/discover?submit=1">
+                  <a className="launch-button plum-button" data-magnetic href="/discover?submit=1">
                     <Plus size={18} />
                     Be the first find
                   </a>
                 )}
-                <a className="launch-button outline-button" href="/discover">
+                <a className="launch-button outline-button" data-magnetic href="/discover">
                   Browse all <ArrowUpRight size={18} />
                 </a>
               </div>
@@ -372,7 +375,7 @@ export default function Launch({ products }) {
                 Share a painting, a design, or an app. No portfolio needed. We review every
                 submission so curious people can discover your work and talk about it.
               </p>
-              <a className="launch-button plum-button" href="/discover?submit=1">
+              <a className="launch-button plum-button" data-magnetic href="/discover?submit=1">
                 Post your thing <ArrowUpRight size={20} />
               </a>
             </div>

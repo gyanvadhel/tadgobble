@@ -314,3 +314,19 @@
 .bubble-text {
   display: inline-block;
 }
+
+/* The cursor blob: soft, behind clicks, and screened so text under it stays readable. */
+.cursor-blob {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ink);
+  mix-blend-mode: multiply;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform;
+}
