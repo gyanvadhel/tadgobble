@@ -151,6 +151,51 @@ check('Pause motion mid-story reverts cleanly', async ({ seeded }, getBrowser) =
   await page.context().close();
 });
 
+// Scroll to `k` viewport heights into the story, let the scrub catch up, read how a part looks.
+const partLook = (page, k, selector) =>
+  page.evaluate(
+    async ([k, selector]) => {
+      const top = document.querySelector('.pin-spacer').getBoundingClientRect().top + scrollY;
+      scrollTo({ top: top + innerHeight * k, behavior: 'instant' });
+      await new Promise((r) => setTimeout(r, 1500));
+      const cs = getComputedStyle(document.querySelector(selector));
+      return `${cs.transform}|${cs.opacity}`;
+    },
+    [k, selector],
+  );
+
+check('each scene illustration changes between its start and end', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  const parts = [
+    '[data-scene="rabbit-hole"] .art-chip',
+    '[data-scene="feed"] [data-part="ticket"]',
+    '[data-scene="stash"] [data-part="bubble"]',
+    '[data-scene="post"] [data-part="receipt"]',
+    '[data-scene="first-time"] [data-part="arrow"]',
+  ];
+  for (const [n, selector] of parts.entries()) {
+    const start = await partLook(page, 4.5 * (n / 5 + 0.004), selector);
+    const end = await partLook(page, 4.5 * ((n + 1) / 5 - 0.004), selector);
+    assert.notEqual(start, end, `scene ${n + 1} ${selector} should move`);
+  }
+  await page.context().close();
+});
+
+check('scene 2 shows the first product name on the ticket', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  const name = await page.locator('[data-scene="feed"] [data-part="ticket"]').textContent();
+  assert.ok(name.trim() && !/your thing/.test(name), `ticket text was "${name}"`);
+  await page.context().close();
+});
+
+check('no console errors across a full scroll', async ({ seeded }, getBrowser) => {
+  const page = await open(getBrowser, seeded);
+  for (let k = 0; k <= 4.8; k += 0.4) await storyAt(page, k);
+  for (let k = 4.8; k >= 0; k -= 0.8) await storyAt(page, k);
+  assert.deepEqual(page.errors, []);
+  await page.context().close();
+});
+
 // -- later tasks add their browser checks below this line --
 
 try {

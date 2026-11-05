@@ -300,3 +300,17 @@
 .intro-story[data-mode='pinned'] .art-arrow {
   bottom: 16%;
 }
+.art-confetti {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin: -4px 0 0 -4px;
+  border-radius: 3px;
+  opacity: 0;
+  pointer-events: none;
+}
+.bubble-text {
+  display: inline-block;
+}
