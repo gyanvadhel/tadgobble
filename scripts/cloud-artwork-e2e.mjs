@@ -74,7 +74,7 @@ try {
     .getByLabel('Add a photo of your work')
     .setInputFiles({ name: 'cloud-art-qa.png', mimeType: 'image/png', buffer: image });
   await page.getByText('Image ready', { exact: true }).waitFor({ timeout: 30000 });
-  await page.getByLabel('Give it a title').fill('Private artwork QA');
+  await page.getByLabel('Give it a title').fill('Artwork QA');
   await page.locator('.cover-stage img').evaluate((i) => i.decode());
   assert.deepEqual(
     await page.locator('.cover-stage img').evaluate((i) => [i.naturalWidth, i.naturalHeight]),
@@ -92,23 +92,23 @@ try {
     await page.screenshot({ path: `${evidence}/form-${width}.png` });
   }
   await page.getByRole('checkbox', { name: /This is my work/ }).check();
-  await page.getByRole('button', { name: 'Send for review', exact: true }).click();
-  await page.getByText('In the review queue', { exact: true }).waitFor({ timeout: 30000 });
+  await page.getByRole('button', { name: 'Post it', exact: true }).click();
+  await page.getByText('It’s live', { exact: true }).waitFor({ timeout: 30000 });
   const work = check(await admin.from('tg_products').select('*').eq('owner_id', user.id).single());
-  assert.equal(work.status, 'pending');
+  assert.equal(work.status, 'published');
   assert.equal(work.url, '');
   assert.equal(work.source, '');
   assert.equal(work.submission_details.kind, 'art');
   const cover = check(await admin.from('tg_covers').select('*').eq('id', work.cover_id).single());
   assert.equal(cover.kind, 'upload');
   assert.equal(cover.status, 'ready');
-  assert.ok((await anon.storage.from('covers').createSignedUrl(cover.path, 60)).error);
+  assert.ok(check(await anon.storage.from('covers').createSignedUrl(cover.path, 60)).signedUrl);
   const current = check(await anon.rpc('tg_api', { route: 'bootstrap' }));
-  assert.ok(!current.products.some((p) => p.id === work.id));
+  assert.ok(current.products.some((p) => p.id === work.id));
   for (const p of initial.products) assert.ok(current.products.some((q) => q.id === p.id));
   await page.goto(origin + '/my-work');
   await page.getByRole('heading', { name: 'My work.', exact: true }).waitFor();
-  await page.getByRole('heading', { name: 'Private artwork QA', exact: true }).waitFor();
+  await page.getByRole('heading', { name: 'Artwork QA', exact: true }).waitFor();
   await page.goto(origin + '/settings');
   await page.locator('[name=displayName]').fill('QA Creator');
   const username = 'qacreator' + Date.now();
@@ -123,7 +123,7 @@ try {
   const publicProfile = check(await anon.rpc('tg_api', { route: 'profiles/' + username }));
   assert.equal(publicProfile.profile.name, 'QA Creator');
   assert.equal(publicProfile.profile.email, undefined);
-  assert.equal(publicProfile.products.length, 0);
+  assert.equal(publicProfile.products.length, 1);
   assert.ok(
     check(await anon.storage.from('covers').createSignedUrl(publicProfile.profile.avatar.path, 60))
       .signedUrl,
@@ -141,14 +141,14 @@ try {
       .error,
   );
   passed.push(
-    'Hosted settings, avatar storage, public profile routing, private pending work and profile visibility work with real Supabase.',
+    'Hosted settings, avatar storage, public profile routing, a live work and profile visibility work with real Supabase.',
   );
   assert.deepEqual(errors, []);
   passed.push(
-    'Real Supabase sign-in, portrait upload, title-only submission and pending review succeed.',
+    'Real Supabase sign-in, portrait upload, title-only posting and instant publishing succeed.',
     '600 × 1000 image retains its dimensions; 390px and 320px form has no horizontal overflow.',
-    'Pending image cannot be signed by an anonymous visitor; existing public listings remain available.',
-    'No JavaScript page errors. QA artwork was never published.',
+    'A posted image can be signed by an anonymous visitor; existing public listings remain available.',
+    'No JavaScript page errors. QA artwork is deleted at the end.',
   );
   writeFileSync(`${evidence}/report.json`, JSON.stringify({ passed }, null, 2));
   for (const item of passed) console.log('PASS: ' + item);

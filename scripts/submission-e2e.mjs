@@ -76,7 +76,7 @@ try {
   assert.equal(await page.getByLabel('A link, if you have one').isVisible(), false);
   await page.getByLabel('Give it a title').fill('Sunday, somewhere quiet');
   await page.getByRole('checkbox', { name: /This is my work/ }).check();
-  await page.getByRole('button', { name: 'Send for review', exact: true }).click();
+  await page.getByRole('button', { name: 'Post it', exact: true }).click();
   await page.locator('.share-error').waitFor();
   assert.ok(await page.locator('.share-error').evaluate((el) => document.activeElement === el));
   await page.getByLabel('Add a photo of your work').setInputFiles(imageFile);
@@ -112,16 +112,16 @@ try {
   await page
     .locator('.submission-modal')
     .screenshot({ path: path.join(dir, 'art-mobile-top.png') });
-  await page.getByRole('button', { name: 'Send for review', exact: true }).scrollIntoViewIfNeeded();
+  await page.getByRole('button', { name: 'Post it', exact: true }).scrollIntoViewIfNeeded();
   assert.ok(
     await page.locator('.submission-modal').evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
   );
   await page.screenshot({ path: path.join(dir, 'art-mobile-submit.png') });
-  await page.getByRole('button', { name: 'Send for review', exact: true }).click();
-  await page.getByText('In the review queue', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Post it', exact: true }).click();
+  await page.getByText('It’s live', { exact: true }).waitFor();
   const publicData = await (await context.request.get(origin + '/api/bootstrap')).json();
-  assert.equal(publicData.products.length, 0);
-  pass('390px mobile submission succeeds with no website and stays out of public discoveries.');
+  assert.equal(publicData.products.length, 1);
+  pass('390px mobile submission succeeds with no website and is in public discoveries at once.');
 
   const adminContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   assert.equal(
@@ -140,13 +140,12 @@ try {
   assert.equal(work.category, 'Painting');
   const adminPage = await adminContext.newPage();
   adminPage.on('pageerror', (e) => errors.push(e.message));
-  await adminPage.goto(origin + '/studio?tab=products&status=pending');
-  await adminPage.getByRole('button', { name: 'Review', exact: true }).first().click();
-  await adminPage.getByText('CREATIVE WORK REVIEW', { exact: true }).waitFor();
+  await adminPage.goto(origin + '/studio?tab=products&status=all');
+  await adminPage.getByRole('button', { name: 'Open', exact: true }).first().click();
+  await adminPage.getByText('CREATIVE WORK', { exact: true }).waitFor();
   assert.equal(await adminPage.getByRole('link', { name: 'Open source', exact: false }).count(), 0);
-  await adminPage.getByRole('checkbox', { name: /I reviewed the image/ }).check();
-  await adminPage.getByRole('button', { name: 'Publish work', exact: true }).click();
-  await adminPage.getByText('CREATIVE WORK REVIEW', { exact: true }).waitFor({ state: 'hidden' });
+  await adminPage.getByRole('button', { name: 'Take down', exact: true }).waitFor();
+  await adminPage.getByRole('button', { name: 'Close' }).first().click();
   await page.goto(origin + '/product/' + work.slug);
   await page.getByRole('heading', { name: work.name, exact: true }).waitFor();
   assert.equal(await page.getByRole('link', { name: /Try Sunday/ }).count(), 0);
@@ -162,7 +161,7 @@ try {
   await page.goto(origin + '/go/' + work.slug);
   await page.waitForURL('**/product/' + work.slug);
   pass(
-    'Admin can review art; public work shows its whole image, alt text and comments without dead website links.',
+    'The studio can open art; public work shows its whole image, alt text and comments without dead website links.',
   );
 
   await page.goto(origin + '/discover?submit=1');
@@ -178,8 +177,8 @@ try {
   await page.getByLabel('Demo video link').fill('https://example.com/demo');
   await page.locator('.share-extras summary').click();
   await page.getByRole('checkbox', { name: /This is my work/ }).check();
-  await page.getByRole('button', { name: 'Send for review', exact: true }).click();
-  await page.getByText('In the review queue', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Post it', exact: true }).click();
+  await page.getByText('It’s live', { exact: true }).waitFor();
   const app = (await (await adminContext.request.get(origin + '/api/studio')).json()).products.find(
     (p) => p.name === 'Oddly Useful',
   );
@@ -192,7 +191,7 @@ try {
   await page.getByRole('button', { name: 'Art & design', exact: true }).click();
   assert.equal(await page.locator('.showcase-card').count(), 1);
   await page.getByRole('button', { name: 'Apps & tools', exact: true }).click();
-  assert.equal(await page.locator('.showcase-card').count(), 0);
+  assert.equal(await page.locator('.showcase-card').count(), 1);
   pass(
     'Existing app fields still submit correctly; creative and app discovery filters separate the two.',
   );

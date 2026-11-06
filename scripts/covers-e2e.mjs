@@ -44,7 +44,7 @@ try {
     } catch {}
     await new Promise((r) => setTimeout(r, 250));
   }
-  browser = await chromium.launch({ headless: true });
+  browser = await chromium.launch({ headless: true, args: ['--enable-unsafe-swiftshader'] });
   const context = await browser.newContext({
     viewport: { width: 1440, height: 1000 },
     reducedMotion: 'reduce',
@@ -124,58 +124,66 @@ try {
     'Upload replaces the capture, invalid files preserve the chosen image, remove works, and cover controls fit through 320px',
   );
   await page.getByRole('checkbox', { name: /This is my work/ }).check();
-  await page.getByRole('button', { name: 'Send for review', exact: true }).click();
-  await page.getByText('In the review queue', { exact: true }).waitFor();
-  assert.equal((await fetch(origin + finalCoverUrl)).status, 404);
+  await page.getByRole('button', { name: 'Post it', exact: true }).click();
+  await page.getByText('It’s live', { exact: true }).waitFor();
+  assert.equal((await fetch(origin + finalCoverUrl)).status, 200);
   const adminContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const admin = await adminContext.newPage();
-  await admin.goto(origin + '/studio?tab=products&status=pending');
+  await admin.goto(origin + '/studio?tab=products&status=all');
   await admin.getByRole('button', { name: 'Sign in to the studio' }).click();
   await admin.getByLabel('Email', { exact: true }).fill('owner@test.example');
   await admin.getByLabel('Password', { exact: true }).fill(password);
   await admin.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await admin.getByRole('button', { name: 'Review', exact: true }).click();
+  await admin.getByRole('button', { name: 'Open', exact: true }).click();
   assert.equal(await admin.locator('.cover-stage img').getAttribute('src'), finalCoverUrl);
   await admin.locator('.modal').screenshot({ path: path.join(dir, 'admin-cover.png') });
-  await admin.getByRole('checkbox', { name: /I checked these details/ }).check();
-  await admin.getByRole('button', { name: 'Publish work', exact: true }).click();
+  await admin.getByRole('button', { name: 'Take down', exact: true }).waitFor();
+  await admin.getByRole('button', { name: 'Close' }).first().click();
   await admin.locator('.modal').waitFor({ state: 'hidden' });
   assert.equal((await fetch(origin + finalCoverUrl)).status, 200);
   assert.equal((await fetch(origin + captured.url)).status, 404);
   pass(
-    'Admin sees the chosen cover; approval publishes that image while unused captures remain private',
+    'Admin sees the chosen cover; posting publishes that image at once while unused captures remain private',
   );
+  const view = await context.newPage();
+  view.on('pageerror', (error) => errors.push(error.message));
   const product = (await (await fetch(origin + '/api/bootstrap')).json()).products[0];
   for (const width of [1440, 390, 320]) {
-    await page.setViewportSize({ width, height: 1000 });
+    await view.setViewportSize({ width, height: 1000 });
     for (const [name, pathname, selector] of [
       ['landing', '/', '.drawer-cover'],
       ['catalog', '/discover', '.showcase-media img'],
       ['detail', '/product/' + product.slug, '.product-cover-figure img'],
     ]) {
-      await page.goto(origin + pathname);
-      await page.locator(selector).waitFor();
-      assert.equal(await page.locator(selector).first().getAttribute('src'), finalCoverUrl);
-      await page
+      await view.goto(origin + pathname);
+      await view.locator(selector).waitFor();
+      assert.equal(await view.locator(selector).first().getAttribute('src'), finalCoverUrl);
+      await view
         .locator(selector)
         .first()
-        .evaluate((img) => img.decode());
+        .evaluate(async (img) => {
+          img.loading = 'eager';
+          if (!img.complete)
+            await new Promise((r) => img.addEventListener('load', r, { once: true }));
+          await img.decode();
+        });
       assert.ok(
-        await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+        await view.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
         `${name} fits ${width}px`,
       );
       if (name === 'landing')
-        await page
+        await view
           .locator('.product-menu')
           .screenshot({ path: path.join(dir, `${name}-${width}.png`) });
-      else await page.screenshot({ path: path.join(dir, `${name}-${width}.png`), fullPage: true });
+      else await view.screenshot({ path: path.join(dir, `${name}-${width}.png`), fullPage: true });
     }
   }
+  await view.close();
   pass(
     'Chosen cover persists across landing drawers, catalog, and product detail at desktop and mobile sizes',
   );
   await admin.goto(origin + '/studio?tab=products&status=published');
-  await admin.getByRole('button', { name: 'Review', exact: true }).click();
+  await admin.getByRole('button', { name: 'Open', exact: true }).click();
   await admin.getByRole('button', { name: 'Retake website', exact: true }).click();
   await admin.getByText('Captured from your website', { exact: true }).waitFor();
   const replacementUrl = await admin.locator('.cover-stage img').getAttribute('src');
@@ -205,8 +213,8 @@ try {
     .locator('.submission-modal')
     .screenshot({ path: path.join(dir, 'capture-failure.png') });
   await page.getByRole('checkbox', { name: /This is my work/ }).check();
-  await page.getByRole('button', { name: 'Send for review', exact: true }).click();
-  await page.getByText('In the review queue', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Post it', exact: true }).click();
+  await page.getByText('It’s live', { exact: true }).waitFor();
   pass('An uncapturable site has actionable feedback and can still be submitted without a cover');
   await page.getByRole('button', { name: 'Back to discoveries' }).click();
   let releaseCapture;

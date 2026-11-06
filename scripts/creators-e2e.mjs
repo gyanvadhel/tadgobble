@@ -112,12 +112,14 @@ try {
   await page.getByText('Image ready', { exact: true }).waitFor();
   await page.getByLabel('Give it a title').fill('Somewhere quiet');
   await page.getByRole('checkbox', { name: /This is my work/ }).check();
-  await page.getByRole('button', { name: 'Send for review', exact: true }).click();
+  await page.getByRole('button', { name: 'Post it', exact: true }).click();
   await page.getByRole('link', { name: /Track it in My work/ }).click();
   await page.getByRole('heading', { name: 'My work.' }).waitFor();
-  await page.getByText('In review', { exact: true }).last().waitFor();
-  await page.screenshot({ path: dir + '/work-pending-mobile.png', fullPage: true });
+  await page.getByText('Live', { exact: true }).last().waitFor();
+  await page.screenshot({ path: dir + '/work-live-mobile.png', fullPage: true });
   const work = (await (await context.request.get(origin + '/api/my-work')).json()).products[0];
+  assert.equal(work.status, 'published');
+  assert.equal((await context.request.get(origin + '/api/products/' + work.slug)).status(), 200);
   const admin = await browser.newContext({
     viewport: { width: 390, height: 844 },
     reducedMotion: 'reduce',
@@ -125,29 +127,30 @@ try {
   await request('auth/login', { email: 'owner@test.example', password }, admin);
   const studio = await admin.newPage();
   studio.on('pageerror', (e) => errors.push(e.message));
-  await studio.goto(origin + '/studio?tab=products&status=pending');
-  await studio.getByRole('button', { name: 'Review', exact: true }).click();
-  await studio
-    .getByLabel('Feedback for the creator')
-    .fill('Lovely piece. Please tell us what medium you used.');
-  await studio.screenshot({ path: dir + '/review-mobile.png', fullPage: true });
-  await studio.getByRole('button', { name: 'Request changes', exact: true }).click();
+  await studio.goto(origin + '/studio?tab=products&status=all');
+  await studio.getByRole('button', { name: 'Open', exact: true }).click();
+  await studio.getByLabel('Why take it down?').fill('Please tell us what medium you used.');
+  await studio.screenshot({ path: dir + '/studio-mobile.png', fullPage: true });
+  studio.once('dialog', (d) => d.accept());
+  await studio.getByRole('button', { name: 'Take down', exact: true }).click();
   await studio.getByRole('dialog').waitFor({ state: 'hidden' });
+  assert.equal((await context.request.get(origin + '/api/products/' + work.slug)).status(), 404);
   await page.getByRole('button', { name: 'Refresh status' }).click();
-  await page.getByText('Lovely piece. Please tell us what medium you used.').waitFor();
-  await page.getByRole('button', { name: 'Edit & resubmit' }).click();
+  await page.getByText('Please tell us what medium you used.').waitFor();
+  pass('A take-down note reaches My work and the work leaves the public site.');
+  await page.getByRole('button', { name: 'Edit work' }).click();
   await page.locator('.share-extras summary').click();
   await page
     .getByLabel('A little about it', { exact: true })
     .fill('Acrylic on paper. An imaginary place to take a breath.');
   await page.getByRole('checkbox', { name: /This is my work/ }).check();
-  await page.getByRole('button', { name: 'Send for review', exact: true }).click();
-  await page.getByText('In the review queue', { exact: true }).waitFor();
-  pass('Private feedback reaches My work; the creator can edit and resubmit.');
+  await page.getByRole('button', { name: 'Save changes', exact: true }).click();
+  await page.getByText('It’s live', { exact: true }).waitFor();
+  assert.equal((await context.request.get(origin + '/api/products/' + work.slug)).status(), 404);
+  pass('Editing a taken-down work saves the edit but does not put it back.');
   await studio.reload();
-  await studio.getByRole('button', { name: 'Review', exact: true }).click();
-  await studio.getByRole('checkbox', { name: /I reviewed the image/ }).check();
-  await studio.getByRole('button', { name: 'Publish work', exact: true }).click();
+  await studio.getByRole('button', { name: 'Open', exact: true }).click();
+  await studio.getByRole('button', { name: 'Put back live', exact: true }).click();
   await studio.getByRole('dialog').waitFor({ state: 'hidden' });
   await page.goto(origin + '/profile/aridraws');
   await page.getByRole('heading', { name: 'Things I’ve made.' }).waitFor();
@@ -166,18 +169,20 @@ try {
   await page.getByRole('link', { name: 'Made by Ari Draws', exact: true }).waitFor();
   await page.getByRole('link', { name: 'Made by Ari Draws', exact: true }).click();
   assert.ok(page.url().endsWith('/profile/aridraws'));
-  pass('Approved work appears on the public profile; product credit links back to the creator.');
+  pass(
+    'A work put back live appears on the public profile; product credit links back to the creator.',
+  );
   await page.goto(origin + '/my-work');
   await page.getByRole('button', { name: 'Edit work' }).click();
-  await page.getByText('Your current version stays live while these edits are reviewed.').waitFor();
+  await page.getByText('Edits go live as soon as you save them.').waitFor();
   await page.getByLabel('Give it a title').fill('Somewhere quiet, revised');
   await page.getByRole('checkbox', { name: /This is my work/ }).check();
-  await page.getByRole('button', { name: 'Send for review', exact: true }).click();
-  await page.getByText('In the review queue', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Save changes', exact: true }).click();
+  await page.getByText('It’s live', { exact: true }).waitFor();
   const live = await context.request.get(origin + '/api/products/' + work.slug);
   assert.equal(live.status(), 200);
-  assert.equal((await live.json()).product.name, 'Somewhere quiet');
-  pass('Editing published work keeps the live version up while the edits are reviewed.');
+  assert.equal((await live.json()).product.name, 'Somewhere quiet, revised');
+  pass('Editing live work updates it at once.');
   assert.deepEqual(errors, []);
   writeFileSync(dir + '/report.json', JSON.stringify({ checks, errors }, null, 2));
   console.log('Evidence: ' + dir);

@@ -234,8 +234,8 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                   ? 'active'
                   : ''
               }
-              title={label || (name === 'Products' ? 'Submissions' : name)}
-              aria-label={label || (name === 'Products' ? 'Submissions' : name)}
+              title={label || (name === 'Products' ? 'All work' : name)}
+              aria-label={label || (name === 'Products' ? 'All work' : name)}
               onClick={() => {
                 setTab(name === 'Published' ? 'Products' : name);
                 if (name === 'Published') setProductStatus('published');
@@ -248,7 +248,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
               }}
             >
               <Icon size={19} />
-              {label || (name === 'Products' ? 'Submissions' : name)}
+              {label || (name === 'Products' ? 'All work' : name)}
             </button>
           ))}
         </nav>
@@ -273,7 +273,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
               {tab === 'Products'
                 ? productStatus === 'published'
                   ? 'Published work'
-                  : 'Submissions'
+                  : 'All work'
                 : tab === 'Tools'
                   ? 'Desktop tools'
                   : tab}

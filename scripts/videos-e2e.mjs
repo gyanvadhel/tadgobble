@@ -97,8 +97,8 @@ try {
   await page.getByLabel('Give it a title').fill('Little motion');
   await page.screenshot({ path: dir + '/submission-mobile.png', fullPage: true });
   await page.getByRole('checkbox', { name: /This is my work/ }).check();
-  await page.getByRole('button', { name: 'Send for review', exact: true }).click();
-  await page.getByText('In the review queue', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Post it', exact: true }).click();
+  await page.getByText('It’s live', { exact: true }).waitFor();
   const pending = (await (await maker.request.get(origin + '/api/my-work')).json()).products[0];
   const anonymous = await browser.newContext({
     viewport: { width: 390, height: 844 },
@@ -106,7 +106,7 @@ try {
   });
   assert.equal(
     (await anonymous.request.get(origin + '/api/videos/' + cover.video.id)).status(),
-    404,
+    200,
   );
   const admin = await browser.newContext({
     viewport: { width: 1440, height: 1050 },
@@ -114,8 +114,8 @@ try {
   });
   await call(admin, 'auth/login', { email: 'owner@test.example', password });
   const review = await admin.newPage();
-  await review.goto(origin + '/studio?tab=products&status=pending');
-  await review.getByRole('button', { name: 'Review', exact: true }).click();
+  await review.goto(origin + '/studio?tab=products&status=all');
+  await review.getByRole('button', { name: 'Open', exact: true }).click();
   await review.getByRole('button', { name: 'Play Little motion video', exact: true }).click();
   await review.locator('video').evaluate(
     (v) =>
@@ -125,8 +125,17 @@ try {
         v.addEventListener('error', reject, { once: true });
       }),
   );
-  await review.getByRole('checkbox', { name: /I watched the video/ }).check();
-  await review.getByRole('button', { name: 'Publish work', exact: true }).click();
+  await review.getByLabel('Why take it down?').fill('Testing the take-down.');
+  review.once('dialog', (d) => d.accept());
+  await review.getByRole('button', { name: 'Take down', exact: true }).click();
+  await review.getByRole('dialog').waitFor({ state: 'hidden' });
+  assert.equal(
+    (await anonymous.request.get(origin + '/api/videos/' + cover.video.id)).status(),
+    404,
+  );
+  await review.reload();
+  await review.getByRole('button', { name: 'Open', exact: true }).click();
+  await review.getByRole('button', { name: 'Put back live', exact: true }).click();
   await review.getByRole('dialog').waitFor({ state: 'hidden' });
   const visitor = await anonymous.newPage();
   visitor.on('pageerror', (e) => errors.push(e.message));
@@ -155,7 +164,7 @@ try {
     await visitor.screenshot({ path: dir + `/playing-${width}.png`, fullPage: true });
   }
   pass(
-    'Admin can watch and approve private clips; profiles show the poster/duration, video bytes load only after Play, and the player supports sound and seeking at mobile widths.',
+    'Admin can watch a clip, take it down and put it back; profiles show the poster/duration, video bytes load only after Play, and the player supports sound and seeking at mobile widths.',
   );
   await call(maker, 'works/update', {
     id: pending.id,
@@ -168,7 +177,7 @@ try {
     (await anonymous.request.get(origin + '/api/videos/' + cover.video.id)).status(),
     200,
   );
-  pass('Editing a published video keeps the live clip up while the edit is reviewed.');
+  pass('Editing a published video keeps the live clip up and the edit goes live at once.');
   assert.deepEqual(errors, []);
   writeFileSync(dir + '/report.json', JSON.stringify({ checks, errors }, null, 2));
   console.log('Evidence: ' + dir);

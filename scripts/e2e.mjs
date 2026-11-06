@@ -103,8 +103,8 @@ try {
     .fill('Demonstrates the content workflow\nProvides a test recording');
   await page.getByLabel('Source for those details').fill('https://example.com/demo');
   await page.getByRole('checkbox', { name: /This is my work/ }).check();
-  await page.getByRole('button', { name: 'Send for review' }).click();
-  await page.getByText('In the review queue', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Post it' }).click();
+  await page.getByText('It’s live', { exact: true }).waitFor();
   await page.getByRole('button', { name: 'Back to discoveries' }).click();
   await page.locator('.modal').waitFor({ state: 'hidden' });
   const denied = await context.request.get(origin + '/api/studio');
@@ -118,10 +118,10 @@ try {
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await page.locator('.studio-main').waitFor();
   await page.getByRole('button', { name: /^Products/ }).click();
-  const row = page.locator('tr').filter({ hasText: 'Workflow Fixture' });
-  await row.getByRole('button', { name: 'Review' }).click();
+  const row = page.locator('.review-queue-item').filter({ hasText: 'Workflow Fixture' });
+  await row.getByRole('button', { name: 'Open' }).click();
   await page.getByRole('checkbox', { name: /I checked these details/ }).check();
-  await page.getByRole('button', { name: 'Verify & publish listing' }).click();
+  await page.getByRole('button', { name: 'Mark as checked' }).click();
   await page.locator('.modal').waitFor({ state: 'hidden' });
   await page.getByRole('button', { name: 'Content', exact: true }).click();
   await page

@@ -103,9 +103,7 @@ try {
   await page.getByLabel('Website link', { exact: true }).fill('https://example.com');
   await page.getByLabel('What does it do?').fill('Testing the real cloud submission flow.');
   await page.getByRole('button', { name: 'Capture website', exact: true }).click();
-  await page
-    .getByRole('button', { name: 'Send for review', exact: true })
-    .waitFor({ state: 'visible' });
+  await page.getByRole('button', { name: 'Post it', exact: true }).waitFor({ state: 'visible' });
   await page.getByLabel('Upload cover image').waitFor();
   const upload = await sharp({
     create: { width: 640, height: 480, channels: 3, background: '#c5b5f5' },
@@ -119,20 +117,20 @@ try {
   await page.getByText('Image ready', { exact: true }).waitFor({ timeout: 20000 });
   await page.locator('.submission-modal').screenshot({ path: `${evidence}/submission-cover.png` });
   await page.getByRole('checkbox', { name: /This is my work/ }).check();
-  await page.getByRole('button', { name: 'Send for review', exact: true }).click();
-  await page.getByText('In the review queue', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Post it', exact: true }).click();
+  await page.getByText('It’s live', { exact: true }).waitFor();
   const submitted = check(await admin.from('tg_products').select('*').eq('name', name).single());
   products.push(submitted.id);
   const owned = check(await admin.from('tg_covers').select('*').eq('owner_id', user.id));
   covers.push(...owned);
-  assert.equal(submitted.status, 'pending');
-  assert.equal((await rpc(anon, 'bootstrap')).products.length, 1);
+  assert.equal(submitted.status, 'published');
+  assert.equal((await rpc(anon, 'bootstrap')).products.length, 2);
   const cover = owned.find((c) => c.id === submitted.cover_id);
   assert.equal(cover.kind, 'upload');
-  assert.ok((await anon.storage.from('covers').createSignedUrl(cover.path, 60)).error);
+  assert.ok(check(await anon.storage.from('covers').createSignedUrl(cover.path, 60)).signedUrl);
   await page.screenshot({ path: `${evidence}/submission-success.png` });
   result.push(
-    'Browser sign-in, saving Argus, creative submission and uploaded private cover work.',
+    'Browser sign-in, saving Argus, creative submission, instant posting and uploaded cover work.',
   );
 
   const owner = createClient(url, key, { auth: { persistSession: false } });
@@ -142,7 +140,6 @@ try {
       password: process.env.ADMIN_PASSWORD,
     }),
   );
-  await rpc(owner, 'studio/product', { id: submitted.id, action: 'verify', confirmed: true });
   assert.equal(
     (await rpc(anon, 'products/' + submitted.slug)).product.cover.id,
     submitted.cover_id,
@@ -158,7 +155,9 @@ try {
   );
   await rpc(owner, 'studio/product', { id: submitted.id, action: 'reject' });
   assert.ok((await anon.storage.from('covers').createSignedUrl(cover.path, 60)).error);
-  result.push('Admin approval exposes the listing and cover; rejection removes public access.');
+  result.push(
+    'A posted work and its cover are public at once; an admin take-down removes public access.',
+  );
 
   const capture = owned.find((c) => c.kind === 'capture');
   if (capture) {
@@ -179,14 +178,14 @@ try {
     );
   }
   const adminPage = await context.newPage();
-  await adminPage.goto(origin + '/studio?tab=products&status=pending', {
+  await adminPage.goto(origin + '/studio?tab=products&status=all', {
     waitUntil: 'networkidle',
   });
   await adminPage.getByText('This account doesn’t have studio access.').waitFor();
   // A new context verifies owner login without changing the member session.
   const ownerContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const ownerPage = await ownerContext.newPage();
-  await ownerPage.goto(origin + '/studio?tab=products&status=pending', {
+  await ownerPage.goto(origin + '/studio?tab=products&status=all', {
     waitUntil: 'networkidle',
   });
   await ownerPage.getByRole('button', { name: 'Sign in to the studio' }).click();
@@ -194,7 +193,7 @@ try {
   await ownerPage.getByLabel('Email', { exact: true }).fill(process.env.ADMIN_EMAIL);
   await ownerPage.getByLabel('Password', { exact: true }).fill(process.env.ADMIN_PASSWORD);
   await ownerPage.getByRole('dialog').getByRole('button', { name: 'Sign in', exact: true }).click();
-  await ownerPage.getByRole('heading', { name: 'Submissions', exact: true }).waitFor();
+  await ownerPage.getByRole('heading', { name: 'All work', exact: true }).waitFor();
   await ownerPage.screenshot({ path: `${evidence}/admin-review.png` });
   result.push('The deployed-style admin route admits the owner and blocks members.');
   for (const width of [390, 320]) {

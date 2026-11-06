@@ -82,17 +82,18 @@ try {
   const record = check(await admin.from('tg_videos').select('*').eq('owner_id', user.id).single());
   assert.ok((await anon.storage.from('videos').createSignedUrl(record.path, 60)).error);
   assert.ok((await anon.rpc('tg_video_play', { video_id: record.id })).error);
-  await page.getByLabel('Give it a title').fill('Private video QA');
+  await page.getByLabel('Give it a title').fill('Video QA');
   await page.getByRole('checkbox', { name: /This is my work/ }).check();
-  await page.getByRole('button', { name: 'Send for review', exact: true }).click();
-  await page.getByText('In the review queue', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Post it', exact: true }).click();
+  await page.getByText('It’s live', { exact: true }).waitFor();
   const work = check(await admin.from('tg_products').select('*').eq('owner_id', user.id).single());
-  assert.equal(work.status, 'pending');
+  assert.equal(work.status, 'published');
+  assert.ok(!(await anon.rpc('tg_video_play', { video_id: record.id })).error);
   await page.goto(origin + '/my-work');
   await page.locator('.video-badge').waitFor();
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
   checks.push(
-    'Real hosted video upload, automatic poster, signed tap-to-play with sound, pending submission and My work succeed. Unapproved video bytes and playback links remain private.',
+    'Real hosted video upload, automatic poster, signed tap-to-play with sound, instant posting and My work succeed. Video bytes stay private until the work is posted, then play for everyone.',
   );
   const member = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -117,11 +118,12 @@ try {
   assert.equal(check(await admin.from('tg_videos').select('id').eq('owner_id', user.id)).length, 1);
   const after = check(await anon.rpc('tg_api', { route: 'bootstrap' }))
     .products.map((p) => p.id)
+    .filter((id) => id !== work.id)
     .sort();
   assert.deepEqual(after, initial);
   assert.deepEqual(errors, []);
   checks.push(
-    'The Edge Function rejects an overlong video even when its submitted duration lies. No QA video was published and existing discoveries are unchanged.',
+    'The Edge Function rejects an overlong video even when its submitted duration lies. Existing discoveries are unchanged apart from the QA work, which is deleted at the end.',
   );
   writeFileSync(dir + '/report.json', JSON.stringify({ checks, errors }, null, 2));
   for (const c of checks) console.log('PASS: ' + c);
