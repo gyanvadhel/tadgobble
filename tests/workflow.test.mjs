@@ -69,7 +69,7 @@ function due(id = 'demo') {
 }
 test('approval requires reviewed product facts and a real rendered clip', () => {
   const j = ready('unverified', false);
-  assert.throws(() => approveJob(j.id), /Verify the product facts/);
+  assert.throws(() => approveJob(j.id), /checked against its source/);
   run('UPDATE products SET verified_at=? WHERE id=?', now(), 'unverified');
   approveJob(j.id);
   assert.equal(get('SELECT status FROM jobs WHERE id=?', j.id).status, 'approved');

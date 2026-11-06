@@ -258,7 +258,10 @@ export default function Launch({ products }) {
                 Fresh from <br />
                 <span className="intro-mark">first-timers.</span>
               </h2>
-              <p>India's newest makers, posting their first things. Art, design, photos and useful apps. Pehli baar? Perfect.</p>
+              <p>
+                India's newest makers, posting their first things. Art, design, photos and useful
+                apps. Pehli baar? Perfect.
+              </p>
               <div className="intro-actions">
                 {products.length ? (
                   <button
@@ -348,7 +351,12 @@ export default function Launch({ products }) {
             </button>
           </div>
         </section>
-        <IntroStory products={products} motion={motion} reduceMotion={reduceMotion} onMotion={setMotion} />
+        <IntroStory
+          products={products}
+          motion={motion}
+          reduceMotion={reduceMotion}
+          onMotion={setMotion}
+        />
         <div className="discovery-ribbon" aria-label="Ekdum fresh. Post your first thing.">
           <div className="ribbon-type" aria-hidden="true">
             EKDUM FRESH. <Asterisk /> POST YOUR FIRST THING. <Asterisk /> EKDUM FRESH.
@@ -374,8 +382,8 @@ export default function Launch({ products }) {
                 and a bookmark nobody opens.
               </p>
               <p className="maker-detail">
-                Share a painting, a design, or an app. No portfolio needed. We review every
-                submission so curious people can discover your work and talk about it.
+                Share a painting, a design, or an app. No portfolio needed. It goes live the moment
+                you post it, so curious people can discover your work and talk about it.
               </p>
               <a className="launch-button plum-button" data-magnetic href="/discover?submit=1">
                 Post your thing <ArrowUpRight size={20} />

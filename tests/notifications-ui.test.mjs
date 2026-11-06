@@ -22,7 +22,7 @@ test('notificationText says what happened, in the app copy', () => {
   );
   assert.equal(
     notificationText({ kind: 'review', product, outcome: 'approved' }),
-    'Tiny Moon is live!',
+    'Tiny Moon is live again',
   );
   assert.equal(
     notificationText({ kind: 'review', product, outcome: 'changes' }),
@@ -30,7 +30,7 @@ test('notificationText says what happened, in the app copy', () => {
   );
   assert.equal(
     notificationText({ kind: 'review', product, outcome: 'rejected' }),
-    "Tiny Moon wasn't accepted",
+    'Tiny Moon was taken down',
   );
 });
 

@@ -494,8 +494,8 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
             <div className="editorial-note">
               <Sparkles size={16} />
               <p>
-                Work belongs to its creators. We review submissions before publishing. Paid features
-                are clearly labelled.
+                Work belongs to its creators. Paid features are clearly labelled, and we take down
+                anything that doesn’t belong.
               </p>
             </div>
           </>
@@ -537,7 +537,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               creator={user?.profile}
               onDone={() => {
                 setModal(null);
-                notify('Your work is in the review queue. Thanks for sharing it.');
+                notify('Your work is live. Thanks for sharing it.');
               }}
             />
           ) : modal === 'sponsor' ? (

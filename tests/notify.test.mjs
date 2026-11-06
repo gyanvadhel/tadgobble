@@ -73,7 +73,7 @@ test('subjects match the copy for every kind and outcome', () => {
       to: null,
       data: { what: 'new', name: 'Moon Zine', maker: 'Asha' },
     }),
-    'New in the review queue: Moon Zine',
+    'New on tadgobble: Moon Zine',
   );
 });
 

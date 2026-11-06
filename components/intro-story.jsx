@@ -54,7 +54,11 @@ function Art({ id, mood, first }) {
               <Bookmark size={22} />
               {scenes.map((scene, n) =>
                 [0, 1].map((m) => (
-                  <i key={`${n}${m}`} className="art-confetti" style={{ background: scene.color }} />
+                  <i
+                    key={`${n}${m}`}
+                    className="art-confetti"
+                    style={{ background: scene.color }}
+                  />
                 )),
               )}
             </span>
@@ -76,7 +80,7 @@ function Art({ id, mood, first }) {
             <b>Your website, for apps</b>
           </span>
           <span className="art-receipt" data-part="receipt">
-            <Check size={16} /> In the review queue
+            <Check size={16} /> It’s live
           </span>
         </>
       );
@@ -102,38 +106,106 @@ function animateArt(tl, n, el) {
   // Where a piece has to travel to land on the middle of the picture (Gobble's mouth).
   const toMouth = (lift = 0) => ({
     x: (i, t) => art.offsetWidth / 2 - (t.offsetLeft + t.offsetWidth / 2),
-    y: (i, t) => art.offsetHeight / 2 + lift * art.offsetHeight - (t.offsetTop + t.offsetHeight / 2),
+    y: (i, t) =>
+      art.offsetHeight / 2 + lift * art.offsetHeight - (t.offsetTop + t.offsetHeight / 2),
   });
   if (n === 0) {
     // The pile of tabs and reels gets swallowed.
-    tl.to(all('.art-chip'), { ...toMouth(), scale: 0.15, opacity: 0, duration: 0.35, stagger: 0.07, ease: 'power2.in' }, 0.3);
-    tl.fromTo(gobble, { scale: 1, transformOrigin: '50% 70%' }, { scale: 1.2, duration: 0.1, yoyo: true, repeat: 1, ease: 'power2.out' }, 0.7);
+    tl.to(
+      all('.art-chip'),
+      { ...toMouth(), scale: 0.15, opacity: 0, duration: 0.35, stagger: 0.07, ease: 'power2.in' },
+      0.3,
+    );
+    tl.fromTo(
+      gobble,
+      { scale: 1, transformOrigin: '50% 70%' },
+      { scale: 1.2, duration: 0.1, yoyo: true, repeat: 1, ease: 'power2.out' },
+      0.7,
+    );
   } else if (n === 1) {
     // A ticket flies into Gobble's mouth and a product card pops out.
-    tl.to(part('ticket'), { ...toMouth(0.06), rotation: 0, scale: 0.2, opacity: 0, duration: 0.35, ease: 'power2.in' }, n + 0.1);
-    tl.fromTo(gobble, { scaleX: 1, scaleY: 1, transformOrigin: '50% 100%' }, { scaleX: 1.1, scaleY: 0.86, duration: 0.1, yoyo: true, repeat: 1 }, n + 0.42);
-    tl.fromTo(part('card'), { scale: 0, opacity: 0, y: 30 }, { scale: 1, opacity: 1, y: 0, duration: 0.3, ease: 'back.out(1.8)' }, n + 0.5);
+    tl.to(
+      part('ticket'),
+      { ...toMouth(0.06), rotation: 0, scale: 0.2, opacity: 0, duration: 0.35, ease: 'power2.in' },
+      n + 0.1,
+    );
+    tl.fromTo(
+      gobble,
+      { scaleX: 1, scaleY: 1, transformOrigin: '50% 100%' },
+      { scaleX: 1.1, scaleY: 0.86, duration: 0.1, yoyo: true, repeat: 1 },
+      n + 0.42,
+    );
+    tl.fromTo(
+      part('card'),
+      { scale: 0, opacity: 0, y: 30 },
+      { scale: 1, opacity: 1, y: 0, duration: 0.3, ease: 'back.out(1.8)' },
+      n + 0.5,
+    );
   } else if (n === 2) {
     // A card opens, the bookmark fills with a burst of confetti, a comment types in.
     const mark = part('bookmark');
-    tl.fromTo(all('.art-card-big'), { scale: 0.6, opacity: 0, rotation: -12 }, { scale: 1, opacity: 1, rotation: -3, duration: 0.3, ease: 'back.out(1.6)' }, n + 0.05);
+    tl.fromTo(
+      all('.art-card-big'),
+      { scale: 0.6, opacity: 0, rotation: -12 },
+      { scale: 1, opacity: 1, rotation: -3, duration: 0.3, ease: 'back.out(1.6)' },
+      n + 0.05,
+    );
     tl.fromTo(gobble, { scale: 0.7 }, { scale: 1, duration: 0.25, ease: 'back.out(2)' }, n + 0.1);
-    tl.fromTo(mark[0].querySelector('svg'), { fill: 'rgba(255,255,246,0)' }, { fill: 'rgb(255,255,246)', duration: 0.15 }, n + 0.4);
+    tl.fromTo(
+      mark[0].querySelector('svg'),
+      { fill: 'rgba(255,255,246,0)' },
+      { fill: 'rgb(255,255,246)', duration: 0.15 },
+      n + 0.4,
+    );
     tl.fromTo(mark, { scale: 1 }, { scale: 1.35, duration: 0.1, yoyo: true, repeat: 1 }, n + 0.4);
     const bits = all('.art-confetti');
     tl.to(bits, { opacity: 1, duration: 0.01 }, n + 0.42);
-    tl.to(bits, { x: (i) => Math.cos((i / bits.length) * Math.PI * 2) * 52, y: (i) => Math.sin((i / bits.length) * Math.PI * 2) * 52, rotation: 200, duration: 0.3, ease: 'power2.out' }, n + 0.42);
+    tl.to(
+      bits,
+      {
+        x: (i) => Math.cos((i / bits.length) * Math.PI * 2) * 52,
+        y: (i) => Math.sin((i / bits.length) * Math.PI * 2) * 52,
+        rotation: 200,
+        duration: 0.3,
+        ease: 'power2.out',
+      },
+      n + 0.42,
+    );
     tl.to(bits, { opacity: 0, duration: 0.15 }, n + 0.57);
     tl.fromTo(part('bubble'), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.2 }, n + 0.6);
-    tl.fromTo(all('.bubble-text'), { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', ease: 'steps(19)', duration: 0.3 }, n + 0.68);
+    tl.fromTo(
+      all('.bubble-text'),
+      { clipPath: 'inset(0 100% 0 0)' },
+      { clipPath: 'inset(0 0% 0 0)', ease: 'steps(19)', duration: 0.3 },
+      n + 0.68,
+    );
   } else if (n === 3) {
-    // The post ticket fills in, then an "In the review queue" receipt arrives.
-    tl.to(all('.art-form b'), { backgroundColor: '#ddd3ff', borderColor: 'rgba(57,36,90,0.8)', duration: 0.15, stagger: 0.15 }, n + 0.1);
+    // The post ticket fills in, then an "It's live" receipt arrives.
+    tl.to(
+      all('.art-form b'),
+      {
+        backgroundColor: '#ddd3ff',
+        borderColor: 'rgba(57,36,90,0.8)',
+        duration: 0.15,
+        stagger: 0.15,
+      },
+      n + 0.1,
+    );
     tl.to(part('ticket'), { y: -12, duration: 0.3, ease: 'power2.inOut' }, n + 0.55);
-    tl.fromTo(part('receipt'), { x: 140, opacity: 0, rotation: 12 }, { x: 0, opacity: 1, rotation: 4, duration: 0.3, ease: 'back.out(1.6)' }, n + 0.6);
+    tl.fromTo(
+      part('receipt'),
+      { x: 140, opacity: 0, rotation: 12 },
+      { x: 0, opacity: 1, rotation: 4, duration: 0.3, ease: 'back.out(1.6)' },
+      n + 0.6,
+    );
   } else {
     // Gobble winks hello and an arrow points down at the fresh picks.
-    tl.fromTo(gobble, { scale: 0.5, rotation: -30 }, { scale: 1, rotation: 0, duration: 0.3, ease: 'back.out(1.8)' }, n + 0.05);
+    tl.fromTo(
+      gobble,
+      { scale: 0.5, rotation: -30 },
+      { scale: 1, rotation: 0, duration: 0.3, ease: 'back.out(1.8)' },
+      n + 0.05,
+    );
     tl.fromTo(part('arrow'), { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.2 }, n + 0.45);
     tl.to(part('arrow'), { y: 14, duration: 0.1, yoyo: true, repeat: 3 }, n + 0.65);
   }
@@ -148,7 +220,12 @@ const spots = [
   [78, 80],
 ];
 
-export default function IntroStory({ products = [], motion = false, reduceMotion = true, onMotion }) {
+export default function IntroStory({
+  products = [],
+  motion = false,
+  reduceMotion = true,
+  onMotion,
+}) {
   const first = products[0];
   const section = useRef(null);
   const stage = useRef(null);
@@ -207,7 +284,10 @@ export default function IntroStory({ products = [], motion = false, reduceMotion
       sceneEls.forEach((el, n) => {
         animateArt(tl, n, el);
         if (n === 0) return;
-        const words = SplitText.create(el.querySelector('h3'), { type: 'words', mask: 'words' }).words;
+        const words = SplitText.create(el.querySelector('h3'), {
+          type: 'words',
+          mask: 'words',
+        }).words;
         tl.to(blobs[n], { scale: 7, duration: 0.5, ease: 'power2.inOut' }, n - 0.35);
         gsap.set(words, { yPercent: 115 });
         tl.to(words, { yPercent: 0, duration: 0.35, stagger: 0.05, ease: 'power3.out' }, n);
@@ -223,7 +303,9 @@ export default function IntroStory({ products = [], motion = false, reduceMotion
   // the visitor was reading on screen, and put keyboard focus on it (the button they pressed is gone).
   useEffect(() => {
     if (mode !== 'static' || resume.current === null) return;
-    const heading = section.current.querySelectorAll('.story-scene')[resume.current]?.querySelector('h3');
+    const heading = section.current
+      .querySelectorAll('.story-scene')
+      [resume.current]?.querySelector('h3');
     resume.current = null;
     if (!heading) return;
     heading.tabIndex = -1;
@@ -241,7 +323,8 @@ export default function IntroStory({ products = [], motion = false, reduceMotion
       // the browser already jumped to (/#for-makers) has to be re-found once, on first pin.
       if (!landed.current) {
         landed.current = true;
-        const target = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+        const target =
+          location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
         if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
       }
     });
@@ -297,7 +380,11 @@ export default function IntroStory({ products = [], motion = false, reduceMotion
         <ol className="story-scenes">
           {scenes.map((scene, i) => (
             <li key={scene.id}>
-              <article className="story-scene" data-scene={scene.id} style={{ '--scene': scene.color }}>
+              <article
+                className="story-scene"
+                data-scene={scene.id}
+                style={{ '--scene': scene.color }}
+              >
                 <div className="story-copy">
                   <span className="story-step">0{i + 1}</span>
                   <h3>{scene.title}</h3>

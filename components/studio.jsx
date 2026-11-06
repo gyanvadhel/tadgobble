@@ -34,9 +34,7 @@ import { CreatorCredit } from './creator-credit';
 import '../app/creator-studio.css';
 import { cloudMode } from '../lib/client-api.mjs';
 const labels = {
-  pending: 'In review',
-  needs_changes: 'Needs changes',
-  rejected: 'Not selected',
+  rejected: 'Taken down',
   draft: 'Draft',
   render_pending: 'Waiting to render',
   rendering: 'Rendering',
@@ -104,7 +102,7 @@ function Empty({ icon: Icon = Clapperboard, title, children }) {
 export default function Studio({ user, loading, onLogin, notify, onLogout }) {
   const [data, setData] = useState(null),
     [tab, setTab] = useState(cloudMode ? 'Products' : 'Overview'),
-    [productStatus, setProductStatus] = useState('pending'),
+    [productStatus, setProductStatus] = useState('all'),
     [selected, setSelected] = useState(null),
     [review, setReview] = useState(null),
     [busy, setBusy] = useState(false),
@@ -134,11 +132,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
             : requested,
       );
     if (requested === 'Published') setProductStatus('published');
-    if (
-      ['all', 'pending', 'needs_changes', 'published', 'rejected', 'archived'].includes(
-        params.get('status'),
-      )
-    )
+    if (['all', 'published', 'rejected', 'archived'].includes(params.get('status')))
       setProductStatus(params.get('status'));
   }, []);
   const refresh = useCallback(async () => {
@@ -187,7 +181,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
           <br />
           <em>control room.</em>
         </h1>
-        <p>Review products, prepare videos, and manage your publishing workflow.</p>
+        <p>Keep an eye on new work, prepare videos, and manage your publishing workflow.</p>
         {!user ? (
           <button className="button button-dark" onClick={onLogin}>
             Sign in to the studio <ArrowRight size={17} />
@@ -197,7 +191,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
         )}
         <small>
           {cloudMode
-            ? 'Only the studio owner can review submissions.'
+            ? 'Only the studio owner can open the studio.'
             : 'The owner account is configured in your local environment file.'}
         </small>
         <a href="/discover">← Back to discoveries</a>
@@ -205,7 +199,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
     );
   const nav = cloudMode
     ? [
-        ['Products', Layers, 'Review queue'],
+        ['Products', Layers, 'All work'],
         ['Published', Check, 'Published'],
         ['Overview', LayoutDashboard],
         ['Inbox', Inbox],
@@ -245,21 +239,16 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
               onClick={() => {
                 setTab(name === 'Published' ? 'Products' : name);
                 if (name === 'Published') setProductStatus('published');
-                if (name === 'Products') setProductStatus('pending');
+                if (name === 'Products') setProductStatus('all');
                 const url = new URL(location.href);
                 url.searchParams.set('tab', name.toLowerCase());
                 if (name === 'Products' || name === 'Published')
-                  url.searchParams.set('status', name === 'Published' ? 'published' : 'pending');
+                  url.searchParams.set('status', name === 'Published' ? 'published' : 'all');
                 history.replaceState(null, '', url);
               }}
             >
               <Icon size={19} />
               {label || (name === 'Products' ? 'Submissions' : name)}
-              {name === 'Products' && data?.products.some((p) => p.status === 'pending') && (
-                <span className="sidebar-count">
-                  {data.products.filter((p) => p.status === 'pending').length}
-                </span>
-              )}
             </button>
           ))}
         </nav>
@@ -369,7 +358,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                     </div>
                     <div className="pipeline">
                       {[
-                        ['Review', data.products.filter((p) => p.status === 'pending').length],
+                        ['Live', data.products.filter((p) => p.status === 'published').length],
                         ['Draft', data.jobs.filter((j) => j.status === 'draft').length],
                         [
                           'Render',
@@ -425,7 +414,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                       ))
                     ) : (
                       <Empty icon={Clock} title="A fresh start.">
-                        Your workflow history will appear here as you review products and prepare
+                        Your workflow history will appear here as you work on products and prepare
                         content.
                       </Empty>
                     )}
@@ -441,10 +430,10 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
               <section className="studio-panel">
                 <div className="panel-title">
                   <div>
-                    <h2>Give good work a proper look.</h2>
+                    <h2>Everything on tadgobble.</h2>
                     <p>
-                      Check the image, creator credit and details. Feedback goes to their My work
-                      page.
+                      New work goes live the moment it is posted. Look it over, mark it checked, or
+                      take it down.
                     </p>
                   </div>
                   <label className="studio-status-filter">
@@ -459,15 +448,13 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                         history.replaceState(null, '', url);
                       }}
                     >
-                      {['pending', 'needs_changes', 'published', 'rejected', 'archived', 'all'].map(
-                        (value) => (
-                          <option key={value} value={value}>
-                            {value === 'all'
-                              ? 'All listings'
-                              : labels[value] || value[0].toUpperCase() + value.slice(1)}
-                          </option>
-                        ),
-                      )}
+                      {['all', 'published', 'rejected', 'archived'].map((value) => (
+                        <option key={value} value={value}>
+                          {value === 'all'
+                            ? 'All listings'
+                            : labels[value] || value[0].toUpperCase() + value.slice(1)}
+                        </option>
+                      ))}
                     </select>
                   </label>
                 </div>
@@ -478,7 +465,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                       <article className="review-queue-item" key={p.id}>
                         <button
                           className="review-queue-image"
-                          aria-label={`Review image for ${p.name}`}
+                          aria-label={`Open ${p.name}`}
                           onClick={() => setReview(p)}
                         >
                           {p.cover?.url ? (
@@ -496,25 +483,21 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
                           <p>
                             {p.category} · {new Date(p.created_at).toLocaleDateString()}
                           </p>
-                          {p.pendingEdit && (
-                            <p className="review-queue-note">
-                              Edit to a live post. The current version stays up until approved.
-                            </p>
+                          {p.status === 'published' && p.verified_at && (
+                            <p className="review-queue-note">Checked against its source.</p>
                           )}
-                          {p.review_note && <p className="review-queue-note">{p.review_note}</p>}
+                          {p.status !== 'published' && p.review_note && (
+                            <p className="review-queue-note">{p.review_note}</p>
+                          )}
                         </div>
                         <button className="button button-dark" onClick={() => setReview(p)}>
-                          Review <ArrowRight size={15} />
+                          Open <ArrowRight size={15} />
                         </button>
                       </article>
                     ))}
                   {!data.products.some(
                     (p) => productStatus === 'all' || p.status === productStatus,
-                  ) && (
-                    <Empty title="Nothing in this queue.">
-                      Choose another status to see more work.
-                    </Empty>
-                  )}
+                  ) && <Empty title="Nothing here.">Choose another status to see more work.</Empty>}
                 </div>
               </section>
             )}
@@ -839,7 +822,7 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
       )}
       {review && (
         <Modal wide onClose={() => setReview(null)}>
-          <ProductReview
+          <ProductPanel
             product={review}
             busy={busy}
             action={action}
@@ -850,18 +833,19 @@ export default function Studio({ user, loading, onLogin, notify, onLogout }) {
     </div>
   );
 }
-function ProductReview({ product: p, busy, action, onClose }) {
+function ProductPanel({ product: p, busy, action, onClose }) {
   const art = isArtwork(p);
   const coverState = useProductCover(p.cover);
   const [savedCoverId, setSavedCoverId] = useState(p.cover?.id || null);
   const coverChanged = (coverState.cover?.id || null) !== savedCoverId;
+  const live = p.status === 'published';
   const [checked, setChecked] = useState(false);
   const [sponsored, setSponsored] = useState(p.sponsored);
   const [feedback, setFeedback] = useState(p.review_note || ''),
     [feedbackError, setFeedbackError] = useState('');
   return (
     <div>
-      <span className="eyebrow">{art ? 'CREATIVE WORK REVIEW' : 'PRODUCT REVIEW'}</span>
+      <span className="eyebrow">{art ? 'CREATIVE WORK' : 'PRODUCT'}</span>
       <h2>{p.name}</h2>
       <p className="form-intro">{p.description}</p>
       <div className="studio-cover">
@@ -887,8 +871,7 @@ function ProductReview({ product: p, busy, action, onClose }) {
         )}
         {coverChanged && (
           <p className="form-intro">
-            Save this change before approving. For a published listing, saving updates the public
-            cover.
+            Save this change first. Saving updates the public cover right away.
           </p>
         )}
       </div>
@@ -929,7 +912,7 @@ function ProductReview({ product: p, busy, action, onClose }) {
       </ul>
       {!art && !p.facts.length && (
         <p className="form-intro">
-          No separate capabilities were added. Review the description and product website.
+          No separate capabilities were added. See the description and product website.
         </p>
       )}
       {p.source && (
@@ -937,14 +920,6 @@ function ProductReview({ product: p, busy, action, onClose }) {
           Open source <ExternalLink size={15} />
         </a>
       )}
-      <label className="check-field review-check">
-        <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} />
-        {p.cover?.video
-          ? 'I watched the video and reviewed its attribution and description. This work is suitable to publish.'
-          : art
-            ? 'I reviewed the image, attribution, and description. This work is suitable to publish.'
-            : 'I checked these details against the source and they accurately describe the product.'}
-      </label>
       <label className="check-field">
         <input
           type="checkbox"
@@ -953,94 +928,117 @@ function ProductReview({ product: p, busy, action, onClose }) {
         />
         This is a paid placement. Label the listing and its video as sponsored.
       </label>
-      <div className="action-row">
-        <button
-          className="button button-dark"
-          disabled={!checked || busy || coverState.busy || coverChanged}
-          onClick={async () => {
-            if (sponsored !== p.sponsored) {
-              const updated = await action('product', {
-                id: p.id,
-                action: 'sponsor',
-                enabled: sponsored,
-              });
-              if (!updated) return;
-            }
-            const r = await action(
-              'product',
-              { id: p.id, action: 'verify', confirmed: true },
-              'Work published. It now appears on the public site.',
-            );
-            if (r) onClose();
-          }}
-        >
-          <Check size={16} /> Publish work
-        </button>
-      </div>
-      <div className="review-response">
-        <label htmlFor="review-feedback">Feedback for the creator</label>
-        <textarea
-          id="review-feedback"
-          value={feedback}
-          maxLength={1000}
-          rows={3}
-          onChange={(e) => {
-            setFeedback(e.target.value);
-            setFeedbackError('');
-          }}
-          placeholder="What needs changing, or why wasn’t this selected?"
-        />
-        <p>This note is private to the creator and the studio.</p>
-        {feedbackError && (
-          <p className="form-error" role="alert">
-            {feedbackError}
-          </p>
-        )}
-      </div>
-      <div className="action-row">
-        <button
-          className="button"
-          disabled={busy}
-          onClick={async () => {
-            if (feedback.trim().length < 3) {
-              setFeedbackError('Add a short note so the creator knows what to change.');
-              return;
-            }
-            if (
-              await action(
+      {sponsored !== p.sponsored && (
+        <div className="action-row">
+          <button
+            className="button"
+            disabled={busy}
+            onClick={() =>
+              action(
                 'product',
-                { id: p.id, action: 'changes', feedback },
-                'Feedback sent to My work.',
+                { id: p.id, action: 'sponsor', enabled: sponsored },
+                'Sponsorship label saved.',
               )
-            )
-              onClose();
-          }}
-        >
-          Request changes
-        </button>
-        <button
-          className="button"
-          disabled={busy}
-          onClick={async () => {
-            if (feedback.trim().length < 3) {
-              setFeedbackError('Add a short note explaining this decision.');
-              return;
             }
-            if (
-              confirm('Remove this listing from discovery and archive its unpublished content?')
-            ) {
-              const r = await action(
-                'product',
-                { id: p.id, action: 'reject', feedback },
-                'Work not selected. Feedback saved.',
-              );
-              if (r) onClose();
-            }
-          }}
-        >
-          Reject work
-        </button>
-      </div>
+          >
+            Save label
+          </button>
+        </div>
+      )}
+      {live ? (
+        <>
+          <label className="check-field review-check">
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={(e) => setChecked(e.target.checked)}
+            />
+            {p.verified_at
+              ? 'Already checked. Tick to record a fresh check of the source and facts.'
+              : 'I checked these details against the source and they accurately describe the work. (Needed before a video can be made from it.)'}
+          </label>
+          <div className="action-row">
+            <button
+              className="button button-dark"
+              disabled={!checked || busy || coverState.busy || coverChanged}
+              onClick={async () => {
+                const r = await action(
+                  'product',
+                  { id: p.id, action: 'checked', confirmed: true },
+                  'Marked as checked.',
+                );
+                if (r) onClose();
+              }}
+            >
+              <Check size={16} /> Mark as checked
+            </button>
+          </div>
+          <div className="review-response">
+            <label htmlFor="review-feedback">Why take it down?</label>
+            <textarea
+              id="review-feedback"
+              value={feedback}
+              maxLength={1000}
+              rows={3}
+              onChange={(e) => {
+                setFeedback(e.target.value);
+                setFeedbackError('');
+              }}
+              placeholder="A short reason. The maker sees it on their My work page."
+            />
+            <p>This note is private to the maker and the studio.</p>
+            {feedbackError && (
+              <p className="form-error" role="alert">
+                {feedbackError}
+              </p>
+            )}
+          </div>
+          <div className="action-row">
+            <button
+              className="button"
+              disabled={busy}
+              onClick={async () => {
+                if (feedback.trim().length < 3) {
+                  setFeedbackError('Add a short note so the maker knows why.');
+                  return;
+                }
+                if (
+                  confirm('Take this work off tadgobble? It stays down even if its maker edits it.')
+                ) {
+                  const r = await action(
+                    'product',
+                    { id: p.id, action: 'reject', feedback },
+                    'Work taken down. The maker can see your note.',
+                  );
+                  if (r) onClose();
+                }
+              }}
+            >
+              Take down
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          {p.review_note && <p className="review-queue-note">Taken down: {p.review_note}</p>}
+          <div className="action-row">
+            <button
+              className="button button-dark"
+              disabled={busy || coverState.busy || coverChanged}
+              onClick={async () => {
+                const r = await action(
+                  'product',
+                  { id: p.id, action: 'verify' },
+                  'Work is live again.',
+                );
+                if (r) onClose();
+              }}
+            >
+              <Check size={16} /> Put back live
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

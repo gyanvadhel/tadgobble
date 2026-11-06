@@ -28,10 +28,8 @@ import {
 import '../app/creators.css';
 
 const statusNames = {
-  pending: 'In review',
-  needs_changes: 'Needs changes',
-  published: 'Published',
-  rejected: 'Not selected',
+  published: 'Live',
+  rejected: 'Taken down',
   archived: 'Archived',
 };
 function GalleryWork({ product, index }) {
@@ -340,7 +338,7 @@ export default function CreatorPage({ mode = 'profile', username: providedUserna
             </section>
             <div className="work-toolbar">
               <div className="work-filters" role="group" aria-label="Submission status">
-                {['all', 'pending', 'needs_changes', 'published', 'rejected'].map((s) => (
+                {['all', 'published', 'rejected'].map((s) => (
                   <button key={s} aria-pressed={filter === s} onClick={() => setFilter(s)}>
                     {s === 'all' ? 'Everything' : statusNames[s]}
                   </button>
@@ -388,25 +386,21 @@ export default function CreatorPage({ mode = 'profile', username: providedUserna
                           {p.category} · Submitted {new Date(p.created_at).toLocaleDateString()}
                         </p>
                         {p.submission.onBehalf && <p>Credited to {p.owner_name}</p>}
-                        {p.review_note && (
+                        {p.status === 'rejected' && p.review_note && (
                           <div className="review-feedback">
-                            <strong>A note from the review</strong>
+                            <strong>Why it was taken down</strong>
                             <p>{p.review_note}</p>
                           </div>
                         )}
-                        {p.pendingEdit ? (
-                          <p>Your edits are in review. The current version stays live meanwhile.</p>
-                        ) : (
-                          p.status === 'pending' && (
-                            <p>We’ll take a human look. Check back here for the result.</p>
-                          )
+                        {p.status === 'rejected' && (
+                          <p>
+                            This work is off tadgobble. Editing it won’t put it back; write to us if
+                            you think that was a mistake.
+                          </p>
                         )}
                         <div className="my-work-actions">
                           <button className="button" onClick={() => setEditing(p)}>
-                            Edit{' '}
-                            {p.status === 'needs_changes' || p.status === 'rejected'
-                              ? '& resubmit'
-                              : 'work'}
+                            Edit work
                           </button>
                           {p.status === 'published' && (
                             <>
@@ -524,7 +518,7 @@ function EmailSwitch() {
         />
         <span>
           Email me about my work
-          <small>First saves, comments, review results and a weekly roundup.</small>
+          <small>First saves, comments, takedowns and a weekly roundup.</small>
         </span>
       </label>
       {error && (
@@ -640,8 +634,7 @@ function ProfileSettings({ user, onSaved }) {
               onChange={(e) => update('username', e.target.value.toLowerCase())}
             />
             <small>
-              tadgobble.in/profile/{data.username || 'you'}. Changing it changes your profile
-              link.
+              tadgobble.in/profile/{data.username || 'you'}. Changing it changes your profile link.
             </small>
           </label>
           <label>
@@ -699,8 +692,8 @@ function ProfileSettings({ user, onSaved }) {
             <span>
               Show my public profile
               <small>
-                Visitors can explore your published work. Your email, saved items and review notes
-                stay private. Hiding your profile keeps approved work in discoveries.
+                Visitors can explore your published work. Your email, saved items and private notes
+                stay private. Hiding your profile keeps your work in discoveries.
               </small>
             </span>
           </label>

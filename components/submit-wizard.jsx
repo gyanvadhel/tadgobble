@@ -148,7 +148,7 @@ export default function SubmitWizard({ onDone, product = null, creator = null })
       <div className="share-success">
         <Gobble />
         <span className="share-receipt">
-          <Check size={18} /> In the review queue
+          <Check size={18} /> It’s live
         </span>
         <h2 ref={successRef} tabIndex={-1}>
           {product ? (
@@ -162,10 +162,10 @@ export default function SubmitWizard({ onDone, product = null, creator = null })
           )}
         </h2>
         <p>
-          <strong>{data.name}</strong> is in for a human look.{' '}
-          {product?.status === 'published'
-            ? 'The current version stays live until your edits are approved.'
-            : 'It will appear in discoveries after approval.'}
+          <strong>{data.name}</strong>{' '}
+          {product
+            ? 'is updated, and the new version is already live.'
+            : 'is live on tadgobble now.'}
         </p>
         <a className="share-send" href="/my-work">
           Track it in My work <ArrowRight size={18} />
@@ -225,9 +225,7 @@ export default function SubmitWizard({ onDone, product = null, creator = null })
           </>
         )}
         {product?.status === 'published' && (
-          <p className="review-edit-note">
-            Your current version stays live while these edits are reviewed.
-          </p>
+          <p className="review-edit-note">Edits go live as soon as you save them.</p>
         )}
         {creator && (
           <p className="share-credit-note">
@@ -542,13 +540,11 @@ export default function SubmitWizard({ onDone, product = null, creator = null })
               'Preparing image…'
             ) : (
               <>
-                Send for review <Send size={18} />
+                {product ? 'Save changes' : 'Post it'} <Send size={18} />
               </>
             )}
           </button>
-          <p className="share-review-note">
-            Free to share. Reviewed by a human before it goes public.
-          </p>
+          <p className="share-review-note">Free to share. It goes live the moment you post it.</p>
         </div>
       </div>
     </form>

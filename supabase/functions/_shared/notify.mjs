@@ -44,7 +44,7 @@ function content(row, site) {
         return {
           subject: edit ? `Your edit to ${name} is live` : `${name} is live on tadgobble`,
           heading: edit ? `Your edit to ${name} is live` : `${name} is live`,
-          lines: [edit ? 'The new version is out for everyone to see.' : 'Everyone can find it now. Go say hi.'],
+          lines: [edit ? 'The new version is out for everyone to see.' : 'It is back, and everyone can find it again.'],
           button: 'See it live',
           href: link,
         };
@@ -60,7 +60,7 @@ function content(row, site) {
       return {
         subject: edit ? `About your edit to ${name}` : `About ${name}`,
         heading: edit ? `About your edit to ${name}` : `About ${name}`,
-        lines: ["We couldn't put this one up."],
+        lines: ['We had to take this one down.'],
         quote: note || null,
         button: 'See details',
         href: link,
@@ -85,11 +85,10 @@ function content(row, site) {
       };
     }
     case 'admin_queue': {
-      const what = { new: 'sent a new work', edit: 'edited a live work', resubmission: 'sent a work back after changes' }[data.what] || 'sent something';
       return {
-        subject: `New in the review queue: ${oneLine(data.name)}`,
-        heading: `New in the review queue: ${oneLine(data.name)}`,
-        lines: [`${oneLine(data.maker) || 'A maker'} ${what}.`],
+        subject: `New on tadgobble: ${oneLine(data.name)}`,
+        heading: `New on tadgobble: ${oneLine(data.name)}`,
+        lines: [`${oneLine(data.maker) || 'A maker'} posted a new work. It is already live; take a look when you can.`],
         button: 'Open the studio',
         href: `${site}/studio`,
       };

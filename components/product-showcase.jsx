@@ -460,7 +460,7 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
         <span>
           {products.length
             ? 'A small menu. Plenty of rabbit holes.'
-            : 'Real work. Reviewed before it lands here.'}
+            : 'Real work, straight from the people who made it.'}
         </span>
         <a className="launch-button plum-button" href={discover}>
           {products.length >= 6 ? `See all ${products.length} finds` : 'See everything on Discover'}
