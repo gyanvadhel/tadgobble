@@ -6,7 +6,7 @@ import { mkdirSync, rmSync, copyFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const FPS = 30, W = 540, H = 960;
-const LEAD = 1.0, SCROLL = 24, TAIL = 1.6; // seconds: hold on the first scene, scroll, hold on the last
+const LEAD = 0.2, SCROLL = 15, TAIL = 1.2, SKIP = 241; // seconds: hold on the first scene, scroll, hold on the last
 const dir = path.resolve('data/scroll/frames');
 rmSync(dir, { recursive: true, force: true });
 mkdirSync(dir, { recursive: true });
@@ -24,12 +24,12 @@ const story = await page.evaluate(() => {
   const r = s.getBoundingClientRect();
   return { top: Math.round(r.top + scrollY), height: Math.round(r.height) };
 });
-const from = story.top, to = story.top + story.height - H;
+const from = story.top + SKIP, to = story.top + story.height - H;
 console.log('story', story, 'scroll', from, '->', to);
 
 // Mostly-linear scroll that eases gently in and out, so it reads as a calm, steady scroll.
 const smooth = (p) => p * p * (3 - 2 * p);
-const ease = (p) => 0.55 * p + 0.45 * smooth(p);
+const ease = (p) => 0.8 * p + 0.2 * smooth(p);
 const nLead = Math.round(LEAD * FPS), nScroll = Math.round(SCROLL * FPS), nTail = Math.round(TAIL * FPS);
 const name = (i) => path.join(dir, String(i).padStart(5, '0') + '.jpg');
 const shoot = async (i) => page.screenshot({ path: name(i), type: 'jpeg', quality: 93 });
