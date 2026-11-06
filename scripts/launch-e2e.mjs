@@ -140,7 +140,7 @@ try {
   );
   pass('Boop responds and pause stops page animation');
 
-  await page.getByRole('button', { name: 'I build', exact: true }).click();
+  await page.getByLabel('More audiences').selectOption('Developers');
   assert.deepEqual((await page.locator('.product-drawer h3').allTextContents()).sort(), [
     'Penpot',
     'n8n',
@@ -149,10 +149,10 @@ try {
   await page.getByRole('dialog').waitFor();
   assert.ok(['Penpot', 'n8n'].includes(await page.locator('#snack-dialog-title').textContent()));
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'For everyone', exact: true }).click();
-  await page.getByRole('textbox', { name: 'Search products' }).fill('automation');
+  await page.getByLabel('More audiences').selectOption('Everyone');
+  await page.getByRole('textbox', { name: 'Search discoveries' }).fill('automation');
   assert.deepEqual(await page.locator('.product-drawer h3').allTextContents(), ['n8n']);
-  await page.getByRole('textbox', { name: 'Search products' }).fill('no-such-product-123');
+  await page.getByRole('textbox', { name: 'Search discoveries' }).fill('no-such-product-123');
   await page.getByRole('heading', { name: 'No bites for that one.' }).waitFor();
   await page.getByRole('button', { name: 'Show all the finds' }).click();
   assert.equal(await page.locator('.product-drawer').count(), 6);
@@ -244,7 +244,7 @@ try {
   pass('Desktop, tablet, 390px and 320px layouts fit; mobile navigation works');
 
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.getByRole('link', { name: 'Post your thing', exact: true }).click();
+  await page.locator('#for-makers').getByRole('link', { name: 'Post your thing', exact: true }).click();
   await page.getByRole('button', { name: 'New here? Create an account' }).click();
   await page.getByLabel('Your name', { exact: true }).fill('Launch Explorer');
   await page.getByLabel('Email', { exact: true }).fill('launch@test.example');
@@ -260,12 +260,12 @@ try {
   await page.waitForURL('**/discover?**');
   assert.equal(new URL(page.url()).searchParams.get('utm_campaign'), 'old-link');
   await page.goto(origin + '/discover?audience=Developers');
-  await page.locator('.product-card').first().waitFor();
+  await page.locator('.showcase-card').first().waitFor();
   assert.equal(
     await page.getByRole('button', { name: /^Filter by audience/ }).getAttribute('aria-label'),
     'Filter by audience: Developers',
   );
-  assert.equal(await page.locator('.product-card').count(), 2);
+  assert.equal(await page.locator('.showcase-card').count(), 2);
   pass('Existing campaign URLs and catalog audience links remain functional');
 
   const reduced = await browser.newPage({
