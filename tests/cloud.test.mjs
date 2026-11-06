@@ -87,21 +87,34 @@ test('member metadata cannot grant studio access; raw tables are closed', async 
   await assert.rejects(() => db.query('select * from public.tg_profiles'), /permission denied/);
   await db.exec('reset role');
 });
-test('pending submission stays private and only admin can approve it', async () => {
+test('a submission is public at once; only an admin can mark it checked or take it down', async () => {
   pending = await api(maker, 'submit', product);
-  assert.equal((await api(null, 'bootstrap')).products.length, 0);
-  await assert.rejects(() => api(null, 'products/' + pending.slug), /not found/);
+  assert.equal((await api(null, 'bootstrap')).products.length, 1);
+  assert.equal((await api(null, 'products/' + pending.slug)).product.status, 'published');
   const { products } = await api(owner, 'studio');
   pending.id = products[0].id;
+  assert.equal(products[0].status, 'published');
+  assert.equal(products[0].verified_at, null);
   await assert.rejects(
-    () => api(maker, 'studio/product', { id: pending.id, action: 'verify', confirmed: true }),
+    () => api(maker, 'studio/product', { id: pending.id, action: 'checked', confirmed: true }),
     /Studio access/,
   );
   await assert.rejects(
-    () => api(owner, 'studio/product', { id: pending.id, action: 'verify' }),
+    () => api(owner, 'studio/product', { id: pending.id, action: 'checked' }),
     /Confirm/,
   );
-  await api(owner, 'studio/product', { id: pending.id, action: 'verify', confirmed: true });
+  await assert.rejects(
+    () => api(owner, 'studio/product', { id: pending.id, action: 'verify', confirmed: true }),
+    /already live/,
+  );
+  await assert.rejects(
+    () => api(owner, 'studio/product', { id: pending.id, action: 'changes', feedback: 'Fix it.' }),
+    /no longer/,
+  );
+  await api(owner, 'studio/product', { id: pending.id, action: 'checked', confirmed: true });
+  const checked = (await api(owner, 'studio')).products.find((p) => p.id === pending.id);
+  assert.equal(checked.status, 'published');
+  assert.ok(checked.verified_at);
   assert.equal((await api(null, 'bootstrap')).products.length, 1);
 });
 test('saves and comments enforce account ownership', async () => {
@@ -140,7 +153,7 @@ test('saves and comments enforce account ownership', async () => {
     await api(r.user_id, 'comment/delete', { id: r.id });
   assert.equal((await thread()).length, 0);
 });
-test('covers remain private until attached to an approved listing', async () => {
+test('covers stay private until attached to a live listing, and again once it is taken down', async () => {
   ({ cover } = await api(maker, 'covers/prepare'));
   await db.query("insert into storage.objects(bucket_id,name) values('covers',$1)", [cover.path]);
   await api(maker, 'covers/complete', { id: cover.id });
@@ -153,7 +166,6 @@ test('covers remain private until attached to an approved listing', async () => 
   await assert.rejects(() => api(other, 'submit', { ...product, coverId: cover.id }), /belonging/);
   const x = await api(maker, 'submit', { ...product, coverId: cover.id });
   const p = (await api(owner, 'studio')).products.find((p) => p.slug === x.slug);
-  await api(owner, 'studio/product', { id: p.id, action: 'verify', confirmed: true });
   await api(null, 'health');
   assert.equal(
     (await db.query('select tg_cover_read($1) as readable', [cover.path])).rows[0].readable,
@@ -189,7 +201,7 @@ test('invalid URLs, categories and forged publishing fields are rejected or igno
     sponsored: true,
   });
   const p = (await api(owner, 'studio')).products.find((p) => p.slug === x.slug);
-  assert.equal(p.status, 'pending');
+  assert.equal(p.status, 'published');
   assert.equal(p.featured, false);
   assert.equal(p.sponsored, false);
 });
@@ -215,9 +227,9 @@ test('creative work needs an owned ready upload, but no website, tagline, or pri
     coverId: image.id,
     imageDescription: 'Blue ink drawing of a tree.',
   });
-  assert.ok(!(await api(null, 'bootstrap')).products.some((p) => p.slug === slug));
+  assert.ok((await api(null, 'bootstrap')).products.some((p) => p.slug === slug));
   const p = (await api(owner, 'studio')).products.find((p) => p.slug === slug);
-  assert.equal(p.status, 'pending');
+  assert.equal(p.status, 'published');
   assert.equal(p.url, '');
   assert.equal(p.source, '');
   assert.equal(p.submission.kind, 'art');
@@ -227,7 +239,6 @@ test('creative work needs an owned ready upload, but no website, tagline, or pri
     () => api(other, 'studio/product', { id: p.id, action: 'verify', confirmed: true }),
     /Studio access/,
   );
-  await api(owner, 'studio/product', { id: p.id, action: 'verify', confirmed: true });
   assert.equal((await api(null, 'products/' + slug)).product.cover.id, image.id);
   await assert.rejects(
     () => api(owner, 'studio/product', { id: p.id, action: 'cover', coverId: null }),
@@ -246,7 +257,7 @@ test('creative work needs an owned ready upload, but no website, tagline, or pri
   assert.equal(linkedWork.url, 'https://example.com/artist');
 });
 
-test('profiles, avatars, review feedback and edits preserve privacy and attribution', async () => {
+test('profiles, avatars, take-downs and edits preserve privacy and attribution', async () => {
   const creator = '44444444-4444-4444-8444-444444444444';
   await db.query('insert into auth.users(id,email,raw_user_meta_data) values($1,$2,$3)', [
     creator,
@@ -299,70 +310,57 @@ test('profiles, avatars, review feedback and edits preserve privacy and attribut
     false,
   );
   await assert.rejects(() => api(other, 'works/update', { ...product, id: work.id }), /not found/);
-  assert.equal((await api(null, 'profiles/aridraws')).products.length, 0);
-  await assert.rejects(
-    () => api(owner, 'studio/product', { id: work.id, action: 'changes' }),
-    /Feedback/,
-  );
+  // Posting is instant: the work is public the moment it is sent.
+  assert.equal(work.status, 'published');
+  assert.equal((await api(null, 'profiles/aridraws')).products.length, 1);
+  // An admin can take a work down; the maker sees why, and editing does not put it back.
   await api(owner, 'studio/product', {
     id: work.id,
-    action: 'changes',
+    action: 'reject',
     feedback: 'Please explain what the app does.',
   });
-  const revised = (await api(creator, 'my-work')).products.find((p) => p.id === work.id);
-  assert.equal(revised.status, 'needs_changes');
-  assert.match(revised.review_note, /Please explain/);
-  await api(creator, 'works/update', {
+  const down = (await api(creator, 'my-work')).products.find((p) => p.id === work.id);
+  assert.equal(down.status, 'rejected');
+  assert.match(down.review_note, /Please explain/);
+  assert.equal((await api(null, 'profiles/aridraws')).products.length, 0);
+  const fixed = await api(creator, 'works/update', {
     ...product,
     id: work.id,
     name: 'Ari’s app updated',
     status: 'published',
   });
-  assert.equal(
-    (await api(creator, 'my-work')).products.find((p) => p.id === work.id).status,
-    'pending',
-  );
+  assert.equal(fixed.live, undefined);
+  const stillDown = (await api(creator, 'my-work')).products.find((p) => p.id === work.id);
+  assert.equal(stillDown.status, 'rejected');
+  assert.equal(stillDown.name, 'Ari’s app updated');
+  assert.match(stillDown.review_note, /Please explain/);
+  assert.equal((await api(null, 'profiles/aridraws')).products.length, 0);
   await api(owner, 'studio/product', { id: work.id, action: 'verify', confirmed: true });
   const published = await api(null, 'profiles/aridraws');
   assert.equal(published.products.length, 1);
   assert.equal(published.products[0].creator_username, 'aridraws');
   assert.equal(published.products[0].review_note, undefined);
-  // Edits to live work wait for review while the live version stays up.
+  // Edits to live work go live straight away.
   const edit = await api(creator, 'works/update', {
     ...product,
     id: work.id,
     name: 'Ari’s app v2',
   });
-  assert.equal(edit.live, true);
-  const stillLive = (await api(null, 'products/' + work.slug)).product;
-  assert.equal(stillLive.name, 'Ari’s app updated');
-  assert.equal(stillLive.pendingEdit, undefined);
-  assert.equal(JSON.stringify(stillLive).includes('v2'), false);
-  assert.equal((await api(null, 'profiles/aridraws')).products.length, 1);
+  assert.equal(edit.live, undefined);
+  const nowLive = (await api(null, 'products/' + work.slug)).product;
+  assert.equal(nowLive.name, 'Ari’s app v2');
+  assert.equal(nowLive.pendingEdit, undefined);
   const mine = (await api(creator, 'my-work')).products.find((p) => p.id === work.id);
   assert.equal(mine.name, 'Ari’s app v2');
-  assert.equal(mine.pendingEdit, true);
+  assert.equal(mine.pendingEdit, undefined);
   assert.equal(mine.status, 'published');
-  const queued = (await api(owner, 'studio')).products.find((p) => p.id === work.id);
-  assert.equal(queued.status, 'pending');
-  assert.equal(queued.name, 'Ari’s app v2');
+  const seen = (await api(owner, 'studio')).products.find((p) => p.id === work.id);
+  assert.equal(seen.status, 'published');
+  assert.equal(seen.name, 'Ari’s app v2');
   await assert.rejects(
     () => api(creator, 'studio/product', { id: work.id, action: 'verify', confirmed: true }),
     /Studio access/,
   );
-  await api(owner, 'studio/product', {
-    id: work.id,
-    action: 'changes',
-    feedback: 'Keep the old name.',
-  });
-  const kept = (await api(creator, 'my-work')).products.find((p) => p.id === work.id);
-  assert.equal(kept.name, 'Ari’s app updated');
-  assert.equal(kept.pendingEdit, undefined);
-  assert.equal(kept.status, 'published');
-  assert.match(kept.review_note, /old name/);
-  await api(creator, 'works/update', { ...product, id: work.id, name: 'Ari’s app v3' });
-  await api(owner, 'studio/product', { id: work.id, action: 'verify', confirmed: true });
-  assert.equal((await api(null, 'products/' + work.slug)).product.name, 'Ari’s app v3');
   const onBehalf = await api(creator, 'submit', {
     ...product,
     name: 'Other artist',
@@ -371,7 +369,6 @@ test('profiles, avatars, review feedback and edits preserve privacy and attribut
     creatorInstagram: '@mika.draws',
   });
   const otherWork = (await api(creator, 'my-work')).products.find((p) => p.slug === onBehalf.slug);
-  await api(owner, 'studio/product', { id: otherWork.id, action: 'verify', confirmed: true });
   const credited = (await api(null, 'products/' + otherWork.slug)).product;
   assert.equal(credited.owner_name, 'Mika');
   assert.equal(credited.creator_username, null);
@@ -384,7 +381,7 @@ test('profiles, avatars, review feedback and edits preserve privacy and attribut
   assert.equal((await db.query('select tg_cover_read($1) as ok', [photo.path])).rows[0].ok, false);
 });
 
-test('video storage and playback inherit review privacy and reject forged attachment or avatar use', async () => {
+test('video storage and playback follow the post and reject forged attachment or avatar use', async () => {
   const uid = '77777777-7777-4777-8777-777777777777',
     cid = '88888888-8888-4888-8888-888888888888',
     vid = '99999999-9999-4999-8999-999999999999';
@@ -456,7 +453,6 @@ test('video storage and playback inherit review privacy and reject forged attach
     ownership: true,
   });
   const p = (await api(owner, 'studio')).products.find((p) => p.slug === sent.slug);
-  await api(owner, 'studio/product', { id: p.id, action: 'verify', confirmed: true });
   assert.equal((await play(null)).rows[0].data.id, vid);
   await api(owner, 'studio/product', {
     id: p.id,
@@ -563,10 +559,9 @@ test('creators can delete their own work, and edits cannot change its kind', asy
     /kind of work/,
   );
   await api(creator, 'works/update', { ...product, id: work.id, name: 'Short-lived, tidied' });
-  await api(owner, 'studio/product', { id: work.id, action: 'verify', confirmed: true });
   await api(other, 'save', { productId: work.id });
   await api(other, 'comment', { productId: work.id, body: 'Lovely work.' });
-  // A pending edit's new cover belongs to the post too, so deleting frees it.
+  // A new cover belongs to the post too, so deleting the post frees it.
   const { cover } = await api(creator, 'covers/prepare');
   await db.query("insert into storage.objects(bucket_id,name) values('covers',$1)", [cover.path]);
   await api(creator, 'covers/complete', { id: cover.id });
@@ -617,7 +612,6 @@ test('notification setup: a published work owned by someone else', async () => {
   await addNoteUser(noteUsers.fan2, 'Notefan2');
   const made = await api(noteUsers.owner, 'submit', { ...product, name: 'Bell check' });
   const row = (await api(owner, 'studio')).products.find((p) => p.slug === made.slug);
-  await api(owner, 'studio/product', { id: row.id, action: 'verify', confirmed: true });
   noteProduct = { id: row.id, slug: made.slug };
 });
 test('saves notify the owner anonymously, merge while unread, and never repeat', async () => {
@@ -695,7 +689,6 @@ test('notifications are private', async () => {
 async function publishWork(user, name) {
   const made = await api(user, 'submit', { ...product, name });
   const row = (await api(owner, 'studio')).products.find((p) => p.slug === made.slug);
-  await api(owner, 'studio/product', { id: row.id, action: 'verify', confirmed: true });
   return { id: row.id, slug: made.slug };
 }
 const outbox = async (where, params = []) =>
@@ -729,44 +722,39 @@ test('top-level comments queue an email, replies and own comments do not', async
   assert.equal(rows[0].data.actor, 'Notefan');
   assert.match(rows[0].data.preview, /Beautifully made/);
 });
-test('review outcomes reach the maker for submissions and edits, and the admin queue fills', async () => {
+test('takedowns and put-backs reach the maker, a new post tells the admin, edits stay quiet', async () => {
   const maker2 = '0b000003-0000-4000-8000-000000000003';
   await addNoteUser(maker2, 'Reviewmaker');
   const made = await api(maker2, 'submit', { ...product, name: 'Reviewed work' });
   const id = (await api(owner, 'studio')).products.find((p) => p.slug === made.slug).id;
-  let queue = await outbox("kind='admin_queue' and product_id=$1", [id]);
+  const queued = async () => (await outbox("kind='admin_queue' and product_id=$1", [id])).map((q) => q.data.what);
+  const queue = await outbox("kind='admin_queue' and product_id=$1", [id]);
   assert.equal(queue.length, 1);
   assert.equal(queue[0].recipient_id, null);
   assert.equal(queue[0].data.what, 'new');
   assert.equal(queue[0].data.name, 'Reviewed work');
   assert.equal(queue[0].data.maker, 'Reviewmaker');
-  await api(owner, 'studio/product', { id, action: 'changes', feedback: 'Please add a clearer photo' });
+  // edits to a live work go live at once and do not email the admin
+  await api(maker2, 'works/update', { ...product, id, name: 'Reviewed work v2' });
+  assert.deepEqual(await queued(), ['new']);
+  assert.equal((await outbox("kind='review' and product_id=$1", [id])).length, 0);
+  // a takedown reaches the maker by bell and email
+  await api(owner, 'studio/product', { id, action: 'reject', feedback: 'Please add a clearer photo' });
   let review = await outbox("kind='review' and product_id=$1", [id]);
   assert.equal(review.length, 1);
-  assert.deepEqual(review[0].data, { outcome: 'changes', note: 'Please add a clearer photo', edit: false });
-  assert.equal((await bell(maker2)).find((n) => n.kind === 'review').outcome, 'changes');
-  await api(maker2, 'works/update', { ...product, id, name: 'Reviewed work v2' });
-  queue = await outbox("kind='admin_queue' and product_id=$1", [id]);
-  assert.deepEqual(queue.map((q) => q.data.what), ['new', 'resubmission']);
+  assert.deepEqual(review[0].data, { outcome: 'rejected', note: 'Please add a clearer photo', edit: false });
+  // editing a taken-down work stays quiet too, and it stays down
+  await api(maker2, 'works/update', { ...product, id, name: 'Reviewed work v3' });
+  assert.deepEqual(await queued(), ['new']);
+  assert.equal((await api(maker2, 'my-work')).products.find((p) => p.id === id).status, 'rejected');
+  // putting it back tells the maker it is live
   await api(owner, 'studio/product', { id, action: 'verify', confirmed: true });
   review = await outbox("kind='review' and product_id=$1", [id]);
+  assert.equal(review.length, 2);
   assert.equal(review[1].data.outcome, 'approved');
-  assert.equal(review[1].data.edit, false);
-  // a repeat approval of live work is not news
-  await api(owner, 'studio/product', { id, action: 'verify', confirmed: true });
-  assert.equal((await outbox("kind='review' and product_id=$1", [id])).length, 2);
-  // an edit to live work queues for review, and a rejected edit reports edit:true
-  const edit = await api(maker2, 'works/update', { ...product, id, name: 'Reviewed work v3' });
-  assert.equal(edit.live, true);
-  queue = await outbox("kind='admin_queue' and product_id=$1", [id]);
-  assert.deepEqual(queue.map((q) => q.data.what), ['new', 'resubmission', 'edit']);
-  await api(owner, 'studio/product', { id, action: 'reject', feedback: 'Not this edit' });
-  review = await outbox("kind='review' and product_id=$1", [id]);
-  assert.equal(review.length, 3);
-  assert.deepEqual(review[2].data, { outcome: 'rejected', note: 'Not this edit', edit: true });
   assert.deepEqual(
     (await bell(maker2)).filter((n) => n.kind === 'review').map((n) => n.outcome).sort(),
-    ['approved', 'changes', 'rejected'],
+    ['approved', 'rejected'],
   );
 });
 test('email preference is private and defaults on', async () => {
