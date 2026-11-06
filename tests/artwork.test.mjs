@@ -59,7 +59,7 @@ test('portrait and wide uploads retain the entire image without upscaling', asyn
   }
 });
 
-test('local art submissions accept only a title and owned image, remain private, and can be reviewed', async () => {
+test('local art submissions accept only a title and owned image, go live at once, and can be taken down', async () => {
   const bytes = await sharp({
     create: { width: 400, height: 800, channels: 3, background: '#faf5ad' },
   })
@@ -80,13 +80,8 @@ test('local art submissions accept only a title and owned image, remain private,
   const p = get('SELECT * FROM products WHERE slug=?', slug);
   assert.equal(p.url, '');
   assert.equal(p.source, '');
-  assert.equal(p.status, 'pending');
+  assert.equal(p.status, 'published');
   assert.equal(JSON.parse(p.submission_details).kind, 'art');
-  assert.throws(() => coverResponse(cover.id, null), { status: 404 });
-  assert.equal(
-    (await post('studio/product', { id: p.id, action: 'verify', confirmed: true }, 'admin')).status,
-    200,
-  );
   assert.equal(coverResponse(cover.id, null).status, 200);
   assert.equal(
     (await post('studio/product', { id: p.id, action: 'cover', coverId: null }, 'admin')).status,

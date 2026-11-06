@@ -117,7 +117,7 @@ test('uploads decode actual raster data and produce a normalized cover; SVG and 
   );
 });
 
-test('unpublished covers are private, another maker cannot attach them, and approval exposes only the chosen image', async () => {
+test('covers are private until attached to a live work, another maker cannot attach them, and a takedown hides the image', async () => {
   const cover = await storeCover(png, 'maker', 'upload');
   assert.throws(() => coverResponse(cover.id, null), { status: 404 });
   assert.throws(() => coverResponse(cover.id, { id: 'other', role: 'member' }), { status: 404 });
@@ -134,13 +134,7 @@ test('unpublished covers are private, another maker cannot attach them, and appr
   assert.equal((await post('submit', details, 'other')).status, 400);
   assert.equal((await post('submit', details)).status, 200);
   const product = get('SELECT * FROM products WHERE cover_id=?', cover.id);
-  assert.equal(product.status, 'pending');
-  assert.throws(() => coverResponse(cover.id, null));
-  assert.equal(
-    (await post('studio/product', { id: product.id, action: 'verify', confirmed: true }, 'admin'))
-      .status,
-    200,
-  );
+  assert.equal(product.status, 'published');
   assert.equal(coverResponse(cover.id, null).status, 200);
   assert.equal(
     (await post('studio/product', { id: product.id, action: 'reject' }, 'admin')).status,

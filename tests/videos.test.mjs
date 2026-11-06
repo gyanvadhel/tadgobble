@@ -66,7 +66,7 @@ test('actual video data supplies trusted duration, codec, dimensions and audio m
     /under 5 MB/,
   );
 });
-test('video uploads remain private, support seeking, enforce ownership and follow review changes', async () => {
+test('video uploads remain private, support seeking, enforce ownership and follow takedowns', async () => {
   assert.equal((await api(null, 'videos/upload', form())).status, 401);
   assert.equal((await api('maker', 'videos/upload', form(fixtures.long.bytes))).status, 400);
   const upload = await api('maker', 'videos/upload', form());
@@ -91,11 +91,6 @@ test('video uploads remain private, support seeking, enforce ownership and follo
   const sent = await api('maker', 'submit', body);
   assert.equal(sent.status, 200, sent.error);
   const product = get('SELECT * FROM products WHERE slug=?', sent.slug);
-  assert.equal(
-    (await api('admin', 'studio/product', { id: product.id, action: 'verify', confirmed: true }))
-      .status,
-    200,
-  );
   assert.equal((await api(null, 'videos/play', { id: vid })).status, 200);
   const partial = videoResponse(
     new Request('http://localhost', { headers: { range: 'bytes=0-99' } }),
@@ -113,9 +108,9 @@ test('video uploads remain private, support seeking, enforce ownership and follo
     416,
   );
   assert.equal((await api('maker', 'works/update', { ...body, id: product.id })).status, 200);
-  // The live version, video included, stays up while the edit is reviewed.
+  // An edit is live at once, video included; a takedown hides it from the public.
   assert.equal((await api(null, 'videos/play', { id: vid })).status, 200);
   await api('admin', 'studio/product', { id: product.id, action: 'reject' });
-  assert.equal((await api(null, 'videos/play', { id: vid })).status, 200);
+  assert.equal((await api(null, 'videos/play', { id: vid })).status, 404);
   assert.equal((await api('admin', 'videos/play', { id: vid })).status, 200);
 });

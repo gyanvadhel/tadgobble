@@ -602,7 +602,7 @@ const noteUsers = {
 let noteProduct;
 async function addNoteUser(id, name) {
   await db.query(
-    "insert into auth.users(id,email,raw_user_meta_data,email_confirmed_at) values($1,$2,$3,now())",
+    'insert into auth.users(id,email,raw_user_meta_data,email_confirmed_at) values($1,$2,$3,now())',
     [id, name.toLowerCase() + '@notes.example.test', { name }],
   );
 }
@@ -640,13 +640,16 @@ test('comments notify the owner; replies notify the thread starter and owner onc
   const id = noteProduct.id;
   const thread = async () => (await api(null, 'products/' + noteProduct.slug)).comments;
   await api(noteUsers.fan, 'comment', { productId: id, body: 'Lovely colours' });
-  const mine = (await api(noteUsers.owner, 'notifications')).items.filter((n) => n.kind === 'comment');
+  const mine = (await api(noteUsers.owner, 'notifications')).items.filter(
+    (n) => n.kind === 'comment',
+  );
   assert.equal(mine.length, 1);
   assert.match(mine[0].preview, /Lovely colours/);
   assert.equal(mine[0].actor.name, 'Notefan');
   const top = (await thread())[0].id;
   await api(noteUsers.fan2, 'comment', { productId: id, parentId: top, body: 'Agreed!' });
-  const replies = async (u) => (await api(u, 'notifications')).items.filter((n) => n.kind === 'reply');
+  const replies = async (u) =>
+    (await api(u, 'notifications')).items.filter((n) => n.kind === 'reply');
   assert.equal((await replies(noteUsers.fan)).length, 1);
   assert.equal((await replies(noteUsers.owner)).length, 1);
   assert.equal((await replies(noteUsers.fan2)).length, 0);
@@ -662,9 +665,13 @@ test('comments notify the owner; replies notify the thread starter and owner onc
 });
 test('a lone comment that is deleted takes its bell item with it', async () => {
   await api(noteUsers.fan2, 'comment', { productId: noteProduct.id, body: 'Short-lived thought' });
-  const before = (await api(noteUsers.owner, 'notifications')).items.filter((n) => n.kind === 'comment');
+  const before = (await api(noteUsers.owner, 'notifications')).items.filter(
+    (n) => n.kind === 'comment',
+  );
   assert.equal(before.length, 1);
-  const c = (await api(null, 'products/' + noteProduct.slug)).comments.find((x) => !x.removed && x.user_id === noteUsers.fan2 && !x.parent_id);
+  const c = (await api(null, 'products/' + noteProduct.slug)).comments.find(
+    (x) => !x.removed && x.user_id === noteUsers.fan2 && !x.parent_id,
+  );
   await api(noteUsers.fan2, 'comment/delete', { id: c.id });
   assert.equal(
     (await api(noteUsers.owner, 'notifications')).items.filter((n) => n.kind === 'comment').length,
@@ -675,11 +682,17 @@ test('notifications are private', async () => {
   await assert.rejects(() => api(null, 'notifications'), /Sign in/);
   await assert.rejects(() => api(null, 'notifications/read'), /Sign in/);
   // other people never see the owner's items
-  assert.equal((await api(noteUsers.fan, 'notifications')).items.filter((n) => n.kind === 'comment').length, 0);
+  assert.equal(
+    (await api(noteUsers.fan, 'notifications')).items.filter((n) => n.kind === 'comment').length,
+    0,
+  );
   await db.query("select set_config('request.jwt.claim.sub',$1,false)", [noteUsers.fan]);
   await db.exec('set role authenticated');
   try {
-    await assert.rejects(() => db.query('select * from public.tg_notifications'), /permission denied/);
+    await assert.rejects(
+      () => db.query('select * from public.tg_notifications'),
+      /permission denied/,
+    );
   } finally {
     await db.exec('reset role');
   }
@@ -692,7 +705,12 @@ async function publishWork(user, name) {
   return { id: row.id, slug: made.slug };
 }
 const outbox = async (where, params = []) =>
-  (await db.query('select * from tg_email_outbox where ' + where + ' order by created_at, id', params)).rows;
+  (
+    await db.query(
+      'select * from tg_email_outbox where ' + where + ' order by created_at, id',
+      params,
+    )
+  ).rows;
 const bell = async (user) => (await api(user, 'notifications')).items;
 test('first save emails the owner exactly once across all their work', async () => {
   const first = '0b000001-0000-4000-8000-000000000001';
@@ -727,7 +745,8 @@ test('takedowns and put-backs reach the maker, a new post tells the admin, edits
   await addNoteUser(maker2, 'Reviewmaker');
   const made = await api(maker2, 'submit', { ...product, name: 'Reviewed work' });
   const id = (await api(owner, 'studio')).products.find((p) => p.slug === made.slug).id;
-  const queued = async () => (await outbox("kind='admin_queue' and product_id=$1", [id])).map((q) => q.data.what);
+  const queued = async () =>
+    (await outbox("kind='admin_queue' and product_id=$1", [id])).map((q) => q.data.what);
   const queue = await outbox("kind='admin_queue' and product_id=$1", [id]);
   assert.equal(queue.length, 1);
   assert.equal(queue[0].recipient_id, null);
@@ -739,10 +758,18 @@ test('takedowns and put-backs reach the maker, a new post tells the admin, edits
   assert.deepEqual(await queued(), ['new']);
   assert.equal((await outbox("kind='review' and product_id=$1", [id])).length, 0);
   // a takedown reaches the maker by bell and email
-  await api(owner, 'studio/product', { id, action: 'reject', feedback: 'Please add a clearer photo' });
+  await api(owner, 'studio/product', {
+    id,
+    action: 'reject',
+    feedback: 'Please add a clearer photo',
+  });
   let review = await outbox("kind='review' and product_id=$1", [id]);
   assert.equal(review.length, 1);
-  assert.deepEqual(review[0].data, { outcome: 'rejected', note: 'Please add a clearer photo', edit: false });
+  assert.deepEqual(review[0].data, {
+    outcome: 'rejected',
+    note: 'Please add a clearer photo',
+    edit: false,
+  });
   // editing a taken-down work stays quiet too, and it stays down
   await api(maker2, 'works/update', { ...product, id, name: 'Reviewed work v3' });
   assert.deepEqual(await queued(), ['new']);
@@ -753,16 +780,24 @@ test('takedowns and put-backs reach the maker, a new post tells the admin, edits
   assert.equal(review.length, 2);
   assert.equal(review[1].data.outcome, 'approved');
   assert.deepEqual(
-    (await bell(maker2)).filter((n) => n.kind === 'review').map((n) => n.outcome).sort(),
+    (await bell(maker2))
+      .filter((n) => n.kind === 'review')
+      .map((n) => n.outcome)
+      .sort(),
     ['approved', 'rejected'],
   );
 });
 test('email preference is private and defaults on', async () => {
   assert.deepEqual(await api(noteUsers.fan, 'email-prefs'), { emailUpdates: true });
-  assert.deepEqual(await api(noteUsers.fan, 'email-prefs/save', { emailUpdates: false }), { emailUpdates: false });
+  assert.deepEqual(await api(noteUsers.fan, 'email-prefs/save', { emailUpdates: false }), {
+    emailUpdates: false,
+  });
   assert.deepEqual(await api(noteUsers.fan, 'email-prefs'), { emailUpdates: false });
   assert.deepEqual(await api(noteUsers.fan2, 'email-prefs'), { emailUpdates: true });
-  await assert.rejects(() => api(noteUsers.fan, 'email-prefs/save', { emailUpdates: 'maybe' }), /on or off/);
+  await assert.rejects(
+    () => api(noteUsers.fan, 'email-prefs/save', { emailUpdates: 'maybe' }),
+    /on or off/,
+  );
   await assert.rejects(() => api(null, 'email-prefs'), /Sign in/);
   await assert.rejects(() => api(null, 'email-prefs/save', { emailUpdates: true }), /Sign in/);
   await api(noteUsers.fan, 'email-prefs/save', { emailUpdates: true });
@@ -773,13 +808,19 @@ test('a broken email hook never fails the action, and the bell item still lands'
   const w = await publishWork(who, 'Broken hook work');
   await db.exec('alter table tg_email_outbox add constraint t_break check (false) not valid');
   try {
-    assert.deepEqual(await api(noteUsers.fan, 'comment', { productId: w.id, body: 'Still goes through' }), { ok: true });
+    assert.deepEqual(
+      await api(noteUsers.fan, 'comment', { productId: w.id, body: 'Still goes through' }),
+      { ok: true },
+    );
     assert.equal((await api(noteUsers.fan, 'save', { productId: w.id })).saved, true);
   } finally {
     await db.exec('alter table tg_email_outbox drop constraint t_break');
   }
   assert.ok((await bell(who)).some((n) => n.kind === 'comment'));
-  assert.equal((await outbox("recipient_id=$1 and kind in ('comment','first_save')", [who])).length, 0);
+  assert.equal(
+    (await outbox("recipient_id=$1 and kind in ('comment','first_save')", [who])).length,
+    0,
+  );
 });
 
 // ---- Notifications: calls only the email sender may make ----
@@ -811,17 +852,23 @@ test('outbox claim skips opted-out, unconfirmed and removed-comment rows', async
   await api(noteUsers.fan, 'comment', { productId: w.id, body: 'Claim me please' });
   await db.exec("update tg_email_outbox set status='sent' where status='queued'"); // only hand-made rows from here
   const seed = async (recipient, kind = 'review', product = w.id, comment = null) =>
-    (await db.query(
-      "insert into tg_email_outbox(kind,recipient_id,product_id,comment_id,data) values($1,$2,$3,$4,'{\"outcome\":\"approved\"}') returning id",
-      [kind, recipient, product, comment],
-    )).rows[0].id;
+    (
+      await db.query(
+        'insert into tg_email_outbox(kind,recipient_id,product_id,comment_id,data) values($1,$2,$3,$4,\'{"outcome":"approved"}\') returning id',
+        [kind, recipient, product, comment],
+      )
+    ).rows[0].id;
   const idOk = await seed(ok);
   const idOff = await seed(off);
   const idNew = await seed(unconfirmed);
   const idAdmin = await seed(null, 'admin_queue');
-  const commentRow = (await db.query('select id from tg_comments where product_id=$1', [w.id])).rows[0];
+  const commentRow = (await db.query('select id from tg_comments where product_id=$1', [w.id]))
+    .rows[0];
   const idRemoved = await seed(ok, 'comment', w.id, commentRow.id);
-  await db.query('update tg_comments set removed=true,body=$2 where id=$1', [commentRow.id, '[removed]']);
+  await db.query('update tg_comments set removed=true,body=$2 where id=$1', [
+    commentRow.id,
+    '[removed]',
+  ]);
   const sent = await claim();
   assert.deepEqual(sent.map((r) => r.id).sort(), [idAdmin, idOk].sort());
   const mine = sent.find((r) => r.id === idOk);
@@ -831,7 +878,8 @@ test('outbox claim skips opted-out, unconfirmed and removed-comment rows', async
   assert.deepEqual(mine.product, { slug: w.slug, name: 'Claim work' });
   assert.equal(mine.data.outcome, 'approved');
   assert.equal(sent.find((r) => r.id === idAdmin).to, null);
-  const status = async (id) => (await db.query('select status,attempts from tg_email_outbox where id=$1', [id])).rows[0];
+  const status = async (id) =>
+    (await db.query('select status,attempts from tg_email_outbox where id=$1', [id])).rows[0];
   for (const id of [idOff, idNew, idRemoved]) assert.equal((await status(id)).status, 'skipped');
   assert.equal((await status(idOk)).attempts, 1);
   await service('select public.tg_outbox_done($1)', [idOk]);
@@ -841,11 +889,24 @@ test('outbox claim skips opted-out, unconfirmed and removed-comment rows', async
 });
 test('outbox claim and done retry up to five times then fail', async () => {
   await db.exec("update tg_email_outbox set status='sent' where status='queued'");
-  const [{ id }] = (await db.query("insert into tg_email_outbox(kind,data) values('admin_queue','{\"what\":\"new\",\"name\":\"Retry\",\"maker\":\"M\"}') returning id")).rows;
-  const row = async () => (await db.query('select status,attempts,last_error,sent_at from tg_email_outbox where id=$1', [id])).rows[0];
+  const [{ id }] = (
+    await db.query(
+      'insert into tg_email_outbox(kind,data) values(\'admin_queue\',\'{"what":"new","name":"Retry","maker":"M"}\') returning id',
+    )
+  ).rows;
+  const row = async () =>
+    (
+      await db.query('select status,attempts,last_error,sent_at from tg_email_outbox where id=$1', [
+        id,
+      ])
+    ).rows[0];
   for (let i = 1; i <= 5; i++) {
     const got = await claim();
-    assert.deepEqual(got.map((r) => r.id), [id], 'attempt ' + i);
+    assert.deepEqual(
+      got.map((r) => r.id),
+      [id],
+      'attempt ' + i,
+    );
     await service('select public.tg_outbox_done($1,$2)', [id, 'Resend is down']);
     const r = await row();
     assert.equal(r.attempts, i);
@@ -858,10 +919,18 @@ test('outbox claim and done retry up to five times then fail', async () => {
 test('roundup queues once per IST week on Sunday morning only', async () => {
   await db.exec("update tg_email_outbox set status='sent' where status='queued'");
   const sunday = '2026-11-08 03:30:00+00'; // Sunday 09:00 in India
-  await db.exec("update tg_notifications set created_at = '2026-11-06 00:00:00+00' where kind in ('save','comment','reply')");
+  await db.exec(
+    "update tg_notifications set created_at = '2026-11-06 00:00:00+00' where kind in ('save','comment','reply')",
+  );
   await db.exec("delete from tg_settings where key = 'roundup_week'");
-  assert.equal((await service('select public.tg_roundup_queue($1) as n', ['2026-11-07 10:00:00+00']))[0].n, 0); // Saturday
-  assert.equal((await service('select public.tg_roundup_queue($1) as n', ['2026-11-08 02:00:00+00']))[0].n, 0); // Sunday 07:30 IST
+  assert.equal(
+    (await service('select public.tg_roundup_queue($1) as n', ['2026-11-07 10:00:00+00']))[0].n,
+    0,
+  ); // Saturday
+  assert.equal(
+    (await service('select public.tg_roundup_queue($1) as n', ['2026-11-08 02:00:00+00']))[0].n,
+    0,
+  ); // Sunday 07:30 IST
   const n = (await service('select public.tg_roundup_queue($1) as n', [sunday]))[0].n;
   assert.ok(n > 0);
   const rows = await outbox("kind='roundup' and status='queued'");
@@ -871,7 +940,10 @@ test('roundup queues once per IST week on Sunday morning only', async () => {
   assert.ok(mine.data.saves >= 1);
   assert.ok(mine.data.works.some((w) => w.slug === noteProduct.slug));
   assert.equal((await service('select public.tg_roundup_queue($1) as n', [sunday]))[0].n, 0);
-  assert.equal((await service("select public.tg_roundup_queue($1) as n", ['2026-11-08 12:00:00+00']))[0].n, 0);
+  assert.equal(
+    (await service('select public.tg_roundup_queue($1) as n', ['2026-11-08 12:00:00+00']))[0].n,
+    0,
+  );
 });
 test('unsubscribe turns the email switch off', async () => {
   await api(noteUsers.fan, 'email-prefs/save', { emailUpdates: true });

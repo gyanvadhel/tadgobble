@@ -77,7 +77,13 @@ test('blobPath is unchanged', () => {
   );
 });
 test('expressions has the five moods', () => {
-  assert.deepEqual(Object.keys(expressions).sort(), ['calm', 'happy', 'hungry', 'surprised', 'wink']);
+  assert.deepEqual(Object.keys(expressions).sort(), [
+    'calm',
+    'happy',
+    'hungry',
+    'surprised',
+    'wink',
+  ]);
 });
 test("calm matches today's smile path", () => {
   assert.equal(expressions.calm.mouth.d, 'M37 63Q50 75 65 61');

@@ -8,21 +8,41 @@ test('notificationText says what happened, in the app copy', () => {
   assert.equal(notificationText({ kind: 'save', count: 1, product }), 'Someone saved Tiny Moon');
   assert.equal(notificationText({ kind: 'save', count: 3, product }), '3 people saved Tiny Moon');
   assert.equal(
-    notificationText({ kind: 'comment', product, actor: { name: 'Ravi' }, preview: 'Lovely colours' }),
+    notificationText({
+      kind: 'comment',
+      product,
+      actor: { name: 'Ravi' },
+      preview: 'Lovely colours',
+    }),
     'Ravi commented on Tiny Moon: "Lovely colours"',
   );
   assert.equal(
     notificationText({ kind: 'reply', product, actor: { name: 'Asha' } }),
     'Asha replied to your comment on Tiny Moon',
   );
-  assert.equal(notificationText({ kind: 'review', product, outcome: 'approved' }), 'Tiny Moon is live!');
-  assert.equal(notificationText({ kind: 'review', product, outcome: 'changes' }), 'Tiny Moon needs a small change');
-  assert.equal(notificationText({ kind: 'review', product, outcome: 'rejected' }), "Tiny Moon wasn't accepted");
+  assert.equal(
+    notificationText({ kind: 'review', product, outcome: 'approved' }),
+    'Tiny Moon is live!',
+  );
+  assert.equal(
+    notificationText({ kind: 'review', product, outcome: 'changes' }),
+    'Tiny Moon needs a small change',
+  );
+  assert.equal(
+    notificationText({ kind: 'review', product, outcome: 'rejected' }),
+    "Tiny Moon wasn't accepted",
+  );
 });
 
 test('notificationText copes with a missing actor', () => {
-  assert.equal(notificationText({ kind: 'comment', product, actor: null, preview: 'Hi' }), 'Someone commented on Tiny Moon: "Hi"');
-  assert.equal(notificationText({ kind: 'reply', product, actor: null }), 'Someone replied to your comment on Tiny Moon');
+  assert.equal(
+    notificationText({ kind: 'comment', product, actor: null, preview: 'Hi' }),
+    'Someone commented on Tiny Moon: "Hi"',
+  );
+  assert.equal(
+    notificationText({ kind: 'reply', product, actor: null }),
+    'Someone replied to your comment on Tiny Moon',
+  );
 });
 
 test('timeAgo is short and human', () => {

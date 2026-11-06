@@ -69,25 +69,56 @@ test('local profiles protect identity, owned avatars, editable submissions and c
     work = get('SELECT * FROM products WHERE slug=?', response.slug);
   assert.equal((await api('other', 'my-work')).products.length, 0);
   assert.equal((await api('other', 'works/update', { ...body, id: work.id })).status, 404);
-  assert.equal((await api(null, 'profiles/aridraws')).products.length, 0);
-  await api('admin', 'studio/product', {
+  // Posting is instant: the work is public the moment it is sent.
+  assert.equal(work.status, 'published');
+  assert.equal((await api(null, 'profiles/aridraws')).products.length, 1);
+  const asked = await api('admin', 'studio/product', {
     id: work.id,
     action: 'changes',
     feedback: 'Please add the medium.',
   });
-  assert.match((await api('artist', 'my-work')).products[0].review_note, /medium/);
+  assert.equal(asked.status, 400);
+  assert.match(asked.error, /no longer/);
+  // An admin can still take a work down; it stays down when its maker edits it.
+  await api('admin', 'studio/product', {
+    id: work.id,
+    action: 'reject',
+    feedback: 'This is not your own work.',
+  });
+  assert.equal((await api(null, 'profiles/aridraws')).products.length, 0);
+  assert.match((await api('artist', 'my-work')).products[0].review_note, /not your own/);
   await api('artist', 'works/update', {
     ...body,
     id: work.id,
     description: 'Acrylic on paper.',
     status: 'published',
   });
-  assert.equal(get('SELECT status FROM products WHERE id=?', work.id).status, 'pending');
-  await api('admin', 'studio/product', { id: work.id, action: 'verify', confirmed: true });
+  const stillDown = get('SELECT * FROM products WHERE id=?', work.id);
+  assert.equal(stillDown.status, 'rejected');
+  assert.equal(stillDown.description, 'Acrylic on paper.');
+  assert.match(stillDown.review_note, /not your own/);
+  assert.equal((await api('admin', 'studio/product', { id: work.id, action: 'verify' })).ok, true);
+  assert.equal(get('SELECT status FROM products WHERE id=?', work.id).status, 'published');
+  assert.equal(
+    (await api('admin', 'studio/product', { id: work.id, action: 'verify' })).status,
+    400,
+  );
   const live = (await api(null, 'profiles/aridraws')).products[0];
   assert.equal(live.creator_username, 'aridraws');
   assert.equal(live.review_note, undefined);
   assert.equal(live.owner_id, undefined);
+  // "Checked" is a studio note; it needs an admin and a confirmation.
+  assert.equal(
+    (await api('artist', 'studio/product', { id: work.id, action: 'checked', confirmed: true }))
+      .status,
+    403,
+  );
+  assert.equal(
+    (await api('admin', 'studio/product', { id: work.id, action: 'checked' })).status,
+    400,
+  );
+  await api('admin', 'studio/product', { id: work.id, action: 'checked', confirmed: true });
+  assert.ok(get('SELECT verified_at FROM products WHERE id=?', work.id).verified_at);
   await api('artist', 'works/update', {
     ...body,
     id: work.id,
@@ -95,21 +126,22 @@ test('local profiles protect identity, owned avatars, editable submissions and c
     creatorName: 'Mika',
     creatorInstagram: '@mika.draws',
   });
-  // The live version stays up, unchanged, while the edit waits for review.
-  const during = await api(null, 'products/' + work.slug);
-  assert.equal(during.product.owner_name, 'Ari Draws');
-  assert.equal(during.product.pendingEdit, undefined);
-  assert.equal((await api(null, 'profiles/aridraws')).products.length, 1);
-  const mine = (await api('artist', 'my-work')).products[0];
-  assert.equal(mine.pendingEdit, true);
-  assert.equal(mine.status, 'published');
-  assert.equal(mine.owner_name, 'Mika');
-  const queued = (await api('admin', 'studio')).products.find((p) => p.id === work.id);
-  assert.equal(queued.status, 'pending');
-  assert.equal(queued.owner_name, 'Mika');
-  await api('admin', 'studio/product', { id: work.id, action: 'verify', confirmed: true });
+  // An edit to live work is live at once, and it clears the checked note.
+  const after = await api(null, 'products/' + work.slug);
+  assert.equal(after.product.owner_name, 'Mika');
+  assert.equal(after.product.pendingEdit, undefined);
   assert.equal((await api(null, 'profiles/aridraws')).products.length, 0);
-  assert.equal((await api(null, 'products/' + work.slug)).product.owner_name, 'Mika');
+  const mine = (await api('artist', 'my-work')).products[0];
+  assert.equal(mine.pendingEdit, undefined);
+  assert.equal(mine.status, 'published');
+  assert.equal(
+    get('SELECT pending_edit, verified_at FROM products WHERE id=?', work.id).pending_edit,
+    '',
+  );
+  assert.equal(get('SELECT verified_at FROM products WHERE id=?', work.id).verified_at, null);
+  const listed = (await api('admin', 'studio')).products.find((p) => p.id === work.id);
+  assert.equal(listed.status, 'published');
+  assert.equal(listed.owner_name, 'Mika');
   await api('artist', 'profile/save', { ...settings, visible: false, avatarId: photo.id });
   assert.equal((await api(null, 'profiles/aridraws')).status, 404);
   await api('admin', 'studio/product', { id: work.id, action: 'reject' });
@@ -143,20 +175,10 @@ test('local creators can delete their own work, and edits cannot change its kind
       .status,
     200,
   );
-  await api('admin', 'studio/product', { id: work.id, action: 'verify', confirmed: true });
   await api('artist', 'works/update', { ...body, id: work.id, name: 'Pizza slice, burnt' });
-  await api('admin', 'studio/product', {
-    id: work.id,
-    action: 'changes',
-    feedback: 'Keep the first title.',
-  });
   const kept = await api(null, 'products/' + work.slug);
-  assert.equal(kept.product.name, 'Pizza slice, tidied');
+  assert.equal(kept.product.name, 'Pizza slice, burnt');
   assert.equal(get('SELECT status FROM products WHERE id=?', work.id).status, 'published');
-  assert.match(
-    (await api('artist', 'my-work')).products.find((p) => p.id === work.id).review_note,
-    /first title/,
-  );
   await api('other', 'save', { productId: work.id });
   await api('other', 'comment', { productId: work.id, body: 'Looks tasty.' });
   assert.equal(get('SELECT count(*) as n FROM comments WHERE product_id=?', work.id).n, 1);

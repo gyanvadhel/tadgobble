@@ -290,7 +290,7 @@ async function makerSubmit(body) {
   );
 }
 
-test('minimal submission stays pending and uses its website as the review source', async () => {
+test('minimal submission goes live at once and uses its website as the source', async () => {
   const response = await makerSubmit({
     name: 'Tiny Research',
     url: 'https://example.com/research',
@@ -303,7 +303,7 @@ test('minimal submission stays pending and uses its website as the review source
   });
   assert.equal(response.status, 200);
   const product = get("SELECT * FROM products WHERE name='Tiny Research'");
-  assert.equal(product.status, 'pending');
+  assert.equal(product.status, 'published');
   assert.equal(product.category, 'Research');
   assert.equal(product.audience, 'Students');
   assert.equal(product.source, 'https://example.com/research');
@@ -312,7 +312,7 @@ test('minimal submission stays pending and uses its website as the review source
   assert.deepEqual(JSON.parse(product.facts), []);
   assert.deepEqual(JSON.parse(product.submission_details).platforms, ['Web app', 'API']);
   assert.equal(product.color, 'blue');
-  assert.equal(get("SELECT count(*) AS n FROM products WHERE status='published'").n, 0);
+  assert.equal(get("SELECT count(*) AS n FROM products WHERE status='published'").n, 1);
 });
 
 test('submission validates expanded choices, explicit ownership, and optional demo URLs', async () => {

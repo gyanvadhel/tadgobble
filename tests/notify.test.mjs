@@ -12,7 +12,8 @@ import {
 const site = 'https://tadgobble.in';
 const opts = { site, unsubscribeUrl: 'https://example.test/unsub?token=abc' };
 const product = { slug: 'tiny-moon', name: 'Tiny Moon' };
-const mail = (row, o = opts) => renderEmail({ id: 'r1', to: 'a@b.test', name: 'Asha', product, data: {}, ...row }, o);
+const mail = (row, o = opts) =>
+  renderEmail({ id: 'r1', to: 'a@b.test', name: 'Asha', product, data: {}, ...row }, o);
 
 test('renderEmail escapes user text', () => {
   const m = mail({
@@ -33,16 +34,45 @@ test('renderEmail escapes user text', () => {
 test('subjects match the copy for every kind and outcome', () => {
   const subject = (row) => mail(row).subject;
   assert.equal(subject({ kind: 'first_save' }), 'Someone saved your work 💜');
-  assert.equal(subject({ kind: 'comment', data: { actor: 'Ravi' } }), 'Ravi commented on Tiny Moon');
-  assert.equal(subject({ kind: 'review', data: { outcome: 'approved' } }), 'Tiny Moon is live on tadgobble');
-  assert.equal(subject({ kind: 'review', data: { outcome: 'changes' } }), 'A small change before Tiny Moon goes live');
-  assert.equal(subject({ kind: 'review', data: { outcome: 'rejected' } }), 'About Tiny Moon');
-  assert.equal(subject({ kind: 'review', data: { outcome: 'approved', edit: true } }), 'Your edit to Tiny Moon is live');
-  assert.equal(subject({ kind: 'review', data: { outcome: 'changes', edit: true } }), 'A small change to your edit of Tiny Moon');
-  assert.equal(subject({ kind: 'review', data: { outcome: 'rejected', edit: true } }), 'About your edit to Tiny Moon');
-  assert.equal(subject({ kind: 'roundup', product: null, data: { saves: 2, comments: 1, replies: 0, works: [] } }), 'Your week on tadgobble');
   assert.equal(
-    subject({ kind: 'admin_queue', to: null, data: { what: 'new', name: 'Moon Zine', maker: 'Asha' } }),
+    subject({ kind: 'comment', data: { actor: 'Ravi' } }),
+    'Ravi commented on Tiny Moon',
+  );
+  assert.equal(
+    subject({ kind: 'review', data: { outcome: 'approved' } }),
+    'Tiny Moon is live on tadgobble',
+  );
+  assert.equal(
+    subject({ kind: 'review', data: { outcome: 'changes' } }),
+    'A small change before Tiny Moon goes live',
+  );
+  assert.equal(subject({ kind: 'review', data: { outcome: 'rejected' } }), 'About Tiny Moon');
+  assert.equal(
+    subject({ kind: 'review', data: { outcome: 'approved', edit: true } }),
+    'Your edit to Tiny Moon is live',
+  );
+  assert.equal(
+    subject({ kind: 'review', data: { outcome: 'changes', edit: true } }),
+    'A small change to your edit of Tiny Moon',
+  );
+  assert.equal(
+    subject({ kind: 'review', data: { outcome: 'rejected', edit: true } }),
+    'About your edit to Tiny Moon',
+  );
+  assert.equal(
+    subject({
+      kind: 'roundup',
+      product: null,
+      data: { saves: 2, comments: 1, replies: 0, works: [] },
+    }),
+    'Your week on tadgobble',
+  );
+  assert.equal(
+    subject({
+      kind: 'admin_queue',
+      to: null,
+      data: { what: 'new', name: 'Moon Zine', maker: 'Asha' },
+    }),
     'New in the review queue: Moon Zine',
   );
 });
@@ -76,7 +106,9 @@ test('roundup lists the totals and each work', () => {
     kind: 'roundup',
     product: null,
     data: {
-      saves: 5, comments: 2, replies: 1,
+      saves: 5,
+      comments: 2,
+      replies: 1,
       works: [{ slug: 'tiny-moon', name: 'Tiny Moon', saves: 5, comments: 2, replies: 1 }],
     },
   });
@@ -102,8 +134,17 @@ test('signed token round-trips and tampering fails', async () => {
   assert.equal(await verifyUnsubscribe(token, 'secret-one'), id);
   assert.equal(await verifyUnsubscribe(token, 'secret-two'), null);
   const [uid, sig] = token.split('.');
-  assert.equal(await verifyUnsubscribe('0c000002-0000-4000-8000-000000000002.' + sig, 'secret-one'), null);
-  assert.equal(await verifyUnsubscribe(uid + '.' + sig.slice(0, -1) + (sig.endsWith('A') ? 'B' : 'A'), 'secret-one'), null);
+  assert.equal(
+    await verifyUnsubscribe('0c000002-0000-4000-8000-000000000002.' + sig, 'secret-one'),
+    null,
+  );
+  assert.equal(
+    await verifyUnsubscribe(
+      uid + '.' + sig.slice(0, -1) + (sig.endsWith('A') ? 'B' : 'A'),
+      'secret-one',
+    ),
+    null,
+  );
   for (const bad of ['', 'nodot', uid + '.', '.' + sig, null, undefined, 42])
     assert.equal(await verifyUnsubscribe(bad, 'secret-one'), null);
 });
@@ -112,7 +153,15 @@ function drainRows() {
   return [
     { id: 'r1', kind: 'first_save', user: 'u1', to: 'one@x.test', name: 'One', product, data: {} },
     { id: 'r2', kind: 'first_save', user: 'u2', to: 'two@x.test', name: 'Two', product, data: {} },
-    { id: 'r3', kind: 'first_save', user: 'u3', to: 'three@x.test', name: 'Three', product, data: {} },
+    {
+      id: 'r3',
+      kind: 'first_save',
+      user: 'u3',
+      to: 'three@x.test',
+      name: 'Three',
+      product,
+      data: {},
+    },
   ];
 }
 const drainWith = (over = {}) => {
@@ -144,7 +193,11 @@ test('drainOutbox isolates a failing send and marks it', async () => {
     done: async (id, error) => void d.calls.push([id, error]),
   }).run(drainRows());
   assert.deepEqual(result, { sent: 2, failed: 1 });
-  assert.deepEqual(d.calls, [['r1', null], ['r2', 'Resend said no'], ['r3', null]]);
+  assert.deepEqual(d.calls, [
+    ['r1', null],
+    ['r2', 'Resend said no'],
+    ['r3', null],
+  ]);
 });
 
 test('a failing done call does not stop the rest of the batch', async () => {
@@ -163,7 +216,15 @@ test('maker mail carries List-Unsubscribe headers, admin mail does not', async (
   const d = drainWith();
   const rows = [
     ...drainRows().slice(0, 1),
-    { id: 'a1', kind: 'admin_queue', user: null, to: null, name: null, product, data: { what: 'new', name: 'Moon Zine', maker: 'Asha' } },
+    {
+      id: 'a1',
+      kind: 'admin_queue',
+      user: null,
+      to: null,
+      name: null,
+      product,
+      data: { what: 'new', name: 'Moon Zine', maker: 'Asha' },
+    },
   ];
   const result = await d.run(rows);
   assert.deepEqual(result, { sent: 2, failed: 0 });
@@ -198,7 +259,10 @@ test('runCycle still sends mail when the weekly roundup fails', async () => {
   });
   assert.equal(drained, true);
   assert.deepEqual(result, { queued: 0, sent: 2, failed: 0, roundupError: 'roundup broke' });
-  const ok = await runCycle({ roundup: async () => 4, drain: async () => ({ sent: 1, failed: 1 }) });
+  const ok = await runCycle({
+    roundup: async () => 4,
+    drain: async () => ({ sent: 1, failed: 1 }),
+  });
   assert.deepEqual(ok, { queued: 4, sent: 1, failed: 1 });
 });
 
