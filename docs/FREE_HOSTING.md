@@ -7,7 +7,7 @@ The static app is deployed to Firebase Hosting. Supabase provides Postgres, auth
 | Landing | https://tadgobble.web.app |
 | Discoveries | https://tadgobble.web.app/discover |
 | Submit | https://tadgobble.web.app/discover?submit=1 |
-| Admin review | https://tadgobble.web.app/studio?tab=products&status=pending |
+| Studio (all work) | https://tadgobble.web.app/studio?tab=products&status=all |
 | Private support inbox | https://tadgobble.web.app/studio?tab=inbox |
 | Privacy policy | https://tadgobble.web.app/privacy |
 | Terms of service | https://tadgobble.web.app/terms |
@@ -82,7 +82,7 @@ Review the config diff before pushing. Application tables use RLS with direct br
 Art and design submissions use a photo and a title; a portfolio or website is
 optional. The form defaults to **Art & design**, with **App or tool** as a second
 choice. Categories, descriptions, image descriptions, and creative links live in
-an optional section. All work uses the same private upload and human review flow.
+an optional section. All work uses the same private upload flow and goes live when posted.
 Uploaded images keep their full proportions and are compressed to WebP within
 1600 × 1600 pixels without upscaling. No new paid service is required. The first
 version supports one photo or video per work. For JPG, PNG, or WebP images, originals up to 25 MB are
@@ -105,15 +105,15 @@ user-scoped database upload gate; the function still requires a valid member JWT
 
 Galleries load only posters and duration badges. Work details and admin review
 obtain a five-minute signed video URL only after Play is pressed. Native controls
-allow sound, seeking, and fullscreen. Pending videos remain private to their owner
-and admins; publishing makes playback available to visitors. Revocation blocks
+allow sound, seeking, and fullscreen. A video stays private to its owner
+and admins until the work is posted; posting makes playback available to visitors. Revocation blocks
 new links immediately, while previously signed links can last until expiry.
 
 Run `npm run test:videos` after `npm run build` for isolated local browser checks.
 `npm run test:cloud:videos` checks the static preview and real cloud upload, then
 removes its private test user, submission, and media. It never publishes a test clip.
 
-## Creator accounts and review
+## Creator accounts and posting
 
 - `/settings` edits the creator's name, username, photo, bio, links, profile colour,
   and public visibility. Google remains the signup method.
@@ -126,12 +126,12 @@ removes its private test user, submission, and media. It never publishes a test 
   They are editable in Settings; they do not yet change the discovery ranking.
 - Account deletion is available only in the collapsed **Delete account** section
   at the bottom of Settings, with the existing confirmation and admin restriction.
-- `/profile/<username>` is a shareable public page containing approved, self-authored
-  work. Email, saved items, pending work, and review notes remain private.
-- `/my-work` shows submission status and private admin feedback. Editing an approved
-  piece returns it to review and temporarily removes it from public pages.
-- `/studio` opens the review queue on the hosted site. Reviewers can publish, request
-  changes, or reject with feedback. Published work and desktop-only tools have their
+- `/profile/<username>` is a shareable public page containing live, self-authored
+  work. Email, saved items and take-down notes remain private.
+- `/my-work` shows whether each work is live or taken down, with any admin note.
+  Edits go live as soon as they are saved; a taken-down work stays down.
+- `/studio` opens all work on the hosted site. Admins can mark work checked, take it
+  down with a note, or put it back live. Published work and desktop-only tools have their
   own labelled navigation items.
 - Work shared with permission on someone else's behalf carries separate creator
   credit and does not appear in the submitter's own profile gallery.
@@ -143,7 +143,7 @@ previously signed links can remain valid until their five-minute expiry.
 
 Run `node --env-file-if-exists=.env.local scripts/cloud-artwork-e2e.mjs` to check
 the static preview against the real cloud backend. It creates and removes a
-temporary account, upload, and pending submission; it never publishes its artwork.
+temporary account, upload, and live post, then deletes them.
 
 Uploaded cover images work entirely through the website. Automatic screenshots run on your computer to avoid paying for a browser server:
 
@@ -154,7 +154,7 @@ npm run worker:cloud
 
 The worker signs in with the owner account, claims queued jobs, captures only permitted public web addresses, normalizes images, and uploads them to private Supabase Storage. On Linux use `npx playwright install --with-deps chromium`. If the computer sleeps or the worker stops, the website stays available and captures wait. A maker can upload or skip a preview.
 
-Pending covers are accessible only to their maker and the owner. Approved covers can be viewed by everyone through signed links valid for five minutes. Rejecting a listing blocks new public links immediately; a previously issued link may remain valid until it expires.
+Covers of live work can be viewed by everyone through signed links valid for five minutes. Unattached covers are accessible only to their maker and the owner. Taking a listing down blocks new public links immediately; a previously issued link may remain valid until it expires.
 
 The promotional-video editing and Instagram workflow remains in the desktop studio:
 
@@ -185,7 +185,7 @@ npm run test:cloud:e2e
 npm run test:cloud:auth
 ```
 
-The cloud browser suite creates temporary QA accounts/listings, verifies access controls, passwords, saves, uploads, screenshots, moderation, and responsive layouts, then removes its fixtures. It briefly publishes its own test listing while checking approval; run it deliberately. It does not sign in to a real person's Google account. Google must be checked interactively after its provider is configured.
+The cloud browser suite creates temporary QA accounts/listings, verifies access controls, passwords, saves, uploads, screenshots, moderation, and responsive layouts, then removes its fixtures. It briefly publishes its own test listings, since posts go live at once; run it deliberately. It does not sign in to a real person's Google account. Google must be checked interactively after its provider is configured.
 
 Free plans have quotas and may pause or restrict service when limits are reached; this is not unlimited hosting. Monitor Firebase Hosting storage/transfer and Supabase database, Storage, auth and function usage. Supabase Free projects can pause after inactivity. Screenshots require the desktop worker; new submissions and uploaded images do not.
 

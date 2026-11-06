@@ -18,14 +18,14 @@ Profile: [photo] Name / @handle     [Share profile]
          [published work] [published work]
 
 My work: [Share something]
-         [image] Title / review status / feedback / edit
+         [image] Title / live or taken down / note / edit
 
 Settings: Profile details | photo | links | colour | visibility
           [Save profile]            account / sign out / delete
 
-Admin: Review queue | Published | Overview | Inbox | Desktop tools
-       [image] Creator / title / received date [Review]
-       Review: image, attribution, feedback, publish/request changes/reject
+Admin: All work | Overview | Inbox | Desktop tools
+       [image] Creator / title / posted date [Take down]
+       Work: image, attribution, note, mark checked / take down / put back live
 ```
 
 Review of direction: avoid a generic social dashboard or follower counts. The
@@ -38,10 +38,10 @@ desktop section. All input and actions must fit 320 px and work by keyboard.
   self-authored work. Email, role, saved items, drafts, and review notes stay private.
 - Creator credit for work submitted on behalf of someone else is separate from
   the submitter; it must never appear as the submitter's own portfolio piece.
-- Edits return listings to review; show this clearly before editing public work.
-- Review outcomes and notes appear in My work; no email service is required.
+- Edits go live as soon as they are saved. A work an admin took down stays down.
+- Take-downs and put-backs, with the admin note, appear in My work and the notification bell.
 - Larger supported phone photos are compressed before upload. Retain bounded
-  file/pixel limits, owned-image checks, human review and private cover storage.
+  file/pixel limits, owned-image checks, admin take-down and private cover storage.
 - Google remains the public signup path. Embedded-browser users get clear
   external-browser instructions and a copyable return link before starting OAuth.
 - Keep the same behaviour in SQLite development and Supabase hosting. Use an

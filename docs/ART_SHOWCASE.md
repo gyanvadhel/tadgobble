@@ -2,7 +2,7 @@
 
 Art and design can be shared with an image and a title. A website, portfolio,
 price, and marketing copy are not required. Apps retain their website link.
-All submissions remain private until reviewed. Existing listings keep their type.
+Posts go live at once; an admin can take a work down. Existing listings keep their type.
 
 ## Design plan
 
@@ -30,7 +30,7 @@ Share something you made.                  close
 │   (whole image)       │                         │
 │                       │ > More details (optional)│
 │ [Add a photo]         │ □ This is my work…      │
-│ formats / size        │ [Send for review →]     │
+│ formats / size        │ [Post it →]            │
 └───────────────────────┴─────────────────────────┘
 ```
 

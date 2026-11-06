@@ -13,13 +13,13 @@ Meet Gobble: the purple blob with excellent taste and absolutely no tab discipli
 ## What's inside
 
 - **Discover.** A showcase of paintings, zines, fonts, tiny apps, and clever tools, with a featured piece, a strip of makers, search, categories, and sorting.
-- **Share your work.** Post art or design with just an image and a title, a short video, or an app with its website link. Everything is reviewed before it goes public.
+- **Share your work.** Post art or design with just an image and a title, a short video, or an app with its website link. Posts go live the moment they are shared.
 - **Creator profiles.** Each maker gets a gallery wall of their work, a short bio, links, and a blob avatar of their own, built during a playful onboarding.
 - **My work.** See how each submission is doing, edit it, or delete it (with a few seconds to undo).
 - **Talk about it.** Save favourites, comment, and reply in threads.
 - **Share it on.** Phones can post any work straight to an Instagram story as a ready-made card.
 - **Accounts.** Sign in with Google or email, including password reset.
-- **Review studio.** An admin space for approving submissions, managing covers, and keeping pending work private.
+- **Review studio.** An admin space to see all work, take a work down (and put it back), mark it checked, and manage covers.
 - **A scroll-driven intro.** A five-scene tour at the top of the home page: Gobble swallows the tab pile, a ticket becomes a find, a bookmark bursts into confetti, and the colour melts from scene to scene as you scroll. It sticks in place with CSS, eases the wheel with Lenis, adds a cursor blob and magnetic buttons for mouse users, and falls back to a plain readable list for reduced motion, paused motion, low-power phones and no JavaScript.
 - **Motion with manners.** GSAP touches throughout: a letter-drop headline, cards that glide when you filter, galleries that rise in as you scroll, pictures that fly onto their page, confetti when you save, and a Gobble whose eyes follow your cursor. All of it switches off for reduced-motion settings.
 

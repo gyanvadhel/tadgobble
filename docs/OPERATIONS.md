@@ -27,13 +27,13 @@ npm run build
 npm start
 ```
 
-Open http://127.0.0.1:3000. The owner email and generated password are in `.env.local`. Open that file locally; do not paste its contents into chat or commit it. The studio is at http://127.0.0.1:3000/studio. The direct pending-review link is http://127.0.0.1:3000/studio?tab=products&status=pending.
+Open http://127.0.0.1:3000. The owner email and generated password are in `.env.local`. Open that file locally; do not paste its contents into chat or commit it. The studio is at http://127.0.0.1:3000/studio. The direct all-work link is http://127.0.0.1:3000/studio?tab=products&status=all.
 
 `npm run setup` preserves existing configuration. The initial owner account is created on the first API request. Changing the environment password later does **not** reset an existing database account.
 
 Website previews require the Playwright Chromium browser. On Linux hosts, use `npx playwright install --with-deps chromium` when preparing the server. Captures run after the first submission step, with a 25-second budget and one browser at a time. Uploads accept still JPG/PNG/WebP images up to 5 MB; covers are normalized to 1600×1200 WebP. Login pages, bot protection, heavy animations, or unavailable sites can prevent useful captures; makers can upload or skip a cover.
 
-Covers live in `DATA_DIR/covers` and are private until attached to an approved product. Capture traffic checks public IP addresses and pins each resolved destination, including redirects and subresources; direct browser networking is denied. Abandoned covers older than seven days are cleaned up on the next successful cover upload/capture. In Studio → Products → Review, an admin can capture, replace, or remove an existing cover, then choose **Save cover**. Saving a published product updates its public cover immediately.
+Covers live in `DATA_DIR/covers` and are private until attached to a posted product. Capture traffic checks public IP addresses and pins each resolved destination, including redirects and subresources; direct browser networking is denied. Abandoned covers older than seven days are cleaned up on the next successful cover upload/capture. In Studio → All work, an admin can capture, replace, or remove an existing cover, then choose **Save cover**. Saving a published product updates its public cover immediately.
 
 For continuous rendering and publishing, run a separate process:
 
@@ -47,7 +47,7 @@ For a single step, use the studio's **Run one workflow step** button. The worker
 
 - Public catalog with category, audience, and search filters; product detail pages and source links.
 - Member registration, password login, persisted saves, comments, and account deletion.
-- Creator submissions with an operator review queue. Pending submissions are not public.
+- Creator posts that go live at once, with an operator view of all work to take down, put back and mark checked.
 - Content drafts generated from recorded product facts: script, caption, and shot list.
 - Upload of an authorised MP4 demo and rendering of a real 1080×1920 H.264 Reel.
 - Human review, approval, scheduling, an optional daily posting cap, and persistent job states.
