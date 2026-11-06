@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>tadgobble — how to post</title>
+<style>
+@font-face{font-family:'Bricolage Grotesque';font-weight:400 800;src:url(../../public/fonts/font-1.woff2) format('woff2')}
+@font-face{font-family:'DM Sans';font-weight:400 700;src:url(../../public/fonts/font-2.woff2) format('woff2')}
+:root{--cream:#f9f4a7;--ink:#39245a;--muted:#665578;--acid:#d5f568;--purple:#c5b5f5;--accent:#ff7547;--pond:#bfdcf5}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--cream)}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:'DM Sans',sans-serif;color:var(--ink)}
+.abs{position:absolute}
+/* story */
+#story{inset:0}
+#story img{position:absolute;inset:0;width:1080px;height:1920px;display:block}
+#hook{left:50%;top:64px;transform:translateX(-50%);background:var(--ink);color:var(--cream);font-weight:700;font-size:34px;padding:18px 34px;border-radius:999px;white-space:nowrap;letter-spacing:.01em}
+#hook b{color:var(--acid)}
+/* stage */
+#stage{inset:0;background:var(--cream)}
+.blob{border-radius:50%;filter:blur(2px)}
+#steps{left:0;right:0;top:78px;display:flex;justify-content:center;align-items:center;gap:14px}
+.dot{height:22px;border-radius:999px;background:var(--ink);opacity:.18}
+#steplabel{left:0;right:0;top:122px;text-align:center;font-weight:700;font-size:30px;letter-spacing:.18em;color:var(--muted)}
+.head{left:70px;right:70px;top:176px;text-align:center}
+.head h2{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:112px;line-height:1;letter-spacing:-.03em;color:var(--ink)}
+.head h2 .w{display:inline-block;will-change:transform}
+.head p{margin-top:18px;font-size:42px;font-weight:500;color:var(--muted)}
+.mask{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:8px;margin-bottom:-8px}
+/* phone */
+#phone{left:132px;top:458px;width:816px;height:1450px;border-radius:92px;background:var(--ink);padding:0;box-shadow:0 60px 90px -30px rgba(57,36,90,.55),0 10px 0 0 #2a1a45}
+#screen{position:absolute;left:8px;top:8px;width:800px;height:1422px;border-radius:84px;overflow:hidden;background:#fff}
+#cam{position:absolute;left:0;top:0;width:800px;height:1422px}
+#cam img.st{position:absolute;left:0;top:0;width:800px;height:1422px}
+#notch{position:absolute;left:50%;top:14px;width:150px;height:34px;margin-left:-75px;border-radius:20px;background:var(--ink);z-index:5}
+.ring{position:absolute;border-radius:50%;border:5px solid var(--accent);pointer-events:none}
+.finger{position:absolute;width:84px;height:84px;margin:-42px 0 0 -42px;border-radius:50%;background:rgba(57,36,90,.34);border:4px solid rgba(255,254,246,.9);pointer-events:none}
+.pill{position:absolute;white-space:nowrap;font-weight:700;border-radius:999px}
+.conf{position:absolute;border-radius:3px;pointer-events:none}
+#livebadge{left:50%;top:560px;transform:translateX(-50%);background:var(--acid);color:var(--ink);font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:64px;padding:20px 46px;border-radius:999px;border:6px solid var(--ink);box-shadow:0 10px 0 var(--ink);white-space:nowrap;z-index:9}
+#chips .pill{background:#fff;border:5px solid var(--ink);font-size:38px;padding:14px 30px;color:var(--ink);box-shadow:0 8px 0 var(--ink)}
+/* end */
+#end{inset:0;background:var(--ink);color:var(--cream)}
+#end .icon{left:50%;top:430px;width:360px;height:360px;margin-left:-180px;border-radius:84px;box-shadow:0 40px 80px rgba(0,0,0,.4)}
+#end h1{left:0;right:0;top:880px;text-align:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:150px;line-height:.98;letter-spacing:-.035em}
+#end h1 span{display:block;color:var(--acid)}
+#end .url{left:50%;top:1330px;transform:translateX(-50%);background:var(--acid);color:var(--ink);font-weight:700;font-size:60px;padding:28px 70px;border-radius:999px;white-space:nowrap;box-shadow:0 10px 0 #8fae2e}
+#end .sub{left:0;right:0;top:1500px;text-align:center;font-size:44px;font-weight:500;color:#e6dcff}
+#wipe{inset:0;background:var(--ink)}
+</style>
+</head>
+<body>
+<div id="root">
+  <div id="story" class="abs"><div id="storyimgs"></div><div id="hook" class="abs">how to post · <b>live in seconds</b></div></div>
+  <div id="ringedge" class="abs" style="border-radius:50%;background:var(--accent)"></div>
+  <div id="stage" class="abs">
+    <div id="blobs"></div>
+    <div id="steps" class="abs"></div>
+    <div id="steplabel" class="abs"></div>
+    <div id="heads"></div>
+    <div id="phoneWrap" class="abs" style="left:0;top:0;width:1080px;height:1920px">
+      <div id="phone" class="abs">
+        <div id="screen"><div id="cam"></div></div>
+      </div>
+    </div>
+    <div id="chips"></div>
+    <div id="confetti"></div>
+    <div id="livebadge" class="abs">It’s live ✨</div>
+  </div>
+  <div id="end" class="abs">
+    <img class="abs icon" src="../../public/brand/tadgobble-logo.png">
+    <h1 class="abs"><div id="e1">Made a thing?</div><span id="e2">Let it loose.</span></h1>
+    <div class="abs url" id="eurl">tadgobble.in</div>
+    <div class="abs sub" id="esub">Post yours. It’s live the moment you do.</div>
+  </div>
+</div>
+<script>
+const D = 27;
+const SH = '../../data/post/shots/';
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const eOut = (x) => 1 - Math.pow(1 - x, 3);
+const eInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const eSine = (x) => -(Math.cos(Math.PI * x) - 1) / 2;
+const eBack = (x) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const lerp = (a, b, x) => a + (b - a) * x;
+const $ = (id) => document.getElementById(id);
+const S = 800 / 540; // css px of the capture -> phone screen px
+
+// ---- assets
+const scrollN = 150, STORY_END_FRAME = 106;
+const stills = [
+  'post-0-open', 'post-1-photo', 'post-3-before-check', 'post-4-checked', 'post-5-ready', 'post-6-live', 'post-7-mywork',
+];
+const typeFrames = Array.from({ length: 12 }, (_, i) => `type/${String(i).padStart(2, '0')}`);
+// story frames are loaded as two crossfading imgs to keep the DOM small
+const storyA = document.createElement('img'), storyB = document.createElement('img');
+$('storyimgs').append(storyA, storyB);
+const imgs = {};
+const cam = $('cam');
+const addState = (key, src) => { const im = document.createElement('img'); im.className = 'st'; im.src = SH + src + '.jpg'; im.style.opacity = 0; cam.append(im); imgs[key] = im; };
+stills.forEach((s) => addState(s, s));
+typeFrames.forEach((s, i) => addState('type' + i, s));
+
+// ---- stage furniture
+const steps = ['Add your work', 'Give it a title', 'Say it’s yours', 'Hit Post it', 'It’s live. Instantly.'];
+const subs = ['A photo or a little video.', '“Sunday sketch” is a perfectly good title.', 'Tick the box. That’s all.', 'That’s the whole thing.', 'No review. No waiting.'];
+const T = [6.5, 10.4, 14.2, 16.9, 19.7, 23.4]; // step boundaries; end card starts at T[5]
+const dots = [];
+for (let i = 0; i < 4; i++) { const d = document.createElement('div'); d.className = 'dot'; $('steps').append(d); dots.push(d); }
+const heads = steps.map((s, i) => {
+  const h = document.createElement('div'); h.className = 'head abs';
+  const words = s.split(' ');
+  h.innerHTML = `<h2>${words.map((w) => `<span class="mask"><span class="w">${w}</span></span>`).join(' ')}</h2><p>${subs[i]}</p>`;
+  $('heads').append(h); return h;
+});
+const blobs = [
+  ['#c5b5f5', 520, 80, 1000, 0.6], ['#d5f568', 420, -120, 620, 0.5], ['#bfdcf5', 560, 700, 1300, 0.55], ['#ff7547', 260, -90, 1700, 0.3],
+].map(([c, s, x, y, o]) => { const b = document.createElement('div'); b.className = 'abs blob'; b.style.cssText = `width:${s}px;height:${s}px;background:${c};opacity:${o}`; b.dataset.x = x; b.dataset.y = y; $('blobs').append(b); return b; });
+
+// taps: [time, screen-space x, screen-space y]
+const rect = { photo: [108, 874], title: [270, 600], check: [42, 785], post: [270, 854] };
+const taps = [
+  { t: 8.55, p: rect.photo, from: [300, -120] },
+  { t: 11.0, p: rect.title, from: [400, 300] },
+  { t: 15.4, p: rect.check, from: [300, 200] },
+  { t: 18.05, p: rect.post, from: [120, 190] },
+];
+const rings = taps.map(() => { const r = document.createElement('div'); r.className = 'ring'; cam.append(r); return r; });
+const fingers = taps.map(() => { const f = document.createElement('div'); f.className = 'finger'; cam.append(f); return f; });
+
+// state timeline: which still shows when (later overrides)
+function stateKey(t) {
+  if (t < 8.75) return 'post-0-open';
+  if (t < 11.0) return 'post-1-photo';
+  if (t < 13.9) {
+    if (t < 11.35) return 'type0';
+    return 'type' + clamp(Math.floor((t - 11.35) / 0.085) + 1, 1, 11);
+  }
+  if (t < 15.45) return 'post-3-before-check';
+  if (t < 16.9) return 'post-4-checked';
+  if (t < 18.4) return 'post-5-ready';
+  if (t < 21.0) return 'post-6-live';
+  return 'post-7-mywork';
+}
+// camera zoom: [t, scale, fx, fy]
+const camKeys = [
+  [6.5, 1, 400, 711], [7.7, 1.55, 200, 1250], [9.8, 1.55, 200, 1250], [10.6, 1, 400, 711],
+  [11.0, 1.0, 400, 711], [11.5, 1.1, 400, 889], [13.4, 1.1, 400, 889],
+  [14.2, 1.45, 330, 1160], [16.4, 1.45, 330, 1160],
+  [17.1, 1.1, 400, 1265], [18.7, 1.1, 400, 1265], [19.3, 1, 400, 711], [24, 1, 400, 711],
+];
+function camAt(t) {
+  let a = camKeys[0];
+  for (let i = 0; i < camKeys.length - 1; i++) {
+    const A = camKeys[i], B = camKeys[i + 1];
+    if (t >= A[0] && t <= B[0]) { const x = eInOut(seg(t, A[0], B[0])); return [lerp(A[1], B[1], x), lerp(A[2], B[2], x), lerp(A[3], B[3], x)]; }
+  }
+  return t < camKeys[0][0] ? camKeys[0].slice(1) : camKeys[camKeys.length - 1].slice(1);
+}
+
+// confetti, deterministic
+let seed = 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const palette = ['#ff7547', '#d5f568', '#c5b5f5', '#bfdcf5', '#39245a', '#f9f4a7'];
+const conf = Array.from({ length: 70 }, () => {
+  const el = document.createElement('div'); el.className = 'conf';
+  const w = 12 + rnd() * 16, h = 18 + rnd() * 22;
+  el.style.cssText = `width:${w}px;height:${h}px;background:${palette[Math.floor(rnd() * palette.length)]}`;
+  $('confetti').append(el);
+  const a = -Math.PI / 2 + (rnd() - 0.5) * 2.2, v = 700 + rnd() * 1100;
+  return { el, vx: Math.cos(a) * v, vy: Math.sin(a) * v, rot: rnd() * 360, vr: (rnd() - 0.5) * 900, delay: rnd() * 0.12 };
+});
+const chips = ['no queue', 'no approval', 'just live'].map((s, i) => { const c = document.createElement('div'); c.className = 'pill'; c.textContent = s; $('chips').append(c); return c; });
+
+// ---- the frame function
+window.render = function (t) {
+  // === story (0 → ~6.8)
+  const sp = eSine(seg(t, 0.25, 5.9));
+  const fi = sp * STORY_END_FRAME;
+  const f0 = Math.floor(fi), f1 = Math.min(scrollN - 1, f0 + 1), fr = fi - f0;
+  const fn = (i) => SH + 'scroll/' + String(i).padStart(4, '0') + '.jpg';
+  if (storyA.dataset.f != f0) { storyA.src = fn(f0); storyA.dataset.f = f0; }
+  if (storyB.dataset.f != f1) { storyB.src = fn(f1); storyB.dataset.f = f1; }
+  storyA.style.opacity = 1; storyB.style.opacity = fr; // linear blend between neighbouring captured frames
+  const intro = seg(t, 0, 0.5);
+  $('storyimgs').style.transform = `scale(${lerp(1.06, 1, eOut(seg(t, 0, 1.3)))})`;
+  $('hook').style.opacity = eOut(intro) * (1 - seg(t, 5.2, 5.6));
+  $('hook').style.transform = `translateX(-50%) translateY(${(1 - eOut(intro)) * -40}px)`;
+
+  // === wipe (stage grows over the story in a circle)
+  const w = eInOut(seg(t, 5.7, 6.75));
+  const cx = 540, cy = 1180, R = Math.hypot(1080, 1920) * 0.95;
+  const rad = w * R;
+  $('stage').style.clipPath = `circle(${rad}px at ${cx}px ${cy}px)`;
+  const edge = $('ringedge');
+  Object.assign(edge.style, { left: cx - rad - 26 * w + 'px', top: cy - rad - 26 * w + 'px', width: (rad + 26 * w) * 2 + 'px', height: (rad + 26 * w) * 2 + 'px', opacity: w > 0 && w < 1 ? 1 : 0 });
+  $('stage').style.visibility = w > 0 ? 'visible' : 'hidden';
+  // keep ring edge under the stage
+  $('story').style.visibility = t < 6.9 ? 'visible' : 'hidden';
+
+  // === stage furniture
+  blobs.forEach((b, i) => {
+    const bx = +b.dataset.x + Math.sin(t * 0.5 + i * 1.7) * 60, by = +b.dataset.y + Math.cos(t * 0.4 + i * 2.3) * 70;
+    b.style.transform = `translate(${bx}px,${by}px) scale(${1 + Math.sin(t * 0.7 + i) * 0.06})`;
+  });
+  // step index
+  let si = 0; for (let i = 0; i < 5; i++) if (t >= T[i]) si = i;
+  dots.forEach((d, i) => {
+    const on = i === Math.min(si, 3);
+    d.style.width = (on ? 74 : 22) + 'px';
+    d.style.opacity = i <= Math.min(si, 3) && si <= 3 ? (on ? 1 : 0.55) : (si >= 4 ? 1 : 0.18);
+    d.style.background = si >= 4 ? '#ff7547' : (on ? 'var(--accent)' : 'var(--ink)');
+  });
+  $('steps').style.opacity = eOut(seg(t, 6.6, 7.2)) * (1 - seg(t, 23.0, 23.4));
+  $('steplabel').textContent = si <= 3 ? 'STEP ' + (si + 1) + ' OF 4' : 'DONE';
+  $('steplabel').style.opacity = eOut(seg(t, 6.6, 7.2)) * (1 - seg(t, 23.0, 23.4));
+
+  heads.forEach((h, i) => {
+    const a = T[i], b = T[i + 1];
+    const out = seg(t, b - 0.28, b);
+    const vis = t >= a - 0.01 && t < b + 0.01 && !(i === 0 && t < 6.5);
+    h.style.display = vis ? 'block' : 'none';
+    if (!vis) return;
+    h.querySelectorAll('.w').forEach((el, k) => {
+      const p = eOut(seg(t, a + 0.06 * k, a + 0.06 * k + 0.55));
+      el.style.transform = `translateY(${(1 - p) * 130 - out * 60}px) rotate(${(1 - p) * 4}deg)`;
+      el.style.opacity = out > 0 ? 1 - out : 1;
+    });
+    const pp = h.querySelector('p');
+    const pin = eOut(seg(t, a + 0.35, a + 0.85));
+    pp.style.opacity = pin * (1 - out);
+    pp.style.transform = `translateY(${(1 - pin) * 30 - out * 30}px)`;
+  });
+
+  // === phone
+  const pin = eBack(seg(t, 6.15, 7.15));
+  const exit = eInOut(seg(t, 23.0, 23.9));
+  const floatY = Math.sin(t * 1.3) * 7, floatR = Math.sin(t * 0.9) * 0.5;
+  const phoneY = (1 - pin) * 1500 + exit * 1300 + floatY;
+  $('phoneWrap').style.transform = `translateY(${phoneY}px) rotate(${(1 - pin) * 6 + floatR}deg)`;
+  // phone's own wiggle on key moments
+  const key = stateKey(t);
+  Object.entries(imgs).forEach(([k, im]) => {
+    im.style.opacity = k === key ? 1 : 0;
+  });
+  // crossfade: keep the previous visible state under the current for a moment
+  // (cheap approach: track arrival time of the current key)
+  window.__arr = window.__arr || {};
+  // arrival time per key is deterministic from the timeline: find latest time <= t at which key changed
+  let arrive = t; for (let k = 0; k < 24; k++) { if (stateKey(arrive - 0.04) !== key) break; arrive -= 0.04; if (arrive < 6) break; }
+  const prevKey = stateKey(arrive - 0.05);
+  const x = eOut(seg(t, arrive, arrive + 0.18));
+  if (prevKey !== key && imgs[prevKey] && !(key.startsWith('type') && prevKey.startsWith('type'))) { imgs[prevKey].style.opacity = 1 - x; imgs[key].style.opacity = x; imgs[key].style.zIndex = 2; imgs[prevKey].style.zIndex = 1; }
+  Object.values(imgs).forEach((im) => { if (im.style.opacity === '0') im.style.zIndex = 0; });
+  // pop when a new still lands
+  const pop = key.startsWith('type') ? 0 : eOut(seg(t, arrive, arrive + 0.35));
+  const [cs, fx, fy] = camAt(t);
+  const popScale = key.startsWith('type') || t < 8 ? 1 : 1 + (1 - pop) * 0.018;
+  const sc = cs * popScale;
+  const tx = clamp(400 - sc * fx, 800 - 800 * sc, 0), ty = clamp(711 - sc * fy, 1422 - 1422 * sc, 0);
+  cam.style.transformOrigin = '0 0';
+  cam.style.transform = `translate(${tx}px,${ty}px) scale(${sc})`;
+
+  // taps
+  taps.forEach((tp, i) => {
+    const d = t - tp.t;
+    const f = fingers[i], r = rings[i];
+    const approach = eInOut(seg(t, tp.t - 0.7, tp.t - 0.05));
+    const x0 = tp.p[0] * S + tp.from[0], y0 = tp.p[1] * S + tp.from[1];
+    const fx2 = lerp(x0, tp.p[0] * S, approach), fy2 = lerp(y0, tp.p[1] * S, approach);
+    const press = d > -0.05 ? 1 - 0.25 * Math.exp(-Math.pow((d) / 0.12, 2)) : 1;
+    const vis = t > tp.t - 0.75 && t < tp.t + 0.55;
+    f.style.opacity = vis ? Math.min(1, seg(t, tp.t - 0.75, tp.t - 0.45)) * (1 - seg(t, tp.t + 0.2, tp.t + 0.55)) : 0;
+    f.style.left = fx2 + 'px'; f.style.top = fy2 + 'px';
+    f.style.transform = `scale(${press})`;
+    const rp = seg(t, tp.t, tp.t + 0.55);
+    r.style.opacity = rp > 0 && rp < 1 ? 1 - rp : 0;
+    const rs = 40 + eOut(rp) * 190;
+    r.style.width = rs + 'px'; r.style.height = rs + 'px';
+    r.style.left = tp.p[0] * S - rs / 2 + 'px'; r.style.top = tp.p[1] * S - rs / 2 + 'px';
+  });
+
+  // === live moment
+  const L0 = 18.55;
+  const lb = $('livebadge');
+  const lp = eBack(seg(t, L0 + 0.1, L0 + 0.7));
+  lb.style.opacity = t >= L0 + 0.1 && t < 23.2 ? 1 - seg(t, 22.6, 23.0) : 0;
+  lb.style.transform = `translateX(-50%) translateY(${(1 - lp) * 120 + Math.sin(t * 3) * 4}px) scale(${0.6 + 0.4 * lp}) rotate(${-4 + (1 - lp) * 10}deg)`;
+  lb.style.top = '440px';
+  // badge only while the live screen is up, then it hands off to the My work screen
+  if (t > 20.6) lb.style.opacity = Math.max(0, 1 - seg(t, 20.6, 21.0));
+  conf.forEach((c) => {
+    const d = t - L0 - c.delay;
+    if (d < 0 || d > 2.8) { c.el.style.opacity = 0; return; }
+    const g = 2400;
+    const x = 540 + c.vx * d * 0.9, y = 900 + c.vy * d + 0.5 * g * d * d;
+    c.el.style.opacity = 1 - seg(d, 2.0, 2.8);
+    c.el.style.transform = `translate(${x}px,${y}px) rotate(${c.rot + c.vr * d}deg)`;
+  });
+  chips.forEach((c, i) => {
+    const a = 21.0 + i * 0.28;
+    const p = eBack(seg(t, a, a + 0.55));
+    const pos = [[70, 1080], [610, 1290], [90, 1500]][i];
+    c.style.left = pos[0] + 'px'; c.style.top = pos[1] + 'px';
+    c.style.opacity = t >= a ? 1 - seg(t, 23.0, 23.4) : 0;
+    c.style.transform = `scale(${0.2 + 0.8 * p}) rotate(${[-5, 4, -3][i] * p}deg)`;
+  });
+
+  // === end card
+  const e0 = T[5];
+  const ew = eInOut(seg(t, e0 - 0.4, e0 + 0.5));
+  const end = $('end');
+  end.style.clipPath = `circle(${ew * R}px at 540px 1100px)`;
+  end.style.visibility = ew > 0 ? 'visible' : 'hidden';
+  const ic = eBack(seg(t, e0 + 0.15, e0 + 0.9));
+  const iconEl = end.querySelector('.icon');
+  iconEl.style.transform = `translateY(${(1 - ic) * -300 + Math.sin((t - e0) * 2.2) * 8}px) scale(${0.4 + 0.6 * ic}) rotate(${(1 - ic) * -25 + Math.sin((t - e0) * 1.5) * 3}deg)`;
+  iconEl.style.opacity = ic > 0 ? 1 : 0;
+  const e1 = eOut(seg(t, e0 + 0.45, e0 + 1.1)), e2 = eOut(seg(t, e0 + 0.7, e0 + 1.35));
+  $('e1').style.cssText = `opacity:${e1};transform:translateY(${(1 - e1) * 70}px)`;
+  $('e2').style.cssText = `opacity:${e2};transform:translateY(${(1 - e2) * 70}px)`;
+  const eu = eBack(seg(t, e0 + 1.1, e0 + 1.7));
+  $('eurl').style.opacity = eu > 0 ? 1 : 0;
+  $('eurl').style.transform = `translateX(-50%) scale(${0.5 + 0.5 * eu})`;
+  const es = eOut(seg(t, e0 + 1.5, e0 + 2.1));
+  $('esub').style.opacity = es; $('esub').style.transform = `translateY(${(1 - es) * 24}px)`;
+  // fade to ink at the very end
+  window.__ready = true;
+};
+window.__duration = D;
+render(0);
+</script>
+</body>
+</html>
