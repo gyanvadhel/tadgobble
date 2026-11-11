@@ -240,8 +240,8 @@ export default function Launch({ products }) {
       <main>
         <section className="poster-hero" ref={hero}>
           <div className="poster-topline">
-            <span>India's newest makers live here.</span>
-            <span>Go say something nice.</span>
+            <span>A home for art, design and useful apps.</span>
+            <span>Made by India's first-time makers.</span>
           </div>
           <h1 className="poster-title">
             <span>FIRST</span> <span>THINGS.</span>
@@ -251,16 +251,18 @@ export default function Launch({ products }) {
               <span className="intro-eyebrow">
                 <i aria-hidden="true" />
                 {products.length
-                  ? `${products.length} ${products.length === 1 ? 'find' : 'finds'} on the menu`
-                  : 'The menu opens soon'}
+                  ? `${products.length} ${products.length === 1 ? 'find' : 'finds'} to discover`
+                  : 'The first finds land soon'}
               </span>
               <h2>
-                Fresh from <br />
-                <span className="intro-mark">first-timers.</span>
+                Discover work from <br />
+                <span className="intro-mark" style={{ whiteSpace: 'nowrap' }}>
+                  first-time makers.
+                </span>
               </h2>
               <p>
-                India's newest makers, posting their first things. Art, design, photos and useful
-                apps. Pehli baar? Perfect.
+                Feed Gobble to get a find. Peek at it, save it, say something nice. Made something
+                yourself? Post it and it's live straight away.
               </p>
               <div className="intro-actions">
                 {products.length ? (
@@ -332,7 +334,6 @@ export default function Launch({ products }) {
             <a href="#fresh-picks">
               Fresh stuff below <ArrowDown size={16} />
             </a>
-            <span>New makers. Kind comments.</span>
             <button
               className="motion-control"
               aria-pressed={!motion}
