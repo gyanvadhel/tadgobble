@@ -4,7 +4,7 @@ import { scenes, pinMode, sceneIndexAt } from '../lib/intro-story.mjs';
 
 const fine = { reduceMotion: false, motion: true, coarsePointer: false };
 
-test('scenes has the five spec titles in order', () => {
+test('scenes has the four spec titles in order', () => {
   assert.deepEqual(
     scenes.map((s) => s.title),
     [
@@ -12,12 +12,11 @@ test('scenes has the five spec titles in order', () => {
       'Feed Gobble. Get a find.',
       'Peek. Save. Say something nice.',
       'Made a thing? Let it loose.',
-      'Pehli baar? Perfect.',
     ],
   );
   assert.deepEqual(
     scenes.map((s) => s.id),
-    ['rabbit-hole', 'feed', 'stash', 'post', 'first-time'],
+    ['rabbit-hole', 'feed', 'stash', 'post'],
   );
 });
 
@@ -57,15 +56,15 @@ test('pinMode is pinned for a coarse pointer with 8 cores', () => {
 test('sceneIndexAt clamps', () => {
   assert.equal(sceneIndexAt(-1), 0);
   assert.equal(sceneIndexAt(0), 0);
-  assert.equal(sceneIndexAt(0.999), 4);
-  assert.equal(sceneIndexAt(1), 4);
-  assert.equal(sceneIndexAt(2), 4);
+  assert.equal(sceneIndexAt(0.999), 3);
+  assert.equal(sceneIndexAt(1), 3);
+  assert.equal(sceneIndexAt(2), 3);
 });
 test('sceneIndexAt splits evenly', () => {
-  assert.equal(sceneIndexAt(0.2), 1);
-  assert.equal(sceneIndexAt(0.4), 2);
-  assert.equal(sceneIndexAt(0.6), 3);
-  assert.equal(sceneIndexAt(0.8), 4);
+  assert.equal(sceneIndexAt(0.24), 0);
+  assert.equal(sceneIndexAt(0.25), 1);
+  assert.equal(sceneIndexAt(0.5), 2);
+  assert.equal(sceneIndexAt(0.75), 3);
 });
 
 import { blobPath, expressions } from '../lib/mascot.mjs';

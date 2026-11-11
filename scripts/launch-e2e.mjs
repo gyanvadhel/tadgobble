@@ -140,23 +140,13 @@ try {
   );
   pass('Boop responds and pause stops page animation');
 
-  await page.getByLabel('More audiences').selectOption('Developers');
-  assert.deepEqual((await page.locator('.product-drawer h3').allTextContents()).sort(), [
-    'Penpot',
-    'n8n',
-  ]);
-  await page.getByRole('button', { name: 'Pick one for me' }).click();
-  await page.getByRole('dialog').waitFor();
-  assert.ok(['Penpot', 'n8n'].includes(await page.locator('#snack-dialog-title').textContent()));
-  await page.keyboard.press('Escape');
-  await page.getByLabel('More audiences').selectOption('Everyone');
-  await page.getByRole('textbox', { name: 'Search discoveries' }).fill('automation');
-  assert.deepEqual(await page.locator('.product-drawer h3').allTextContents(), ['n8n']);
-  await page.getByRole('textbox', { name: 'Search discoveries' }).fill('no-such-product-123');
-  await page.getByRole('heading', { name: 'No bites for that one.' }).waitFor();
-  await page.getByRole('button', { name: 'Show all the finds' }).click();
   assert.equal(await page.locator('.product-drawer').count(), 6);
-  pass('Audience filters, search, random discovery and empty-state reset work together');
+  assert.equal(await page.locator('#fresh-picks select, #fresh-picks input').count(), 0);
+  assert.equal(
+    await page.getByRole('link', { name: 'See all the finds' }).getAttribute('href'),
+    '/discover',
+  );
+  pass('Home shows every find and sends filtering to Discover');
 
   async function openProduct(name) {
     const summary = page.getByLabel(`Explore ${name}`, { exact: true });

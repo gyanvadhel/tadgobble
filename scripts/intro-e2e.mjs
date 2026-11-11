@@ -13,7 +13,6 @@ const titles = [
   'Feed Gobble. Get a find.',
   'Peek. Save. Say something nice.',
   'Made a thing? Let it loose.',
-  'Pehli baar? Perfect.',
 ];
 const servers = [];
 let browser;
@@ -59,11 +58,11 @@ async function start(port, seed) {
 const storyHtml = (html) => {
   const from = html.indexOf('id="how-it-works"');
   assert.ok(from > 0, 'the story section is in the HTML');
-  const to = html.indexOf('discovery-ribbon', from);
+  const to = html.indexOf('id="fresh-picks"', from);
   return html.slice(from, to > from ? to : undefined);
 };
 
-check('no-JS HTML has all five scene titles in order and the skip link', async ({ seeded }) => {
+check('no-JS HTML has all four scene titles in order and the skip link', async ({ seeded }) => {
   const html = storyHtml(await (await fetch(seeded)).text());
   let at = 0;
   for (const title of titles) {
@@ -117,7 +116,7 @@ const storyAt = (page, k) =>
 check('story pins while scrolling', async ({ seeded }, getBrowser) => {
   const page = await open(getBrowser, seeded);
   assert.equal(await storyAt(page, 0.1), 0);
-  assert.equal(await storyAt(page, 4.3), 4);
+  assert.equal(await storyAt(page, 3.4), 3);
   await page.screenshot({ path: path.join(dir, 'pinned-scene-5.png') });
   assert.deepEqual(page.errors, []);
   await page.context().close();
@@ -128,13 +127,13 @@ check('the story sticks in place with CSS, not a scripted fixed pin', async ({ s
   assert.equal(await page.locator('.pin-spacer').count(), 0);
   assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('.story-stage')).position), 'sticky');
   const ratio = await page.evaluate(() => document.querySelector('.intro-story').offsetHeight / innerHeight);
-  assert.ok(ratio > 5.4 && ratio < 5.6, `story is ${ratio} screens tall`);
+  assert.ok(ratio > 4.5 && ratio < 4.7, `story is ${ratio} screens tall`);
   await page.context().close();
 });
 
 check('scrolling back rewinds', async ({ seeded }, getBrowser) => {
   const page = await open(getBrowser, seeded);
-  await storyAt(page, 4.3);
+  await storyAt(page, 3.4);
   assert.equal(await storyAt(page, 0.1), 0);
   await page.context().close();
 });
@@ -204,11 +203,10 @@ check('each scene illustration changes between its start and end', async ({ seed
     '[data-scene="feed"] [data-part="ticket"]',
     '[data-scene="stash"] [data-part="bubble"]',
     '[data-scene="post"] [data-part="receipt"]',
-    '[data-scene="first-time"] [data-part="arrow"]',
   ];
   for (const [n, selector] of parts.entries()) {
-    const start = await partLook(page, 4.5 * (n / 5 + 0.004), selector);
-    const end = await partLook(page, 4.5 * ((n + 1) / 5 - 0.004), selector);
+    const start = await partLook(page, 3.6 * (n / 4 + 0.004), selector);
+    const end = await partLook(page, 3.6 * ((n + 1) / 4 - 0.004), selector);
     assert.notEqual(start, end, `scene ${n + 1} ${selector} should move`);
   }
   await page.context().close();
@@ -223,8 +221,8 @@ check('scene 2 shows the first product name on the ticket', async ({ seeded }, g
 
 check('no console errors across a full scroll', async ({ seeded }, getBrowser) => {
   const page = await open(getBrowser, seeded);
-  for (let k = 0; k <= 4.8; k += 0.4) await storyAt(page, k);
-  for (let k = 4.8; k >= 0; k -= 0.8) await storyAt(page, k);
+  for (let k = 0; k <= 4; k += 0.4) await storyAt(page, k);
+  for (let k = 4; k >= 0; k -= 0.8) await storyAt(page, k);
   assert.deepEqual(page.errors, []);
   await page.context().close();
 });
@@ -404,7 +402,7 @@ check('resizing from desktop to phone while pinned leaves no gap or errors', asy
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForTimeout(1200);
   assert.equal(await storyAt(page, 0.1), 0);
-  assert.equal(await storyAt(page, 3.2), 4);
+  assert.equal(await storyAt(page, 2.6), 3);
   const stage = await page.evaluate(() => {
     const r = document.querySelector('.story-stage').getBoundingClientRect();
     return { top: Math.round(r.top), height: Math.round(r.height), vh: innerHeight };

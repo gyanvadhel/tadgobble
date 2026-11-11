@@ -85,14 +85,7 @@ function Art({ id, mood, first }) {
         </>
       );
     default:
-      return (
-        <>
-          <span className="art-gobble" data-part="gobble">
-            <Gobble expression={mood} />
-          </span>
-          <ArrowDown className="art-arrow" size={44} data-part="arrow" />
-        </>
-      );
+      return null;
   }
 }
 
@@ -198,16 +191,6 @@ function animateArt(tl, n, el) {
       { x: 0, opacity: 1, rotation: 4, duration: 0.3, ease: 'back.out(1.6)' },
       n + 0.6,
     );
-  } else {
-    // Gobble winks hello and an arrow points down at the fresh picks.
-    tl.fromTo(
-      gobble,
-      { scale: 0.5, rotation: -30 },
-      { scale: 1, rotation: 0, duration: 0.3, ease: 'back.out(1.8)' },
-      n + 0.05,
-    );
-    tl.fromTo(part('arrow'), { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.2 }, n + 0.45);
-    tl.to(part('arrow'), { y: 14, duration: 0.1, yoyo: true, repeat: 3 }, n + 0.65);
   }
 }
 
@@ -217,7 +200,6 @@ const spots = [
   [18, 78],
   [84, 24],
   [24, 20],
-  [78, 80],
 ];
 
 export default function IntroStory({

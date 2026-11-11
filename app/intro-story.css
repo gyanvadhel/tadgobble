@@ -183,12 +183,6 @@
   font-size: clamp(14px, 1.7vw, 19px);
   transform: rotate(4deg);
 }
-.art-arrow {
-  position: absolute;
-  left: 50%;
-  bottom: 2%;
-  margin-left: -22px;
-}
 .story-skip {
   position: absolute;
   width: 1px;
@@ -223,15 +217,15 @@
 .intro-story[data-mode='pinned'] {
   padding: 0;
 }
-/* The tour is 4.5 screens of scrolling on a desktop and 3.5 on a phone, plus the one it sits on. */
+/* The tour is 3.6 screens of scrolling on a desktop and 2.8 on a phone, plus the one it sits on. */
 .intro-story[data-mode='pinned'] {
-  height: 550vh;
-  height: 550svh;
+  height: 460vh;
+  height: 460svh;
 }
 @media (max-width: 800px) {
   .intro-story[data-mode='pinned'] {
-    height: 450vh;
-    height: 450svh;
+    height: 380vh;
+    height: 380svh;
   }
 }
 .intro-story[data-mode='pinned'] .story-stage {
@@ -313,9 +307,6 @@
   .story-art {
     min-height: 240px;
   }
-}
-.intro-story[data-mode='pinned'] .art-arrow {
-  bottom: 16%;
 }
 .art-confetti {
   position: absolute;

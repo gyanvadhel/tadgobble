@@ -3,9 +3,6 @@ import { useId, useState } from 'react';
 import {
   ArrowUpRight,
   ArrowDown,
-  Search,
-  X,
-  Shuffle,
   Check,
   Plus,
   Zap,
@@ -17,7 +14,7 @@ import {
 import { Gobble } from './gobble';
 import { CreatorCredit } from './creator-credit';
 import WorkMedia from './work-media';
-import { audiences, productColors, isArtwork, workImageAlt } from '../lib/product-options.mjs';
+import { productColors, isArtwork, workImageAlt } from '../lib/product-options.mjs';
 import '../app/covers.css';
 
 export const showcaseColors = {
@@ -258,21 +255,8 @@ export function ProductDemo({ product }) {
 }
 
 export default function ProductShowcase({ products, onPeek, motion = true }) {
-  const [audience, setAudience] = useState('Everyone');
-  const [workKind, setWorkKind] = useState('all');
-  const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(products[0]?.id);
-  const shown = products.filter(
-    (p) =>
-      (audience === 'Everyone' || p.audience === 'Everyone' || p.audience === audience) &&
-      (workKind === 'all' || isArtwork(p) === (workKind === 'art')) &&
-      `${p.name} ${p.category} ${p.tagline} ${p.description}`
-        .toLowerCase()
-        .includes(query.trim().toLowerCase()),
-  );
-  const discover = `/discover${audience !== 'Everyone' ? `?audience=${encodeURIComponent(audience)}` : ''}`;
-  const activeId =
-    selected === null ? null : shown.some((p) => p.id === selected) ? selected : shown[0]?.id;
+  const activeId = selected === null ? null : selected;
   function choose(event, product) {
     event.preventDefault();
     const item = event.currentTarget.closest('details');
@@ -292,81 +276,9 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
           <br />
           next fixation.
         </h2>
-        <div className="menu-intro-aside">
-          <p>
-            Art, design, and useful little apps.
-            <br />
-            First things. Real makers behind them.
-          </p>
-          {products.length > 0 && (
-            <div className="menu-intro-actions">
-              <button
-                className="text-button"
-                disabled={!shown.length}
-                onClick={(e) =>
-                  onPeek(shown[Math.floor(Math.random() * shown.length)], true, e.currentTarget)
-                }
-              >
-                <Shuffle size={19} />
-                Pick one for me
-              </button>
-              <a className="text-button" href={discover}>
-                See all <ArrowUpRight size={19} />
-              </a>
-            </div>
-          )}
-        </div>
       </div>
-      {products.length > 0 && (
-        <div className="menu-controls">
-          <div className="audience-tabs" role="group" aria-label="What to discover">
-            {[
-              ['all', 'Everything'],
-              ['art', 'Art & design'],
-              ['app', 'Apps & tools'],
-            ].map(([value, label]) => (
-              <button
-                key={value}
-                aria-pressed={workKind === value}
-                onClick={() => setWorkKind(value)}
-              >
-                {label}
-              </button>
-            ))}
-            <select
-              className="more-audiences"
-              aria-label="More audiences"
-              value={audience}
-              onChange={(event) => setAudience(event.target.value || 'Everyone')}
-            >
-              {audiences.map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-          </div>
-          <label className="menu-search">
-            <Search size={18} />
-            <input
-              aria-label="Search discoveries"
-              placeholder="Find your thing…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            {query && (
-              <button aria-label="Clear search" onClick={() => setQuery('')}>
-                <X size={16} />
-              </button>
-            )}
-          </label>
-        </div>
-      )}
-      <span className="sr-only" role="status">
-        {shown.length} discoveries found
-      </span>
       <div className="product-drawers">
-        {shown.map((product) => (
+        {products.map((product) => (
           <details
             className={`product-drawer ${product.cover ? 'has-cover' : ''} ${isArtwork(product) ? 'is-artwork' : ''}`}
             key={product.id}
@@ -437,36 +349,16 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
             </a>
           </div>
         </div>
-      ) : (
-        !shown.length && (
-          <div className="menu-empty">
-            <Gobble />
-            <h3>No bites for that one.</h3>
-            <p>Try another name or explore everything.</p>
-            <button
-              className="launch-button plum-button"
-              onClick={() => {
-                setQuery('');
-                setAudience('Everyone');
-                setWorkKind('all');
-              }}
-            >
-              Show all the finds
-            </button>
-          </div>
-        )
+      ) : null}
+      {products.length > 0 && (
+        <div className="menu-end">
+          <span>Search and filter everything on Discover.</span>
+          <a className="launch-button plum-button" href="/discover">
+            See all the finds
+            <ArrowUpRight size={20} />
+          </a>
+        </div>
       )}
-      <div className="menu-end">
-        <span>
-          {products.length
-            ? 'A small menu. Plenty of rabbit holes.'
-            : 'Real work, straight from the people who made it.'}
-        </span>
-        <a className="launch-button plum-button" href={discover}>
-          {products.length >= 6 ? `See all ${products.length} finds` : 'See everything on Discover'}
-          <ArrowUpRight size={20} />
-        </a>
-      </div>
     </section>
   );
 }

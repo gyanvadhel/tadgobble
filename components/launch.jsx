@@ -110,20 +110,6 @@ export default function Launch({ products }) {
         ease: 'none',
         scrollTrigger: { trigger: hero.current, start: 'top top', end: 'bottom top', scrub: 0.7 },
       });
-      gsap.fromTo(
-        '.ribbon-type',
-        { xPercent: -8 },
-        {
-          xPercent: 4,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '.discovery-ribbon',
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 1,
-          },
-        },
-      );
       gsap.to('.maker-asterisk', {
         rotation: 120,
         ease: 'none',
@@ -358,17 +344,8 @@ export default function Launch({ products }) {
           reduceMotion={reduceMotion}
           onMotion={setMotion}
         />
-        <div className="discovery-ribbon" aria-label="Ekdum fresh. Post your first thing.">
-          <div className="ribbon-type" aria-hidden="true">
-            EKDUM FRESH. <Asterisk /> POST YOUR FIRST THING. <Asterisk /> EKDUM FRESH.
-          </div>
-        </div>
         <ProductShowcase products={products} onPeek={openPreview} motion={motion} />
         <section className="maker-poster" id="for-makers">
-          <div className="maker-poster-top">
-            <span>For the people making things</span>
-            <span>Your side project called.</span>
-          </div>
           <h2>
             MADE A THING?
             <br />
@@ -377,11 +354,6 @@ export default function Launch({ products }) {
           <div className="maker-poster-bottom">
             <Asterisk className="maker-asterisk" aria-hidden="true" />
             <div>
-              <p>
-                It deserves more than “looks cool bro”
-                <br />
-                and a bookmark nobody opens.
-              </p>
               <p className="maker-detail">
                 Share a painting, a design, or an app. No portfolio needed. It goes live the moment
                 you post it, so curious people can discover your work and talk about it.
@@ -389,14 +361,6 @@ export default function Launch({ products }) {
               <a className="launch-button plum-button" data-magnetic href="/discover?submit=1">
                 Post your thing <ArrowUpRight size={20} />
               </a>
-            </div>
-            <div className="maker-stamp">
-              <Gobble />
-              <span>
-                made it?
-                <br />
-                feed it to us.
-              </span>
             </div>
           </div>
         </section>
