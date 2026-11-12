@@ -55,3 +55,24 @@ test('timeAgo is short and human', () => {
   assert.equal(timeAgo(ago(10 * 86400 * 1000), now), '26 Oct');
   assert.equal(timeAgo(new Date(now + 5000).toISOString(), now), 'now');
 });
+
+test('notificationText covers follows and new work', async () => {
+  const { notificationHref } = await import('../lib/notifications.mjs');
+  assert.equal(
+    notificationText({ kind: 'follow', actor: { name: 'Asha', username: 'asha' }, product: null }),
+    'Asha started following you',
+  );
+  assert.equal(
+    notificationText({ kind: 'new_work', actor: { name: 'Asha' }, product: { name: 'Moon Garden' } }),
+    'Asha posted something new: Moon Garden',
+  );
+  assert.equal(notificationText({ kind: 'follow', actor: null }), 'Someone started following you');
+  assert.equal(
+    notificationText({ kind: 'new_work', actor: null, product: { name: 'Moon Garden' } }),
+    'Someone posted something new: Moon Garden',
+  );
+  assert.equal(notificationHref({ kind: 'follow', actor: { username: 'a b' } }), '/profile/a%20b');
+  assert.equal(notificationHref({ kind: 'follow', actor: { name: 'Hidden', username: null } }), null);
+  assert.equal(notificationHref({ kind: 'new_work', product: { slug: 'moon' } }), '/product/moon');
+  assert.equal(notificationHref({ kind: 'save', product }), '/product/tiny-moon');
+});

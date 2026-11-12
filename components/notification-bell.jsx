@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Bell } from 'lucide-react';
 import { api, cloudMode } from '../lib/client-api.mjs';
-import { notificationText, timeAgo } from '../lib/notifications.mjs';
+import { notificationHref, notificationText, timeAgo } from '../lib/notifications.mjs';
 import '../app/notifications.css';
 
 // The bell in the header: what happened to your work. Only on the hosted site, and only when signed in.
@@ -85,14 +85,18 @@ export default function NotificationBell() {
         <div className="bell-panel" role="dialog" aria-label="Notifications">
           {items.length ? (
             <ul>
-              {items.map((item) => (
-                <li key={item.id}>
-                  <a className={item.read ? '' : 'is-new'} href={`/product/${item.product.slug}`}>
-                    <span>{notificationText(item)}</span>
-                    <time dateTime={item.created_at}>{timeAgo(item.created_at)}</time>
-                  </a>
-                </li>
-              ))}
+              {items.map((item) => {
+                const href = notificationHref(item);
+                const Tag = href ? 'a' : 'div';
+                return (
+                  <li key={item.id}>
+                    <Tag className={item.read ? '' : 'is-new'} href={href || undefined}>
+                      <span>{notificationText(item)}</span>
+                      <time dateTime={item.created_at}>{timeAgo(item.created_at)}</time>
+                    </Tag>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className="bell-empty">

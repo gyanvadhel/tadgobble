@@ -56,7 +56,8 @@
   margin: 0;
   padding: 6px;
 }
-.bell-panel a {
+.bell-panel li > a,
+.bell-panel li > div {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -70,7 +71,7 @@
 .bell-panel a:focus-visible {
   background: var(--rose, #efd8e5);
 }
-.bell-panel a.is-new span::before {
+.bell-panel .is-new span::before {
   content: '';
   display: inline-block;
   width: 8px;
