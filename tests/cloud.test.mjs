@@ -967,3 +967,97 @@ test('the service-only calls are closed to browser roles', async () => {
     }
   }
 });
+
+// ---- Following makers ----
+const followUsers = {
+  maker: 'f0000001-0000-4000-8000-000000000001',
+  fan: 'f0000002-0000-4000-8000-000000000002',
+  hidden: 'f0000003-0000-4000-8000-000000000003',
+};
+const usernameOf = async (id) =>
+  (await db.query('select username from tg_profiles where id=$1', [id])).rows[0].username;
+const followRows = async () => Number((await db.query('select count(*) as n from tg_follows')).rows[0].n);
+test('follow setup: a maker, a fan and a hidden profile', async () => {
+  await addNoteUser(followUsers.maker, 'Followmaker');
+  await addNoteUser(followUsers.fan, 'Followfan');
+  await addNoteUser(followUsers.hidden, 'Followhidden');
+  await db.query('update tg_profiles set visible=false where id=$1', [followUsers.hidden]);
+});
+test('cannot follow yourself, a hidden profile, or while signed out', async () => {
+  const makerName = await usernameOf(followUsers.maker);
+  await assert.rejects(() => api(null, 'follow', { username: makerName }), /Sign in/);
+  await assert.rejects(
+    () => api(followUsers.maker, 'follow', { username: makerName }),
+    /yourself/,
+  );
+  const hiddenName = await usernameOf(followUsers.hidden);
+  await assert.rejects(
+    () => api(followUsers.fan, 'follow', { username: hiddenName }),
+    /unavailable/,
+  );
+  await assert.rejects(
+    () => api(followUsers.fan, 'follow', { username: 'nobody-by-this-name' }),
+    /unavailable/,
+  );
+  assert.equal(await followRows(), 0);
+});
+test('follow toggles and reports the follower count', async () => {
+  const username = await usernameOf(followUsers.maker);
+  assert.deepEqual(await api(followUsers.fan, 'follow', { username }), {
+    following: true,
+    followers: 1,
+  });
+  assert.deepEqual(await api(followUsers.fan, 'follow', { username: username.toUpperCase() }), {
+    following: false,
+    followers: 0,
+  });
+});
+test('profile shows followers and whether you follow', async () => {
+  const username = await usernameOf(followUsers.maker);
+  await api(followUsers.fan, 'follow', { username });
+  const seen = await api(followUsers.fan, 'profiles/' + username);
+  assert.equal(seen.followers, 1);
+  assert.equal(seen.following, true);
+  const anon = await api(null, 'profiles/' + username);
+  assert.equal(anon.followers, 1);
+  assert.equal(anon.following, false);
+  assert.equal((await api(followUsers.maker, 'profiles/' + username)).following, false);
+});
+test('the maker hears about a follower once', async () => {
+  const username = await usernameOf(followUsers.maker);
+  await api(followUsers.fan, 'follow', { username }); // unfollow (followed in the test above)
+  await api(followUsers.fan, 'follow', { username }); // follow again: stays quiet
+  const follows = (await bell(followUsers.maker)).filter((n) => n.kind === 'follow');
+  assert.equal(follows.length, 1);
+  assert.equal(follows[0].actor.name, 'Followfan');
+  assert.equal(follows[0].actor.username, await usernameOf(followUsers.fan));
+  assert.equal(follows[0].product, null);
+});
+test('followers hear when the maker posts, until the work is taken down', async () => {
+  const made = await api(followUsers.maker, 'submit', { ...product, name: 'Moon Garden' });
+  const news = async () => (await bell(followUsers.fan)).filter((n) => n.kind === 'new_work');
+  const items = await news();
+  assert.equal(items.length, 1);
+  assert.equal(items[0].product.slug, made.slug);
+  assert.equal(items[0].actor.name, 'Followmaker');
+  assert.equal((await bell(followUsers.maker)).filter((n) => n.kind === 'new_work').length, 0);
+  // a work posted on someone else's behalf is not the maker's own news
+  await api(followUsers.maker, 'submit', {
+    ...product,
+    name: 'Cousin painting',
+    onBehalf: true,
+    creatorName: 'A cousin',
+  });
+  assert.equal((await news()).length, 1);
+  const id = (await api(owner, 'studio')).products.find((p) => p.slug === made.slug).id;
+  await api(owner, 'studio/product', { id, action: 'reject', feedback: 'Taken down' });
+  assert.equal((await news()).length, 0);
+});
+test('who follows whom stays private', async () => {
+  await db.exec('set role authenticated');
+  try {
+    await assert.rejects(() => db.query('select * from public.tg_follows'), /permission denied/);
+  } finally {
+    await db.exec('reset role');
+  }
+});
