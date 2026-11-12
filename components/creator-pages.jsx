@@ -12,6 +12,7 @@ import SubmitWizard from './submit-wizard';
 import { useProductCover } from './cover-editor';
 import { ShareButton } from './creator-credit';
 import NotificationBell from './notification-bell';
+import FollowButton from './follow-button';
 import { VideoBadge } from './work-media';
 import { api, cloudMode } from '../lib/client-api.mjs';
 import { workImageAlt } from '../lib/product-options.mjs';
@@ -289,6 +290,16 @@ export default function CreatorPage({ mode = 'profile', username: providedUserna
                 </div>
               </div>
               <div className="creator-intro-actions">
+                {user?.profile?.username !== profile.username && (
+                  <FollowButton
+                    key={`${user?.id || 'out'}:${data.following}:${data.followers}`}
+                    username={profile.username}
+                    following={data.following}
+                    followers={data.followers}
+                    signedIn={!!user}
+                    onSignIn={() => setAuth(true)}
+                  />
+                )}
                 <ShareButton
                   path={`/profile/${profile.username}`}
                   title={`${profile.name} on Tadgobble`}

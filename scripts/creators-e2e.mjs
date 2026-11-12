@@ -172,6 +172,41 @@ try {
   pass(
     'A work put back live appears on the public profile; product credit links back to the creator.',
   );
+  assert.equal(
+    await page.locator('.follow-button').count(),
+    0,
+    'No follow button on your own profile.',
+  );
+  const fan = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    reducedMotion: 'reduce',
+  });
+  const fanPage = await fan.newPage();
+  fanPage.on('pageerror', (e) => errors.push(e.message));
+  await fanPage.goto(origin + '/profile/aridraws');
+  await fanPage.getByRole('button', { name: 'Follow', exact: true }).click();
+  await fanPage.getByRole('dialog').waitFor();
+  pass('Signed out, Follow asks you to sign in.');
+  await request('auth/register', { name: 'Bo', email: 'bo@test.example', password }, fan);
+  await fanPage.reload();
+  const follow = fanPage.locator('.follow-button');
+  await fanPage.getByText('0 followers', { exact: true }).waitFor();
+  await follow.click();
+  await fanPage.getByRole('button', { name: 'Following', exact: true }).waitFor();
+  assert.equal(await follow.getAttribute('aria-pressed'), 'true');
+  await fanPage.getByText('1 follower', { exact: true }).waitFor();
+  await fanPage.screenshot({ path: dir + '/profile-follow-mobile.png', fullPage: true });
+  assert.ok(await fanPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await fanPage.reload();
+  await fanPage.getByRole('button', { name: 'Following', exact: true }).waitFor();
+  await fanPage.getByText('1 follower', { exact: true }).waitFor();
+  await fanPage.setViewportSize({ width: 1440, height: 1050 });
+  await fanPage.screenshot({ path: dir + '/profile-follow-desktop.png' });
+  await follow.click();
+  await fanPage.getByRole('button', { name: 'Follow', exact: true }).waitFor();
+  await fanPage.getByText('0 followers', { exact: true }).waitFor();
+  await fan.close();
+  pass('Follow toggles, counts, survives a reload, and is absent on your own profile.');
   await page.goto(origin + '/my-work');
   await page.getByRole('button', { name: 'Edit work' }).click();
   await page.getByText('Edits go live as soon as you save them.').waitFor();
