@@ -1053,6 +1053,14 @@ test('followers hear when the maker posts, until the work is taken down', async 
   await api(owner, 'studio/product', { id, action: 'reject', feedback: 'Taken down' });
   assert.equal((await news()).length, 0);
 });
+test('saying follow or unfollow outright is safe to repeat', async () => {
+  const username = await usernameOf(followUsers.maker);
+  for (const want of [true, true, false, false, true]) {
+    const result = await api(followUsers.fan, 'follow', { username, follow: want });
+    assert.equal(result.following, want);
+  }
+  assert.equal((await api(followUsers.fan, 'follow', { username, follow: false })).followers, 0);
+});
 test('who follows whom stays private', async () => {
   await db.exec('set role authenticated');
   try {

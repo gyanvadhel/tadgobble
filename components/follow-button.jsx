@@ -18,7 +18,7 @@ export default function FollowButton({ username, following, followers, signedIn,
     setError('');
     setState({ following: next, followers: Math.max(0, before.followers + (next ? 1 : -1)) });
     try {
-      const result = await api('follow', { username });
+      const result = await api('follow', { username, follow: next });
       setState({ following: !!result.following, followers: result.followers || 0 });
     } catch (e) {
       setState(before);

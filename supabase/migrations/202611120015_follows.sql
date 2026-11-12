@@ -30,7 +30,7 @@ alter function public.tg_api(text, jsonb) rename to tg_api_before_follows;
 revoke all on function public.tg_api_before_follows(text, jsonb) from public, anon, authenticated;
 create function public.tg_api(route text, payload jsonb default '{}'::jsonb) returns jsonb
 language plpgsql security definer set search_path = '' as $$
-declare uid uuid := auth.uid(); result jsonb; maker public.tg_profiles; prod public.tg_products;
+declare uid uuid := auth.uid(); result jsonb; maker public.tg_profiles; prod public.tg_products; want boolean;
 begin
   if route = 'follow' then
     if uid is null then raise exception 'Sign in to continue.'; end if;
@@ -39,14 +39,21 @@ begin
       where username = lower(trim(coalesce(payload->>'username', ''))) and visible;
     if maker.id is null then raise exception 'This profile is unavailable.'; end if;
     if maker.id = uid then raise exception 'You can''t follow yourself.'; end if;
-    delete from public.tg_follows where follower_id = uid and maker_id = maker.id;
-    if not found then
+    -- The client says what it wants (follow: true/false) so a repeat or a stale tab can't undo it;
+    -- with no answer given, it toggles.
+    want := case when jsonb_typeof(payload->'follow') = 'boolean' then (payload->>'follow')::boolean end;
+    if want is null then
+      want := not exists(select 1 from public.tg_follows where follower_id = uid and maker_id = maker.id);
+    end if;
+    if want then
       insert into public.tg_follows(follower_id, maker_id) values (uid, maker.id) on conflict do nothing;
       begin
         insert into tg_private.follow_seen(follower_id, maker_id) values (uid, maker.id) on conflict do nothing;
         if found then perform tg_private.notify(maker.id, 'follow', null, null, uid, ''); end if;
       exception when others then null;
       end;
+    else
+      delete from public.tg_follows where follower_id = uid and maker_id = maker.id;
     end if;
     return jsonb_build_object(
       'following', exists(select 1 from public.tg_follows where follower_id = uid and maker_id = maker.id),

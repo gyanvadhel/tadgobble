@@ -249,7 +249,8 @@ test('local follows toggle, show on profiles, refuse yourself and hidden profile
   const off = await api('followfan', 'follow', { username: maker });
   assert.equal(off.following, false);
   assert.equal(off.followers, 0);
-  await api('followfan', 'follow', { username: maker });
+  for (const want of [true, true, false, false, true])
+    assert.equal((await api('followfan', 'follow', { username: maker, follow: want })).following, want);
   assert.equal((await api('followfan', 'account/delete', {})).status, 200);
   assert.equal(get('SELECT count(*) as n FROM follows').n, 0);
   assert.equal((await api(null, 'profiles/' + maker)).followers, 0);
