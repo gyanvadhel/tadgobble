@@ -223,3 +223,34 @@ test('local creators can delete their own work, and edits cannot change its kind
   assert.equal(get('SELECT id FROM product_covers WHERE id=?', photo.id), undefined);
   assert.throws(() => coverResponse(photo.id, 'artist'));
 });
+
+test('local follows toggle, show on profiles, refuse yourself and hidden profiles, and go with the account', async () => {
+  for (const id of ['followmaker', 'followfan', 'followhidden'])
+    run('INSERT INTO users VALUES(?,?,?,?,?,?)', id, id + '@example.test', id, 'unused', 'member', now());
+  await api('followmaker', 'bootstrap');
+  await api('followhidden', 'bootstrap');
+  const { creatorProfile } = await import('../lib/db.mjs');
+  const maker = creatorProfile('followmaker').username;
+  const hidden = creatorProfile('followhidden').username;
+  run('UPDATE creator_profiles SET visible=0 WHERE user_id=?', 'followhidden');
+  assert.equal((await api(null, 'follow', { username: maker })).status, 401);
+  assert.equal((await api('followmaker', 'follow', { username: maker })).status, 400);
+  assert.equal((await api('followfan', 'follow', { username: hidden })).status, 404);
+  assert.equal((await api('followfan', 'follow', { username: 'nobody-here' })).status, 404);
+  const on = await api('followfan', 'follow', { username: maker.toUpperCase() });
+  assert.equal(on.following, true);
+  assert.equal(on.followers, 1);
+  const seen = await api('followfan', 'profiles/' + maker);
+  assert.equal(seen.followers, 1);
+  assert.equal(seen.following, true);
+  const anon = await api(null, 'profiles/' + maker);
+  assert.equal(anon.followers, 1);
+  assert.equal(anon.following, false);
+  const off = await api('followfan', 'follow', { username: maker });
+  assert.equal(off.following, false);
+  assert.equal(off.followers, 0);
+  await api('followfan', 'follow', { username: maker });
+  assert.equal((await api('followfan', 'account/delete', {})).status, 200);
+  assert.equal(get('SELECT count(*) as n FROM follows').n, 0);
+  assert.equal((await api(null, 'profiles/' + maker)).followers, 0);
+});
