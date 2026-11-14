@@ -23,6 +23,7 @@ import {
 import '../app/showcase.css';
 
 function Byline({ product: p }) {
+  if (!p.sponsored && !p.owner_name && !(p.comment_count > 0)) return null;
   return (
     <div className="showcase-byline">
       {p.sponsored ? (
@@ -32,9 +33,7 @@ function Byline({ product: p }) {
           {p.creator_profile && <Avatar profile={p.creator_profile} size={22} />}
           <CreatorCredit product={p} prefix="" />
         </>
-      ) : (
-        <span>Editorial find</span>
-      )}
+      ) : null}
       {p.comment_count > 0 && (
         <span className="showcase-talk" title="Comments">
           <MessageCircle size={13} aria-hidden="true" />
@@ -130,9 +129,8 @@ export function ShowcaseCard({ product: p, onSave }) {
               <VideoBadge video={p.cover.video} />
             </>
           ) : (
-            <span className="showcase-placeholder">
-              <strong>{p.name}</strong>
-              {p.tagline && <span>{p.tagline}</span>}
+            <span className="showcase-placeholder" aria-hidden="true">
+              {p.name.trim().charAt(0)}
             </span>
           )}
         </a>
@@ -142,7 +140,7 @@ export function ShowcaseCard({ product: p, onSave }) {
         <a className="showcase-title" href={href}>
           {p.name}
         </a>
-        {!isArtwork(p) && p.cover && p.tagline && <p>{p.tagline}</p>}
+        {!isArtwork(p) && p.tagline && <p>{p.tagline}</p>}
         <Byline product={p} />
       </div>
     </article>

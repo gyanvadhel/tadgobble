@@ -18,9 +18,7 @@ import {
   LogOut,
   ArrowLeft,
   Send,
-  Asterisk,
   Compass,
-  Sparkles,
   Reply,
   Clock,
   Shapes,
@@ -35,12 +33,9 @@ import {
   CountBump,
   LivingGobble,
   Poster,
-  SpinOnScroll,
-  Squiggle,
   saveBurst,
   squish,
   useLanding,
-  useMagnetic,
   useScramblePlaceholder,
 } from './motion';
 import SubmitWizard from './submit-wizard';
@@ -79,9 +74,7 @@ const searchExamples = [
 ];
 
 export default function Platform({ initialView = 'discover', initialSlug = null }) {
-  const shareMagnet = useMagnetic(),
-    bannerMagnet = useMagnetic(),
-    searchBox = useScramblePlaceholder(searchExamples);
+  const searchBox = useScramblePlaceholder(searchExamples);
   const [products, setProducts] = useState([]),
     [user, setUser] = useState(null),
     [loading, setLoading] = useState(true),
@@ -261,11 +254,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
             </button>
           </nav>
           <div className="header-actions">
-            <button
-              ref={shareMagnet}
-              className="button button-dark submit-nav"
-              onClick={() => actionModal('submit')}
-            >
+            <button className="button button-dark submit-nav" onClick={() => actionModal('submit')}>
               <Plus size={16} /> Post your thing
             </button>
             {user && <NotificationBell />}
@@ -280,7 +269,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               </button>
             ) : (
               <button className="button button-plain" onClick={() => setModal('auth')}>
-                Sign in <ArrowUpRight size={15} />
+                Sign in
               </button>
             )}
           </div>
@@ -317,45 +306,19 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               <Poster />
             ) : (
               <section className="collection-hero">
-                <div className="eyebrow">
-                  {view === 'saved' ? 'YOUR LITTLE CORNER' : 'FROM THE FEED TO YOUR FAVOURITES'}
-                </div>
-                <h1>
-                  {view === 'saved' ? (
-                    <>
-                      Your very
-                      <br />
-                      <em>good stash.</em>
-                    </>
-                  ) : (
-                    <>
-                      Saw it. Loved it.
-                      <br />
-                      <em>Find it here.</em>
-                    </>
-                  )}
-                </h1>
+                <h1>{view === 'saved' ? 'Saved' : 'Find it here'}</h1>
                 <p>
                   {view === 'saved'
-                    ? 'All the discoveries you wanted to come back to.'
+                    ? 'The things you wanted to come back to.'
                     : 'The collection behind our product discoveries. Explore the tools and meet their makers.'}
                 </p>
               </section>
             )}
             {spotlight && !loading && <FeaturedWork product={spotlight} onSave={save} />}
             <section id="discoveries" className="discovery-section">
-              <div className="section-heading">
-                <div>
-                  <span className="eyebrow">A FEW TABS WORTH OPENING</span>
-                  <h2>
-                    {view === 'saved' ? 'Your saved discoveries' : 'Fresh out of the internet.'}
-                  </h2>
-                  <Squiggle />
-                </div>
-                <span className="collection-note">
-                  <span className="small-dot" /> A growing collection
-                </span>
-              </div>
+              <h2 className="sr-only">
+                {view === 'saved' ? 'Your saved discoveries' : 'All discoveries'}
+              </h2>
               {products.length > 0 && (
                 <div className="discovery-controls">
                   <div className="category-tabs" role="group" aria-label="What to discover">
@@ -474,36 +437,21 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               )}
             </section>
             {view === 'discover' && !loading && <MakersStrip products={products} />}
-            <section className="maker-banner">
-              <SpinOnScroll className="maker-banner-icon">
-                <Asterisk size={54} />
-              </SpinOnScroll>
-              <div>
-                <span className="eyebrow">YOU MADE IT. LET PEOPLE FIND IT.</span>
-                <h2>There’s a place for your thing here.</h2>
-                <p>A photo and a title are enough. Give something you made a place to be seen.</p>
-              </div>
-              <button
-                ref={bannerMagnet}
-                className="button button-dark"
-                onClick={() => actionModal('submit')}
-              >
-                Post your thing <ArrowUpRight size={17} />
+            <section className="post-prompt">
+              <h2>Share your own work</h2>
+              <p>A photo and a title are enough to give it a page here.</p>
+              <button className="button" onClick={() => actionModal('submit')}>
+                <Plus size={16} /> Post your thing
               </button>
             </section>
-            <div className="editorial-note">
-              <Sparkles size={16} />
-              <p>
-                Work belongs to its creators. Paid features are clearly labelled, and we take down
-                anything that doesn’t belong.
-              </p>
-            </div>
           </>
         )}
       </main>
       <footer className="footer">
         <Brand />
-        <p>{brand.tagline}</p>
+        <p>
+          {brand.tagline} Work belongs to its creators, and paid features are clearly labelled.
+        </p>
         <div>
           <button onClick={() => setModal('sponsor')}>Partner with us</button>
           <a href="/privacy">Privacy</a>

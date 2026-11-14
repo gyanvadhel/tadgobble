@@ -46,22 +46,15 @@
 .showcase-media:hover img {
   transform: scale(1.025);
 }
+/* No picture yet: the work's colour and its first letter, so the name below
+   isn't repeated on the cover. */
 .showcase-placeholder {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 10px;
+  display: grid;
+  place-items: center;
   aspect-ratio: 4/3;
-  padding: 24px;
-}
-.showcase-placeholder strong {
-  font: 650 clamp(30px, 3vw, 44px)/0.95 var(--display);
-  letter-spacing: -0.035em;
-  overflow-wrap: anywhere;
-}
-.showcase-placeholder span {
-  font-size: 14px;
-  line-height: 1.45;
+  font: 650 clamp(64px, 7vw, 110px)/1 var(--display);
+  letter-spacing: -0.04em;
+  opacity: 0.9;
 }
 .catalog-app .showcase-save {
   position: absolute;
@@ -298,10 +291,7 @@
     font-size: 12px;
   }
   .showcase-placeholder {
-    padding: 14px;
-  }
-  .showcase-placeholder strong {
-    font-size: 22px;
+    font-size: 56px;
   }
   .catalog-app .showcase-save {
     top: 6px;

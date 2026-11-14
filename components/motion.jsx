@@ -99,54 +99,13 @@ export function LivingGobble(props) {
   return <Gobble ref={ref} {...props} />;
 }
 
-// The Discover poster: the headline drops in letter by letter, then the line
-// under it and Gobble follow.
+// The Discover intro: one quiet line that says what the page is, so the work
+// below can do the talking.
 export function Poster() {
-  const ref = useRef(null);
-  useGSAP(
-    () => {
-      const h1 = ref.current.querySelector('h1');
-      gsap.set(h1, { visibility: 'visible' });
-      if (calm()) return;
-      SplitText.create(h1, {
-        type: 'chars',
-        aria: 'hidden',
-        autoSplit: true,
-        onSplit: (self) =>
-          gsap.from(self.chars, {
-            yPercent: -120,
-            opacity: 0,
-            rotation: () => gsap.utils.random(-25, 25),
-            duration: 0.5,
-            ease: 'bounce.out',
-            stagger: 0.025,
-          }),
-      });
-      gsap.from(ref.current.querySelector('p'), { y: 16, opacity: 0, duration: 0.45, delay: 0.45 });
-      gsap.from(ref.current.querySelector('svg'), {
-        scale: 0,
-        duration: 0.5,
-        delay: 0.35,
-        ease: 'back.out(2.5)',
-      });
-    },
-    { scope: ref },
-  );
   return (
-    <section className="catalog-poster" ref={ref}>
-      <h1 aria-label="The whole rabbit hole.">
-        THE WHOLE
-        <br />
-        RABBIT HOLE.
-      </h1>
-      <div>
-        <LivingGobble />
-        <p>
-          Art. Design. Useful little apps.
-          <br />
-          Made by people worth discovering.
-        </p>
-      </div>
+    <section className="catalog-poster">
+      <h1>The whole rabbit hole.</h1>
+      <p>Art, design and useful little apps, made by people worth discovering.</p>
     </section>
   );
 }
