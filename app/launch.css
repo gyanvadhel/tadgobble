@@ -2188,20 +2188,11 @@ html.lenis.lenis-smooth {
   scroll-behavior: auto !important;
 }
 
-/* Minimal chrome: a white page, a short sentence-case intro, one quiet call to
-   post, and a one-line footer. The coloured story scenes and work rows stay
-   the bold part of the page. */
-.launch {
-  background: #fff;
-}
+/* Minimal chrome on the brand yellow: a short sentence-case intro, one quiet
+   call to post, and a one-line footer. The coloured story scenes and work rows
+   stay the bold part of the page. */
 .launch-header {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  min-height: 68px;
-  background: #ffffffef;
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid #39245a1a;
+  min-height: 76px;
 }
 .launch .brand {
   font-size: 26px;
@@ -2230,8 +2221,13 @@ html.lenis.lenis-smooth {
 .poster-hero {
   padding: clamp(40px, 6vw, 80px) 4.5% 0;
 }
+.poster-hero {
+  max-width: 1360px;
+  margin: 0 auto;
+}
 .poster-bottom {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: center;
   min-height: 0;
   gap: clamp(24px, 4vw, 60px);
 }
@@ -2279,6 +2275,15 @@ html.lenis.lenis-smooth {
   height: 400px;
   margin: 0;
 }
+.gobble-disc {
+  width: min(70%, 340px);
+}
+.gobble-character {
+  width: min(62%, 290px);
+}
+.gobble-snack {
+  right: max(2%, calc(50% - 250px));
+}
 .gobble-shape {
   filter: none;
 }
@@ -2325,7 +2330,7 @@ html.lenis.lenis-smooth {
   flex-wrap: wrap;
   gap: 14px 28px;
   padding: 26px 4.5%;
-  background: #fff;
+  background: none;
   color: #665578;
   border-top: 1px solid #39245a1a;
   font-size: 13px;
@@ -2348,10 +2353,10 @@ html.lenis.lenis-smooth {
 }
 @media (max-width: 800px) {
   .launch-header {
-    min-height: 60px;
+    min-height: 64px;
   }
   .launch-nav {
-    top: 60px;
+    top: 64px;
     margin: 0;
   }
   .header-submit {
@@ -2361,7 +2366,11 @@ html.lenis.lenis-smooth {
   .poster-hero {
     padding-top: 28px;
   }
+  .poster-bottom {
+    align-items: stretch;
+  }
   .poster-title {
+    max-width: none;
     font-size: clamp(34px, 9.5vw, 48px);
     margin-right: 0;
     padding: 0;
