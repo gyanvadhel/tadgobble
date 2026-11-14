@@ -45,8 +45,12 @@ const structuredData = {
 };
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Browsers hide the plain-text copy kept in the HTML for crawlers and AI readers. */}
+        <script
+          dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }}
+        />
         <link
           rel="preload"
           href="/fonts/font-1.woff2"

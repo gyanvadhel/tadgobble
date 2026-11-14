@@ -3431,3 +3431,14 @@ code {
     animation-duration: 0.25s;
   }
 }
+
+/* Plain-text copy for readers without JavaScript; hidden once the app runs. */
+.js .crawl-copy {
+  display: none;
+}
+.crawl-copy {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 24px 16px;
+  line-height: 1.55;
+}
