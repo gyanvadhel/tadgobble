@@ -101,3 +101,13 @@ test('blob inputs and setup return URLs cannot introduce markup or off-site redi
   assert.equal(safeReturn('/discover?submit=1'), '/discover?submit=1');
   assert.equal(setupDestination('/my-work'), '/welcome?next=%2Fmy-work');
 });
+test('profiles and blobs accept the wider colour range', async () => {
+  const { profileColors } = await import('../lib/blob-options.mjs');
+  const { profileFields } = await import('../lib/creators.mjs');
+  for (const color of ['mint', 'rose', 'tangerine', 'lime', 'sky', 'cloud'])
+    assert.ok(profileColors.some((c) => c.id === color), color);
+  assert.equal(profileFields({ name: 'A', username: 'abc', color: 'mint' }).color, 'mint');
+  assert.equal(profileFields({ name: 'A', username: 'abc', color: 'nope' }).color, 'lavender');
+  for (const color of ['rose', 'sky', 'mint', 'cherry', 'midnight', 'peach'])
+    assert.equal(blobChoice({ ...defaultBlob, color }).color, color);
+});

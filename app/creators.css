@@ -82,6 +82,24 @@
 .theme-peach {
   background: #f4dfd1;
 }
+.theme-mint {
+  background: #c9ecd7;
+}
+.theme-rose {
+  background: #f8cbdc;
+}
+.theme-tangerine {
+  background: #ffcfaa;
+}
+.theme-lime {
+  background: #e2f29c;
+}
+.theme-sky {
+  background: #cfe3ff;
+}
+.theme-cloud {
+  background: #ebe8f2;
+}
 .creator-avatar {
   position: relative;
   width: 150px;
@@ -341,6 +359,53 @@
   text-underline-offset: 3px;
   cursor: pointer;
 }
+.share-formats {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.share-formats > span {
+  margin-right: 2px;
+}
+.share-format {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid #39245a55;
+  border-radius: 999px;
+  background: #fffdf8;
+  color: #39245a;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.share-format:hover:not(:disabled) {
+  border-color: #39245a;
+}
+.share-format:focus-visible {
+  outline: 3px solid #39245a;
+  outline-offset: 2px;
+}
+.share-format:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+/* A tiny outline of each frame, so the shapes explain themselves. */
+.share-format i {
+  display: block;
+  width: 9px;
+  height: 16px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+}
+.share-format-post i {
+  width: 12px;
+  height: 15px;
+}
 .share-control small {
   font-size: 12px;
   overflow-wrap: anywhere;
@@ -518,7 +583,7 @@
   margin: 30px 0 0;
   padding: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
   gap: 8px;
 }
 .profile-colors legend {

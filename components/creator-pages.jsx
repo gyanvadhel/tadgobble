@@ -6,7 +6,7 @@ import { Gobble } from './gobble';
 import { Avatar } from './blob-avatar';
 import BlobPicker from './blob-picker';
 import StarterPreferences from './starter-preferences';
-import { defaultBlob } from '../lib/blob-options.mjs';
+import { defaultBlob, profileColors } from '../lib/blob-options.mjs';
 import { Modal, AuthModal } from './platform';
 import SubmitWizard from './submit-wizard';
 import { useProductCover } from './cover-editor';
@@ -304,6 +304,7 @@ export default function CreatorPage({ mode = 'profile', username: providedUserna
                   path={`/profile/${profile.username}`}
                   title={`${profile.name} on Tadgobble`}
                   label="Share profile"
+                  profile={profile}
                 />
                 {user?.profile?.username === profile.username && (
                   <a href="/settings">Edit profile</a>
@@ -604,17 +605,17 @@ function ProfileSettings({ user, onSaved }) {
           />
           <fieldset className="profile-colors">
             <legend>Your profile colour</legend>
-            {['lavender', 'butter', 'pond', 'peach'].map((color) => (
-              <label key={color} className={`theme-${color}`}>
+            {profileColors.map(({ id, label }) => (
+              <label key={id} className={`theme-${id}`} title={label}>
                 <input
                   type="radio"
                   name="profile-color"
-                  value={color}
-                  checked={data.color === color}
-                  onChange={() => update('color', color)}
+                  value={id}
+                  checked={data.color === id}
+                  onChange={() => update('color', id)}
                 />
-                <span>{color}</span>
-                {data.color === color && <Check size={16} />}
+                <span>{label}</span>
+                {data.color === id && <Check size={14} aria-hidden="true" />}
               </label>
             ))}
           </fieldset>
