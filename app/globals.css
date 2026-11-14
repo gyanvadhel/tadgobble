@@ -263,6 +263,15 @@ svg {
   align-items: center;
   font-weight: 650;
 }
+/* Holds the account spot while we find out who is visiting. */
+.avatar-pending {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.08;
+}
 .avatar.small {
   width: 31px;
   height: 31px;

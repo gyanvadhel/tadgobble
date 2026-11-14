@@ -14,7 +14,7 @@ import { ShareButton } from './creator-credit';
 import NotificationBell from './notification-bell';
 import FollowButton from './follow-button';
 import { VideoBadge } from './work-media';
-import { api, cloudMode } from '../lib/client-api.mjs';
+import { api, cloudMode, remembered } from '../lib/client-api.mjs';
 import { workImageAlt } from '../lib/product-options.mjs';
 import {
   calm,
@@ -163,13 +163,17 @@ export default function CreatorPage({ mode = 'profile', username: providedUserna
   const refresh = useCallback(async () => {
     setError('');
     try {
-      const boot = await api('bootstrap');
+      const username =
+        mode === 'profile' &&
+        (providedUsername || decodeURIComponent(location.pathname.split('/')[2] || ''));
+      if (mode === 'profile' && !username) throw new Error('This profile is unavailable.');
+      // A profile doesn't depend on who is looking, so fetch both at once.
+      const [boot, result] = await Promise.all([
+        api('bootstrap'),
+        mode === 'profile' && api('profiles/' + encodeURIComponent(username)),
+      ]);
       setUser(boot.user);
       if (mode === 'profile') {
-        const username =
-          providedUsername || decodeURIComponent(location.pathname.split('/')[2] || '');
-        if (!username) throw new Error('This profile is unavailable.');
-        const result = await api('profiles/' + encodeURIComponent(username));
         setData(result);
         document.title = `${result.profile.name} (@${result.profile.username}) | tadgobble`;
       } else if (boot.user) {
@@ -183,8 +187,21 @@ export default function CreatorPage({ mode = 'profile', username: providedUserna
     }
   }, [mode, providedUsername]);
   useEffect(() => {
+    // Open with what was here last visit; refresh() swaps in the current copy.
+    const boot = remembered('bootstrap');
+    const username =
+      providedUsername || decodeURIComponent(location.pathname.split('/')[2] || '');
+    const seen =
+      mode === 'profile'
+        ? username && remembered('profiles/' + encodeURIComponent(username))
+        : mode === 'work' && boot?.user && remembered('my-work');
+    if (boot && seen) {
+      setUser(boot.user);
+      setData(seen);
+      setLoading(false);
+    }
     refresh();
-  }, [refresh]);
+  }, [refresh]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (mode !== 'work') return;
     const focus = () => refresh();
@@ -230,6 +247,8 @@ export default function CreatorPage({ mode = 'profile', username: providedUserna
             <a href="/settings" aria-label="Account settings">
               <Settings size={20} />
             </a>
+          ) : loading ? (
+            <span className="avatar-pending" aria-hidden="true" />
           ) : (
             <button className="button" onClick={() => setAuth(true)}>
               Sign in

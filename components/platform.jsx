@@ -46,7 +46,7 @@ import '../app/catalog.css';
 import Studio from './studio';
 import NotificationBell from './notification-bell';
 import { brand } from '../lib/brand.mjs';
-import { api, cloudMode } from '../lib/client-api.mjs';
+import { api, cloudMode, remembered } from '../lib/client-api.mjs';
 export { api } from '../lib/client-api.mjs';
 
 function Field({ label, children, hint }) {
@@ -110,6 +110,18 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
   }, [initialSlug]);
   useEffect(() => {
     const params = new URLSearchParams(location.search);
+    // Show what was here last visit straight away; the fresh copy replaces it.
+    const seen = remembered('bootstrap'),
+      seenDetail = initialSlug && remembered('products/' + initialSlug);
+    if (seen && (!initialSlug || seenDetail)) {
+      setProducts(seen.products);
+      setUser(seen.user);
+      if (seenDetail) {
+        setDetail(seenDetail.product);
+        setComments(seenDetail.comments);
+      }
+      setLoading(false);
+    }
     Promise.all([refresh(), refreshDetail()])
       .then(([data]) => {
         if (params.get('submit') === '1') {
@@ -267,6 +279,9 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               >
                 <Avatar profile={user.profile || { name: user.name }} size={40} />
               </button>
+            ) : loading ? (
+              // Until we know who this is, keep the spot quiet instead of flashing "Sign in".
+              <span className="avatar-pending" aria-hidden="true" />
             ) : (
               <button className="button button-plain" onClick={() => setModal('auth')}>
                 Sign in
