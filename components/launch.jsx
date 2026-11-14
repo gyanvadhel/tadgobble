@@ -10,14 +10,12 @@ import {
   Pause,
   Play,
   Plus,
-  Asterisk,
 } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Brand } from './art';
 import { Gobble } from './gobble';
 import { isArtwork } from '../lib/product-options.mjs';
-import SnackMachine from './snack-machine';
 import NotificationBell from './notification-bell';
 import IntroStory from './intro-story';
 import { useSmoothScroll } from './use-smooth-scroll';
@@ -97,28 +95,13 @@ export default function Launch({ products }) {
     }
     gsap.registerPlugin(ScrollTrigger);
     const context = gsap.context(() => {
-      gsap.from('.poster-title span', {
-        yPercent: 110,
-        rotate: 3,
-        duration: 0.9,
-        stagger: 0.09,
+      gsap.from('.poster-title, .poster-intro > p, .intro-actions', {
+        y: 18,
+        opacity: 0,
+        duration: 0.7,
+        stagger: 0.08,
         ease: 'power3.out',
         clearProps: 'all',
-      });
-      gsap.to('.poster-title', {
-        xPercent: -3,
-        ease: 'none',
-        scrollTrigger: { trigger: hero.current, start: 'top top', end: 'bottom top', scrub: 0.7 },
-      });
-      gsap.to('.maker-asterisk', {
-        rotation: 120,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.maker-poster',
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 0.8,
-        },
       });
     }, root);
     return () => context.revert();
@@ -225,36 +208,17 @@ export default function Launch({ products }) {
       </header>
       <main>
         <section className="poster-hero" ref={hero}>
-          <div className="poster-topline">
-            <span>A home for art, design and useful apps.</span>
-            <span>Made by India's first-time makers.</span>
-          </div>
-          <h1 className="poster-title">
-            <span>FIRST</span> <span>THINGS.</span>
-          </h1>
           <div className="poster-bottom">
             <div className="poster-intro">
-              <span className="intro-eyebrow">
-                <i aria-hidden="true" />
-                {products.length
-                  ? `${products.length} ${products.length === 1 ? 'find' : 'finds'} to discover`
-                  : 'The first finds land soon'}
-              </span>
-              <h2>
-                Discover work from <br />
-                <span className="intro-mark" style={{ whiteSpace: 'nowrap' }}>
-                  first-time makers.
-                </span>
-              </h2>
+              <h1 className="poster-title">Discover work from first-time makers.</h1>
               <p>
-                Feed Gobble to get a find. Peek at it, save it, say something nice. Made something
-                yourself? Post it and it's live straight away.
+                Art, design and useful little apps. Feed Gobble for a surprise, or browse
+                everything.
               </p>
               <div className="intro-actions">
                 {products.length ? (
                   <button
                     className="feed-button launch-button plum-button"
-                    data-magnetic
                     onClick={feed}
                     disabled={feeding || !products.length}
                   >
@@ -262,12 +226,12 @@ export default function Launch({ products }) {
                     {feeding ? 'nom nom nom…' : 'Feed me a find'}
                   </button>
                 ) : (
-                  <a className="launch-button plum-button" data-magnetic href="/discover?submit=1">
+                  <a className="launch-button plum-button" href="/discover?submit=1">
                     <Plus size={18} />
                     Be the first find
                   </a>
                 )}
-                <a className="launch-button outline-button" data-magnetic href="/discover">
+                <a className="launch-button outline-button" href="/discover">
                   Browse all <ArrowUpRight size={18} />
                 </a>
               </div>
@@ -308,13 +272,6 @@ export default function Launch({ products }) {
                 <span aria-hidden="true">↖</span>
               </span>
             </div>
-            <div className="poster-note">
-              <SnackMachine
-                products={products}
-                motion={motion}
-                onPick={(p, el) => openPreview(p, false, el)}
-              />
-            </div>
           </div>
           <div className="poster-foot">
             <a href="#fresh-picks">
@@ -346,60 +303,38 @@ export default function Launch({ products }) {
         />
         <ProductShowcase products={products} onPeek={openPreview} motion={motion} />
         <section className="maker-poster" id="for-makers">
-          <h2>
-            MADE A THING?
-            <br />
-            LET IT LOOSE.
-          </h2>
-          <div className="maker-poster-bottom">
-            <Asterisk className="maker-asterisk" aria-hidden="true" />
-            <div>
-              <p className="maker-detail">
-                Share a painting, a design, or an app. No portfolio needed. It goes live the moment
-                you post it, so curious people can discover your work and talk about it.
-              </p>
-              <a className="launch-button plum-button" data-magnetic href="/discover?submit=1">
-                Post your thing <ArrowUpRight size={20} />
-              </a>
-            </div>
+          <div>
+            <h2>Made something?</h2>
+            <p className="maker-detail">
+              A painting, a design or an app. No portfolio needed, and it goes live the moment you
+              post it.
+            </p>
           </div>
+          <a className="launch-button plum-button" href="/discover?submit=1">
+            Post your thing <ArrowUpRight size={18} />
+          </a>
         </section>
       </main>
       <footer className="launch-footer">
-        <div className="footer-intro">
-          <p>
-            Fresh finds.
-            <br />
-            Questionable screen time.
-          </p>
-          <div>
-            <a href="/discover">Explore</a>
-            <a href="/privacy">Privacy</a>
-            <a href="/terms">Terms</a>
-            <a href="/discover?sponsor=1">Work with us</a>
-            <a href="/studio">
-              The kitchen <ArrowUpRight size={14} />
-            </a>
-          </div>
-          <a
-            className="back-top"
-            href="#top"
-            aria-label="Back to top"
-            onClick={(e) => {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: motion ? 'smooth' : 'instant' });
-            }}
-          >
-            <ArrowUp size={28} />
-          </a>
-        </div>
-        <a className="footer-wordmark" href="/" aria-label="tadgobble home">
-          tadgobble<span>.</span>
+        <span>© {new Date().getFullYear()} tadgobble. Stay curious.</span>
+        <nav aria-label="Footer">
+          <a href="/discover">Explore</a>
+          <a href="/discover?sponsor=1">Work with us</a>
+          <a href="/studio">The kitchen</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+        </nav>
+        <a
+          className="back-top"
+          href="#top"
+          aria-label="Back to top"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: motion ? 'smooth' : 'instant' });
+          }}
+        >
+          <ArrowUp size={18} />
         </a>
-        <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} tadgobble</span>
-          <span>Stay curious. Stay a little weird.</span>
-        </div>
       </footer>
       <dialog
         ref={dialog}

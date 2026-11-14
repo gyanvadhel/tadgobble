@@ -284,8 +284,12 @@ check('Page Down, Space and Tab still move the page', async ({ seeded }, getBrow
 check('loading /#for-makers lands on the makers section', async ({ seeded }, getBrowser) => {
   const page = await open(getBrowser, seeded + '/#for-makers');
   await page.waitForTimeout(1500);
-  const top = await page.evaluate(() => document.querySelector('#for-makers').getBoundingClientRect().top);
-  assert.ok(Math.abs(top) < 200, `makers section top was ${top}`);
+  // It is the last section, so the page may not scroll it to the very top; it just has to be fully in view.
+  const box = await page.evaluate(() => {
+    const r = document.querySelector('#for-makers').getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom, h: innerHeight };
+  });
+  assert.ok(box.top >= -1 && box.bottom <= box.h + 1, `makers section was at ${box.top}..${box.bottom} of ${box.h}`);
   await page.context().close();
 });
 

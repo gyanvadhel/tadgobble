@@ -272,9 +272,7 @@ export default function ProductShowcase({ products, onPeek, motion = true }) {
     <section className="product-menu" id="fresh-picks" aria-labelledby="menu-title">
       <div className="menu-intro">
         <h2 id="menu-title">
-          Find your
-          <br />
-          next fixation.
+          Find your next fixation.
         </h2>
       </div>
       <div className="product-drawers">

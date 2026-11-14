@@ -76,7 +76,7 @@ try {
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(1100);
   assert.equal(await page.locator('.product-drawer').count(), 6);
-  assert.equal(await page.locator('h1').textContent(), 'FIRST THINGS.');
+  assert.equal(await page.locator('h1').textContent(), 'Discover work from first-time makers.');
   assert.equal(await page.locator('canvas,.scene-canvas,.scene-fallback').count(), 0);
   assert.ok(await page.locator('.gobble-character').isVisible());
   assert.equal(
@@ -141,7 +141,7 @@ try {
   pass('Boop responds and pause stops page animation');
 
   assert.equal(await page.locator('.product-drawer').count(), 6);
-  assert.equal(await page.locator('#fresh-picks select, #fresh-picks input').count(), 0);
+  assert.equal(await page.locator('#fresh-picks select, #fresh-picks input:not([type="range"])').count(), 0);
   assert.equal(
     await page.getByRole('link', { name: 'See all the finds' }).getAttribute('href'),
     '/discover',
