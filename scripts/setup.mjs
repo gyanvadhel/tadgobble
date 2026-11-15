@@ -13,3 +13,5 @@ if (existsSync('.env.local')) {
     'Created .env.local with unique credentials. Open that file locally to get your studio login.',
   );
 }
+// Create the database in one process, so parallel build workers don't race on its first migration.
+await import('../lib/db.mjs');
