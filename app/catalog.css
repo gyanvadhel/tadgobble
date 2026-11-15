@@ -54,7 +54,7 @@
 .catalog-app .collection-hero h1 {
   font-size: clamp(50px, 7vw, 105px);
   line-height: 0.95;
-  font-weight: 700;
+  font-weight: 600;
 }
 .catalog-app .collection-hero h1 em {
   font-family: inherit;
@@ -101,7 +101,7 @@
 .catalog-first-find h3 {
   font-size: clamp(30px, 4vw, 55px);
   line-height: 1;
-  font-weight: 650;
+  font-weight: 600;
   margin: 25px 0 18px;
 }
 .catalog-first-find p {
@@ -133,7 +133,7 @@
   color: inherit;
 }
 .catalog-app .modal {
-  border-radius: 8px;
+  border-radius: 16px;
   color: #39245a;
   background: #fff;
 }
@@ -179,7 +179,7 @@
   font-family: var(--display);
   font-size: 66px;
   line-height: 1;
-  font-weight: 700;
+  font-weight: 600;
 }
 .catalog-app .detail-title .product-monogram {
   display: none;
@@ -427,7 +427,7 @@
 .catalog-poster h1 {
   margin: 0 0 10px;
   font-size: clamp(32px, 4vw, 48px);
-  font-weight: 650;
+  font-weight: 600;
   line-height: 1.05;
 }
 .catalog-app .catalog-poster p {
@@ -441,7 +441,7 @@
 .catalog-app .collection-hero h1 {
   margin: 0 0 10px;
   font-size: clamp(32px, 4vw, 48px);
-  font-weight: 650;
+  font-weight: 600;
   line-height: 1.05;
 }
 .catalog-app .collection-hero p {

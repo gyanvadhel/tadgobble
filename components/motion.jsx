@@ -170,8 +170,8 @@ export function squish(el) {
   if (el && !calm())
     gsap.fromTo(
       el,
-      { scale: 0.7 },
-      { scale: 1, duration: 0.5, ease: 'elastic.out(1.2, 0.4)', overwrite: true },
+      { scale: 0.88 },
+      { scale: 1, duration: 0.3, ease: 'power3.out', overwrite: true },
     );
 }
 
@@ -209,8 +209,8 @@ export function CountBump({ value, className }) {
     if (!calm())
       gsap.fromTo(
         ref.current,
-        { scale: 1.7 },
-        { scale: 1, duration: 0.5, ease: 'elastic.out(1, 0.35)' },
+        { scale: 1.25 },
+        { scale: 1, duration: 0.3, ease: 'power3.out' },
       );
   }, [value]);
   return (

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ArrowUpRight, Bookmark, MessageCircle, Sparkles } from 'lucide-react';
+import { ArrowUpRight, Bookmark, MessageCircle } from 'lucide-react';
 import { Avatar } from './blob-avatar';
 import { CreatorCredit } from './creator-credit';
 import { VideoBadge } from './work-media';
@@ -18,7 +18,6 @@ import {
   Squiggle,
   useFlingScroll,
   useGSAP,
-  useMagnetic,
 } from './motion';
 import '../app/showcase.css';
 
@@ -184,10 +183,10 @@ export function ShowcaseGrid({ products, onSave }) {
     if (!state || calm()) return;
     Flip.from(state, {
       targets: grid.current.querySelectorAll('.showcase-card'),
-      duration: 0.45,
-      ease: 'power3.inOut',
+      duration: 0.4,
+      ease: 'power3.out',
       onEnter: (els) =>
-        gsap.fromTo(els, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.35 }),
+        gsap.fromTo(els, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power3.out' }),
     });
   }, [key]);
   useGSAP(
@@ -201,7 +200,7 @@ export function ShowcaseGrid({ products, onSave }) {
       const first = revealed.current.size === fresh.length;
       const later = fresh.filter((card) => first || card.getBoundingClientRect().top > innerHeight);
       const parts = (cards) => cards.flatMap((card) => [...card.children]);
-      gsap.set(parts(later), { opacity: 0, y: 40 });
+      gsap.set(parts(later), { opacity: 0, y: 12 });
       ScrollTrigger.batch(later, {
         start: 'top 96%',
         once: true,
@@ -209,9 +208,9 @@ export function ShowcaseGrid({ products, onSave }) {
           gsap.to(parts(cards), {
             opacity: 1,
             y: 0,
-            duration: 0.5,
+            duration: 0.4,
             ease: 'power3.out',
-            stagger: 0.05,
+            stagger: 0.04,
           }),
       });
     },
@@ -235,30 +234,6 @@ export function ShowcaseGrid({ products, onSave }) {
 
 export function FeaturedWork({ product: p, onSave }) {
   const href = '/product/' + p.slug;
-  const media = useRef(null),
-    magnet = useMagnetic();
-  // The picture drifts a little slower than the page as it scrolls past.
-  useGSAP(
-    () => {
-      if (calm()) return;
-      gsap.fromTo(
-        'img',
-        { scale: 1.14, yPercent: -3 },
-        {
-          scale: 1.08,
-          yPercent: 3,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: media.current,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true,
-          },
-        },
-      );
-    },
-    { scope: media, dependencies: [p.id] },
-  );
   return (
     <section
       className={`featured-work ${isArtwork(p) ? 'is-artwork' : ''}`}
@@ -266,7 +241,6 @@ export function FeaturedWork({ product: p, onSave }) {
       aria-labelledby="featured-work-title"
     >
       <a
-        ref={media}
         className="showcase-media featured-media"
         href={href}
         aria-label={`Explore ${p.name}`}
@@ -277,7 +251,7 @@ export function FeaturedWork({ product: p, onSave }) {
       </a>
       <div className="featured-copy">
         <span className="featured-label">
-          <Sparkles size={14} /> {p.featured ? 'Featured' : 'Fresh pick'}
+          {p.featured ? 'Featured' : 'Fresh pick'}
         </span>
         <h2 id="featured-work-title">
           <a href={href}>{p.name}</a>
@@ -285,7 +259,7 @@ export function FeaturedWork({ product: p, onSave }) {
         {p.tagline && <p>{p.tagline}</p>}
         <Byline product={p} />
         <div className="featured-actions">
-          <a ref={magnet} className="button button-dark" href={href}>
+          <a className="button button-dark" href={href}>
             See the work <ArrowUpRight size={16} />
           </a>
           <SaveButton product={p} onSave={onSave} size={20} />
@@ -297,17 +271,16 @@ export function FeaturedWork({ product: p, onSave }) {
 
 export function MakersStrip({ products }) {
   const row = useFlingScroll();
-  // The faces pop up one after another when the row comes into view.
+  // The faces fade up one after another when the row comes into view.
   useGSAP(
     () => {
       if (!row.current || calm()) return;
       gsap.from(row.current.children, {
-        scale: 0.4,
-        y: 24,
+        y: 12,
         opacity: 0,
-        duration: 0.5,
-        ease: 'back.out(2.2)',
-        stagger: 0.05,
+        duration: 0.4,
+        ease: 'power3.out',
+        stagger: 0.04,
         scrollTrigger: { trigger: row.current, start: 'top 92%', once: true },
       });
     },
@@ -331,7 +304,7 @@ export function MakersStrip({ products }) {
       <div>
         <h2 id="makers-title">Meet the makers</h2>
         <Squiggle />
-        <p>The people behind the work.</p>
+        <p>The people behind the work</p>
       </div>
       <ul ref={row}>
         {[...makers.values()].slice(0, 16).map((m) => (

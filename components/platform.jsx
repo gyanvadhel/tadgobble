@@ -65,7 +65,6 @@ function Field({ label, children, hint }) {
 export { Field };
 
 const searchExamples = [
-  'Find your next thing…',
   'Find a font…',
   'Find a tiny app…',
   'Find a painting…',
@@ -369,7 +368,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                       <input
                         ref={searchBox}
                         aria-label="Search discoveries"
-                        placeholder="Find your next thing…"
+                        placeholder="Search"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                       />
@@ -403,7 +402,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               )}
               {loading ? (
                 <div className="loading">
-                  <LoaderCircle className="spin" /> Finding the good stuff…
+                  <LoaderCircle className="spin" /> Loading
                 </div>
               ) : error ? (
                 <div className="empty-state">
@@ -415,7 +414,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
               ) : products.length === 0 && view !== 'saved' ? (
                 <div className="catalog-first-find">
                   <LivingGobble />
-                  <h3>The first bite is still cooking.</h3>
+                  <h3>The first work is on its way</h3>
                   <p>
                     No discoveries yet. Share something you made and we’ll give it a proper look.
                   </p>
@@ -427,7 +426,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                 <div className="empty-state">
                   <Bookmark size={30} />
                   <h3>
-                    {view === 'saved' ? 'Make room for your favourites.' : 'Nothing here just yet.'}
+                    {view === 'saved' ? 'Save a work and it will show up here' : 'Nothing here yet'}
                   </h3>
                   <p>
                     {view === 'saved'
@@ -512,8 +511,8 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
             />
           ) : modal === 'account' ? (
             <div className="account-panel">
-              <span className="eyebrow">YOUR CORNER</span>
-              <h2>Hello, {user?.name}.</h2>
+              <span className="eyebrow">Your corner</span>
+              <h2>{user?.name}</h2>
               <Avatar profile={user?.profile || { name: user?.name }} size={84} />
               <p>{user?.email}</p>
               <div className="account-shortcuts">
@@ -555,9 +554,6 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
       )}
     </div>
   );
-}
-function ArrowDownIcon() {
-  return <span className="arrow-circle">↓</span>;
 }
 export function Modal({ children, onClose, wide = false, className = '' }) {
   const dialog = useRef(null),
@@ -680,7 +676,7 @@ function AuthForm({ onDone, afterAuth }) {
         }
       }}
     >
-      <span className="eyebrow">YOUR STASH IS WAITING</span>
+      <span className="eyebrow">Your stash is waiting</span>
       <h2>
         {cloudMode
           ? 'Make yourself at home.'
@@ -865,8 +861,8 @@ function SponsorForm({ onDone }) {
         }
       }}
     >
-      <span className="eyebrow">LET’S MAKE A GOOD INTRODUCTION</span>
-      <h2>Cook something up with {brand.name}.</h2>
+      <span className="eyebrow">Partner with us</span>
+      <h2>Work with {brand.name}</h2>
       <p className="form-intro">
         Tell us about your product and the people you want to reach. Paid features are clearly
         labelled. Submitting an inquiry doesn’t reserve a placement.
@@ -1086,7 +1082,7 @@ function ProductDetail({ product: p, comments, user, onSave, onLogin, onRefresh,
         </section>
       </div>
       <aside className="detail-sidebar">
-        <span className="eyebrow">{art ? 'MADE BY A GOBBLER' : 'YOUR NEXT TAB'}</span>
+        <span className="eyebrow">{art ? 'Made by a Gobbler' : 'Your next tab'}</span>
         <h3>{art ? 'A little appreciation goes a long way.' : 'Take a closer look.'}</h3>
         {!art && <p>{p.pricing}</p>}
         {p.url && (
@@ -1119,7 +1115,7 @@ function ProductDetail({ product: p, comments, user, onSave, onLogin, onRefresh,
           product={p}
         />
         <div className="sidebar-divider" />
-        <span className="eyebrow">BEHIND THE DISCOVERY</span>
+        <span className="eyebrow">Behind the discovery</span>
         <p>
           {p.owner_name ? (
             <CreatorCredit product={p} prefix="Made by " />

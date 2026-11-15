@@ -2,12 +2,12 @@
 .showcase-grid {
   display: grid;
   grid-template-columns: repeat(var(--columns, 4), minmax(0, 1fr));
-  gap: 22px;
+  gap: 24px;
   align-items: start;
 }
 .showcase-column {
   display: grid;
-  gap: 30px;
+  gap: 32px;
 }
 .showcase-card {
   color: #39245a;
@@ -19,7 +19,7 @@
   position: relative;
   display: block;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--product-color);
 }
 .showcase-media img,
@@ -27,7 +27,7 @@
   display: block;
   width: 100%;
   height: auto;
-  transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .showcase-card.is-app .showcase-media img {
   aspect-ratio: 4/3;
@@ -44,7 +44,7 @@
   background: var(--product-color);
 }
 .showcase-media:hover img {
-  transform: scale(1.025);
+  transform: scale(1.01);
 }
 /* No picture yet: the work's colour and its first letter, so the name below
    isn't repeated on the cover. */
@@ -52,14 +52,14 @@
   display: grid;
   place-items: center;
   aspect-ratio: 4/3;
-  font: 650 clamp(64px, 7vw, 110px)/1 var(--display);
-  letter-spacing: -0.04em;
+  font: 600 clamp(64px, 7vw, 110px)/1 var(--display);
+  letter-spacing: -0.03em;
   opacity: 0.9;
 }
 .catalog-app .showcase-save {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 12px;
   z-index: 2;
   display: grid;
   place-items: center;
@@ -69,38 +69,48 @@
   border-radius: 50%;
   background: #fffdf8;
   color: #39245a;
-  box-shadow: 0 2px 10px #39245a26;
-  transition: opacity 0.2s;
+  box-shadow: 0 1px 2px #39245a14;
+  transition:
+    opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.12s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .catalog-app .showcase-save:hover,
 .catalog-app .showcase-save.is-saved {
   background: #39245a;
   color: #f9f4a7;
 }
+.catalog-app .showcase-save:active {
+  transform: scale(0.97);
+}
+/* The save button appears on hover, and on keyboard focus anywhere in the card.
+   Devices without hover keep it visible. */
 @media (hover: hover) {
   .showcase-frame .showcase-save:not(.is-saved) {
     opacity: 0;
   }
   .showcase-frame:hover .showcase-save,
+  .showcase-frame:focus-within .showcase-save,
   .showcase-frame .showcase-save:focus-visible {
     opacity: 1;
   }
 }
 .showcase-info {
-  padding: 12px 2px 0;
+  padding: 12px 4px 0;
 }
 .showcase-title {
   display: block;
-  font: 650 20px/1.15 var(--display);
-  letter-spacing: -0.02em;
+  font: 600 20px/1.2 var(--display);
+  letter-spacing: -0.01em;
   overflow-wrap: anywhere;
 }
 .showcase-title:hover {
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: 4px;
 }
 .showcase-info p {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   font-size: 14px;
   line-height: 1.45;
   color: #665578;
@@ -112,8 +122,8 @@
 .showcase-byline {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin-top: 9px;
+  gap: 8px;
+  margin-top: 8px;
   font-size: 13px;
   color: #665578;
   min-width: 0;
@@ -135,17 +145,16 @@
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   align-items: center;
-  gap: clamp(28px, 5vw, 70px);
-  margin: 0 0 70px;
+  gap: clamp(32px, 5vw, 72px);
+  margin: 0 0 64px;
   padding: clamp(20px, 3vw, 40px);
-  border-radius: 14px;
+  border-radius: 16px;
   background: var(--product-color);
   color: #39245a;
 }
 .featured-media img {
   max-height: 70dvh;
   object-fit: cover;
-  /* It drifts with the scroll instead of zooming on hover. */
   transition: none;
 }
 .featured-work.is-artwork .featured-media {
@@ -157,18 +166,18 @@
 .featured-label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 8px;
+  padding: 4px 12px;
   border-radius: 20px;
   background: #39245a;
   color: #f9f4a7;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
 }
 .featured-copy h2 {
-  margin: 18px 0 12px;
-  font: 700 clamp(40px, 5vw, 78px)/0.95 var(--display);
-  letter-spacing: -0.04em;
+  margin: 16px 0 12px;
+  font: 600 clamp(40px, 5vw, 72px)/1 var(--display);
+  letter-spacing: -0.03em;
   overflow-wrap: anywhere;
 }
 .featured-copy > p {
@@ -184,12 +193,12 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 26px;
+  margin-top: 24px;
 }
 .catalog-app .featured-actions .showcase-save {
   position: static;
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   box-shadow: none;
   border: 1px solid #39245a70;
   background: transparent;
@@ -199,15 +208,15 @@
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
   align-items: center;
-  gap: 30px;
-  margin-top: 45px;
-  padding: 30px 0;
+  gap: 32px;
+  margin-top: 48px;
+  padding: 32px 0;
   border-top: 1px solid #39245a30;
 }
 .makers-strip h2 {
   margin: 0 0 8px;
-  font-size: 34px;
-  line-height: 1;
+  font-size: 32px;
+  line-height: 1.1;
 }
 .makers-strip p {
   margin: 0;
@@ -216,9 +225,9 @@
 }
 .makers-strip ul {
   display: flex;
-  gap: 26px;
+  gap: 24px;
   margin: 0;
-  padding: 6px 2px 10px;
+  padding: 8px 4px 12px;
   list-style: none;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
@@ -239,15 +248,9 @@
 .makers-strip a {
   display: grid;
   justify-items: center;
-  gap: 6px;
+  gap: 8px;
   width: 100px;
   text-align: center;
-}
-.makers-strip a:hover .creator-avatar {
-  transform: rotate(-6deg) scale(1.05);
-}
-.makers-strip .creator-avatar {
-  transition: transform 0.2s;
 }
 .makers-strip strong {
   max-width: 100%;
@@ -255,10 +258,15 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 14px;
+  font-weight: 500;
 }
 .makers-strip small {
   font-size: 12px;
   color: #665578;
+}
+.makers-strip a:hover strong {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 .catalog-app .search-controls .sort-select {
   margin-left: auto;
@@ -267,7 +275,7 @@
 @media (max-width: 800px) {
   .featured-work {
     grid-template-columns: 1fr;
-    margin-bottom: 50px;
+    margin-bottom: 48px;
   }
   .featured-media img {
     max-height: 60dvh;
@@ -282,7 +290,7 @@
     gap: 12px;
   }
   .showcase-column {
-    gap: 22px;
+    gap: 24px;
   }
   .showcase-title {
     font-size: 16px;
@@ -294,10 +302,10 @@
     font-size: 56px;
   }
   .catalog-app .showcase-save {
-    top: 6px;
-    right: 6px;
-    width: 34px;
-    height: 34px;
+    top: 8px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
   }
   .showcase-byline .creator-avatar {
     display: none;
@@ -306,9 +314,14 @@
     font-size: 40px;
   }
 }
+/* Spatial movement off; colour changes stay. */
 @media (prefers-reduced-motion: reduce) {
   .showcase-media img,
-  .makers-strip .creator-avatar {
-    transition: none;
+  .catalog-app .showcase-save {
+    transition-property: opacity, background-color, color;
+  }
+  .showcase-media:hover img,
+  .catalog-app .showcase-save:active {
+    transform: none;
   }
 }
