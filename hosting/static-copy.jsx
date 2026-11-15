@@ -6,10 +6,13 @@ import { join } from 'node:path';
 import { brand } from '../lib/brand.mjs';
 import { workSummary } from '../lib/public-catalog.mjs';
 
+// Parsed once per build: every work and profile page reads it.
+let catalog;
 export function readCatalog() {
+  if (catalog) return catalog;
   for (const path of ['hosting/catalog.json', 'catalog.json']) {
     try {
-      return JSON.parse(readFileSync(join(process.cwd(), path), 'utf8'));
+      return (catalog = JSON.parse(readFileSync(join(process.cwd(), path), 'utf8')));
     } catch {}
   }
   return { products: [], profiles: [] };
