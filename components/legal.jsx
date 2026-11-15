@@ -136,9 +136,9 @@ export function PrivacyPage() {
           them and to take down anything that breaks the rules.
         </p>
         <p>
-          Listings and covers can remain after account deletion with the account association
-          removed. If you want a listing, image, or personal information within it removed, contact
-          us below. Previously shared images or cached copies may take time to disappear.
+          Deleting your account deletes the works you posted and their images and videos. To remove
+          a single listing, image, or personal information within it, delete it from My work or
+          contact us below. Previously shared images or cached copies may take time to disappear.
         </p>
       </section>
       <section>
@@ -185,8 +185,8 @@ export function PrivacyPage() {
         <p>
           Account information is kept while your account exists. To delete a member account, sign
           in, open Settings, expand Delete account at the bottom, then choose Delete my account and
-          confirm. This removes the login, profile, preferences, saves, and comments, and
-          disconnects any retained listings from the account.
+          confirm. This removes the login, profile, preferences, saves, and comments, and the works
+          you posted with their images and videos.
         </p>
         <p>
           Raw activity records are scheduled for deletion after 90 days; cleanup delays can extend
@@ -288,8 +288,8 @@ export function TermsPage() {
         <p>
           Features and listings can change, and the service may experience interruptions. Keep your
           own copy of any material you submit. You can stop using tadgobble at any time and delete
-          your member account from the account menu. Account deletion does not automatically remove
-          every public listing; request listing or image removal through the form below.
+          your member account from the account menu. Deleting your account also deletes the works
+          you posted.
         </p>
       </section>
       <section>

@@ -536,12 +536,11 @@ test('new-account setup validates blobs, keeps preferences private and respects 
   );
   await db.exec('reset role');
 });
-test('account deletion preserves product listings and removes personal activity', async () => {
-  await api(maker, 'account/delete');
+test('account deletion removes the account, its activity and its works', async () => {
+  const { removed } = await api(maker, 'account/delete');
+  assert.ok(removed.covers.includes(cover.path));
   await assert.rejects(() => api(maker, 'save', { productId: pending.id }), /Sign in/);
-  const p = (await api(null, 'products/' + pending.slug)).product;
-  assert.equal(p.owner_name, null);
-  assert.equal(p.save_count, 0);
+  await assert.rejects(() => api(null, 'products/' + pending.slug), /not found/);
   await assert.rejects(() => api(owner, 'account/delete'), /studio owner/);
 });
 

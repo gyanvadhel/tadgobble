@@ -255,3 +255,19 @@ test('local follows toggle, show on profiles, refuse yourself and hidden profile
   assert.equal(get('SELECT count(*) as n FROM follows').n, 0);
   assert.equal((await api(null, 'profiles/' + maker)).followers, 0);
 });
+test('deleting a local account deletes the works it posted', async () => {
+  run('INSERT INTO users VALUES(?,?,?,?,?,?)', 'leaving', 'leaving@example.test', 'leaving', 'unused', 'member', now());
+  const photo = await storeCover(
+    await sharp({ create: { width: 400, height: 600, channels: 3, background: '#c5b5f5' } })
+      .png()
+      .toBuffer(),
+    'leaving',
+    'upload',
+  );
+  const { slug } = await api('leaving', 'submit', { kind: 'art', name: 'Last light', coverId: photo.id, ownership: true });
+  const work = get('SELECT * FROM products WHERE slug=?', slug);
+  await api('other', 'save', { productId: work.id });
+  assert.equal((await api('leaving', 'account/delete', {})).status, 200);
+  assert.equal(get('SELECT count(*) as n FROM products WHERE id=?', work.id).n, 0);
+  assert.equal(get('SELECT count(*) as n FROM saves WHERE product_id=?', work.id).n, 0);
+});

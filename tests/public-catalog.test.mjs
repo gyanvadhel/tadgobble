@@ -31,6 +31,23 @@ test('loadCatalog collects published works and the profile of each maker once', 
   assert.deepEqual(catalog.profiles[0].works, ['paper-moons']);
 });
 
+test('loadCatalog follows the page cursor until every published work is in', async () => {
+  const asked = [];
+  const call = async (route, payload) => {
+    asked.push([route, payload?.cursor]);
+    if (route === 'bootstrap') return { products: [work], nextCursor: 'c1' };
+    if (route === 'products/page' && payload.cursor === 'c1')
+      return { products: [{ ...work, slug: 'second' }], nextCursor: 'c2' };
+    if (route === 'products/page' && payload.cursor === 'c2')
+      return { products: [{ ...work, slug: 'third' }], nextCursor: null };
+    if (route === 'profiles/sam') return { profile, products: [work] };
+    throw new Error('unexpected ' + route);
+  };
+  const catalog = await loadCatalog(call);
+  assert.deepEqual(catalog.products.map((p) => p.slug), ['paper-moons', 'second', 'third']);
+  assert.deepEqual(asked.slice(0, 3), [['bootstrap', undefined], ['products/page', 'c1'], ['products/page', 'c2']]);
+});
+
 test('loadCatalog skips a maker whose profile cannot be read', async () => {
   const call = async (route) => {
     if (route === 'bootstrap') return { products: [work] };

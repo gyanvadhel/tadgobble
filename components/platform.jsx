@@ -64,6 +64,12 @@ function Field({ label, children, hint }) {
 }
 export { Field };
 
+// Keeps the first copy of each work.
+const uniqueById = (items) => {
+  const seen = new Set();
+  return items.filter((p) => !seen.has(p.id) && seen.add(p.id));
+};
+
 const searchExamples = [
   'Find a font…',
   'Find a tiny app…',
@@ -74,7 +80,12 @@ const searchExamples = [
 
 export default function Platform({ initialView = 'discover', initialSlug = null }) {
   const searchBox = useScramblePlaceholder(searchExamples);
-  const [products, setProducts] = useState([]),
+  // The catalog arrives a page at a time: bootstrap brings the first page plus every
+  // saved work, "Show more" appends the next page. Bootstrap's copy wins on overlap.
+  const [firstPage, setFirstPage] = useState([]),
+    [later, setLater] = useState([]),
+    [cursor, setCursor] = useState(null),
+    [loadingMore, setLoadingMore] = useState(false),
     [user, setUser] = useState(null),
     [loading, setLoading] = useState(true),
     [view, setView] = useState(initialView);
@@ -94,12 +105,33 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
     setToast(message);
     setTimeout(() => setToast(''), 4500);
   }, []);
+  const paged = useRef(false);
+  const showBootstrap = useCallback((data) => {
+    setFirstPage(uniqueById([...(data.products || []), ...(data.saved || [])]));
+    // Once later pages are loaded, their cursor is the one that moves on.
+    if (!paged.current) setCursor(data.nextCursor || null);
+    setUser(data.user);
+  }, []);
   const refresh = useCallback(async () => {
     const data = await api('bootstrap');
-    setProducts(data.products);
-    setUser(data.user);
+    showBootstrap(data);
     return data;
-  }, []);
+  }, [showBootstrap]);
+  const products = uniqueById([...firstPage, ...later]);
+  async function loadMore() {
+    if (!cursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const page = await api('products/page', { cursor });
+      paged.current = true;
+      setLater((items) => [...items, ...page.products]);
+      setCursor(page.nextCursor || null);
+    } catch (e) {
+      notify(e.message);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
   const refreshDetail = useCallback(async () => {
     if (initialSlug) {
       const data = await api('products/' + initialSlug);
@@ -113,8 +145,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
     const seen = remembered('bootstrap'),
       seenDetail = initialSlug && remembered('products/' + initialSlug);
     if (seen && (!initialSlug || seenDetail)) {
-      setProducts(seen.products);
-      setUser(seen.user);
+      showBootstrap(seen);
       if (seenDetail) {
         setDetail(seenDetail.product);
         setComments(seenDetail.comments);
@@ -147,7 +178,7 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
     api('events', { kind: 'visit', source: src, campaign: params.get('utm_campaign') || '' }).catch(
       () => {},
     );
-  }, [refresh, refreshDetail]);
+  }, [refresh, refreshDetail, showBootstrap]);
   useEffect(() => {
     if (detail) api('events', { kind: 'detail', productId: detail.id, source }).catch(() => {});
   }, [detail?.id, source]);
@@ -158,6 +189,14 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
     }
     try {
       await api('save', { productId: p.id });
+      // A work from a later page isn't in bootstrap's copy, so flip it here.
+      setLater((items) =>
+        items.map((x) =>
+          x.id === p.id
+            ? { ...x, saved: !x.saved, save_count: x.save_count + (x.saved ? -1 : 1) }
+            : x,
+        ),
+      );
       await refresh();
       await refreshDetail();
       return true;
@@ -173,6 +212,9 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
   }
   async function signout() {
     await api('auth/logout', {});
+    // Later pages carry the old account's saved marks; start the list again.
+    paged.current = false;
+    setLater([]);
     await refresh();
     setView('discover');
     notify('Signed out.');
@@ -448,6 +490,14 @@ export default function Platform({ initialView = 'discover', initialSlug = null 
                 </div>
               ) : (
                 <ShowcaseGrid products={gridProducts} onSave={save} />
+              )}
+              {!loading && !error && cursor && view !== 'saved' && (
+                <div className="show-more">
+                  <button className="button" onClick={loadMore} disabled={loadingMore}>
+                    {loadingMore ? <LoaderCircle className="spin" size={16} /> : null}
+                    {loadingMore ? 'Loading' : 'Show more work'}
+                  </button>
+                </div>
               )}
             </section>
             {view === 'discover' && !loading && <MakersStrip products={products} />}

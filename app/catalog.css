@@ -88,6 +88,11 @@
   border-bottom: 1px solid #39245a60;
   background: #fff;
 }
+.show-more {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0 8px;
+}
 .catalog-first-find {
   background: #c5b5f5;
   text-align: center;

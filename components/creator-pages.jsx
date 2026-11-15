@@ -785,14 +785,13 @@ function ProfileSettings({ user, onSaved }) {
           <details className="account-danger">
             <summary>Delete account</summary>
             <p>
-              This removes your account, profile, saved items and comments. Published listings
-              remain without an account link. To take work down, delete it from{' '}
-              <a href="/my-work">My work</a> first.
+              This removes your account, profile, saved items and comments, and every work you
+              posted along with its images and videos. It can’t be undone.
             </p>
             <button
               className="button button-danger"
               onClick={async () => {
-                if (!confirm('Permanently delete your account, profile, saved items and comments?'))
+                if (!confirm('Permanently delete your account and everything you posted?'))
                   return;
                 try {
                   await api('account/delete', {});
