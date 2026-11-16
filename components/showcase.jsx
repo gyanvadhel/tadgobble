@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ArrowUpRight, Bookmark, MessageCircle } from 'lucide-react';
+import { ArrowUpRight, Bookmark, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { Avatar } from './blob-avatar';
 import { CreatorCredit } from './creator-credit';
 import { VideoBadge } from './work-media';
@@ -286,6 +286,30 @@ export function MakersStrip({ products }) {
     },
     { scope: row },
   );
+  // Which ends of the row are scrolled to, so the arrows and edge fades only show where there's more.
+  const [ends, setEnds] = useState({ start: true, end: true });
+  useEffect(() => {
+    const el = row.current;
+    if (!el) return;
+    const update = () =>
+      setEnds({
+        start: el.scrollLeft <= 1,
+        end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 1,
+      });
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    const resize = new ResizeObserver(update);
+    resize.observe(el);
+    return () => {
+      el.removeEventListener('scroll', update);
+      resize.disconnect();
+    };
+  }, [row, products]);
+  const page = (direction) =>
+    row.current?.scrollBy({
+      left: direction * row.current.clientWidth * 0.8,
+      behavior: calm() ? 'auto' : 'smooth',
+    });
   const makers = new Map();
   for (const p of products)
     if (p.creator_username) {
@@ -306,19 +330,41 @@ export function MakersStrip({ products }) {
         <Squiggle />
         <p>The people behind the work</p>
       </div>
-      <ul ref={row}>
-        {[...makers.values()].slice(0, 16).map((m) => (
-          <li key={m.username}>
-            <a href={`/profile/${encodeURIComponent(m.username)}`}>
-              <Avatar profile={{ name: m.name, ...m.profile }} size={64} />
-              <strong>{m.name}</strong>
-              <small>
-                {m.works} {m.works === 1 ? 'piece' : 'pieces'}
-              </small>
-            </a>
-          </li>
-        ))}
-      </ul>
+      <div className="makers-row" data-start={ends.start} data-end={ends.end}>
+        <ul ref={row}>
+          {[...makers.values()].slice(0, 16).map((m) => (
+            <li key={m.username}>
+              <a href={`/profile/${encodeURIComponent(m.username)}`}>
+                <Avatar profile={{ name: m.name, ...m.profile }} size={64} />
+                <strong>{m.name}</strong>
+                <small>
+                  {m.works} {m.works === 1 ? 'piece' : 'pieces'}
+                </small>
+              </a>
+            </li>
+          ))}
+        </ul>
+        {!ends.start && (
+          <button
+            type="button"
+            className="makers-arrow is-prev"
+            aria-label="Previous makers"
+            onClick={() => page(-1)}
+          >
+            <ChevronLeft size={20} aria-hidden="true" />
+          </button>
+        )}
+        {!ends.end && (
+          <button
+            type="button"
+            className="makers-arrow is-next"
+            aria-label="More makers"
+            onClick={() => page(1)}
+          >
+            <ChevronRight size={20} aria-hidden="true" />
+          </button>
+        )}
+      </div>
     </section>
   );
 }
